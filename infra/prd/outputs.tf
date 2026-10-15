@@ -13,7 +13,3 @@ output "worker_id" {
 output "workers_dev_url" {
   value = cloudflare_worker.gallery.subdomain.url
 }
-
-output "custom_hostname" {
-  value = var.custom_hostname != "" ? var.custom_hostname : null
-}

@@ -2,7 +2,3 @@ account_id           = "your-cloudflare-account-id"
 google_client_id     = "your-google-oauth-client-id"
 google_client_secret = "your-google-oauth-client-secret"
 allowed_emails       = ["you@example.com"]
-
-# カスタムホスト名を使うときだけ、次の2つをセットで書く。
-# custom_hostname = "photos.example.com"
-# zone_id         = "your-zone-id"

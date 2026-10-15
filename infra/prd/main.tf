@@ -1,22 +1,18 @@
-resource "terraform_data" "hostname_pair" {
-  lifecycle {
-    precondition {
-      condition     = (var.custom_hostname == "" && var.zone_id == "") || (var.custom_hostname != "" && var.zone_id != "")
-      error_message = "custom_hostname と zone_id は両方指定するか、両方空にしてください。"
-    }
-  }
+locals {
+  bucket_name = "photogallery-media"
+  worker_name = "photogallery"
 }
 
 resource "cloudflare_r2_bucket" "media" {
   account_id    = var.account_id
-  name          = var.bucket_name
+  name          = local.bucket_name
   location      = "apac"
   storage_class = "Standard"
 }
 
 resource "cloudflare_worker" "gallery" {
   account_id = var.account_id
-  name       = var.worker_name
+  name       = local.worker_name
 
   subdomain = {
     enabled          = true
@@ -26,15 +22,6 @@ resource "cloudflare_worker" "gallery" {
   observability = {
     enabled = true
   }
-}
-
-resource "cloudflare_workers_custom_domain" "gallery" {
-  count = var.custom_hostname != "" ? 1 : 0
-
-  account_id = var.account_id
-  hostname   = var.custom_hostname
-  service    = cloudflare_worker.gallery.name
-  zone_id    = var.zone_id
 }
 
 resource "cloudflare_zero_trust_access_identity_provider" "google" {

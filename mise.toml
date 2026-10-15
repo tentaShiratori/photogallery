@@ -1,4 +1,10 @@
 [tools]
 node = "22"
+"npm:@antfu/ni" = "30.3.0"
+"npm:skills" = "1.5.25"
 pnpm = "10"
 terraform = "1.10"
+
+[env]
+MISE_PIN = true
+_.file = { path = ".env", redact = true }

@@ -1,18 +1,14 @@
 # エージェント向け
 
-このリポジトリは Cloudflare 上の非公開フォトギャラリー。ユーザー向けの手順は README にある。
+コードを変える前に、下の 5 つを守る。ユーザー向けの手順は README。
 
-## 守る範囲
+1. Worker と `scripts/upload.ts` は TypeScript。Workers は JavaScript が第一級。Python は範囲が狭く、Go は非対応。
+2. インフラは `infra/terraform`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
+3. `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `local.worker_name` / `local.bucket_name` と揃える。
+4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。配信は Worker の `/media/` だけ。
+5. 撮影年での分類は未実装。README の「追加機能メモ」以上に広げない。ファイルの更新日時を撮影年の代わりに使わない。
 
-- Worker と `scripts/upload.ts` は TypeScript。Workers は JavaScript が第一級で、Python は範囲が狭く、Go は非対応。
-- インフラは `infra/terraform`。Cloudflare に CloudFormation 相当はない。
-- Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）、任意のカスタムホスト名。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）が持つ。両方でバージョンを管理しない。
-- `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `worker_name` / `bucket_name` と揃える。
-- `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。
-- R2 バケットは公開しない。配信は Worker の `/media/` だけ。
-- 撮影年での分類は未実装。README の「追加機能メモ」以上に広げない。ファイルの更新日時を撮影年の代わりに使わない。
-
-## コマンド
+## 実行するコマンド
 
 ツールは mise（`mise.toml`）。依存関係は pnpm。
 
@@ -29,10 +25,12 @@ pnpm test run test/page.test.ts
 
 アップロードは引数フォルダの直下だけ。サブフォルダは対象外。対象拡張子の判定は `src/media.ts` の `selectUploadNames` に寄せる。
 
-## 配置
+## 触るファイル
 
-- `src/index.ts` リクエストの振り分け、R2 の一覧と配信
-- `src/page.ts` ギャラリー HTML
-- `src/media.ts` 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
-- `scripts/upload.ts` ローカルから R2（S3 互換 API）へのアップロード
-- `infra/terraform` Cloudflare リソース
+1. `src/index.ts` — リクエストの振り分け、R2 の一覧と配信
+2. `src/page.ts` — ギャラリー HTML
+3. `src/media.ts` — 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
+4. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード
+5. `infra/terraform` — Cloudflare リソース
+
+次: 変更がテスト対象なら `pnpm test run test/media.test.ts` を実行する。画面なら `pnpm test run test/page.test.ts`。
