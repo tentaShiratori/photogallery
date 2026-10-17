@@ -9,7 +9,9 @@
     "strict": true,
     "skipLibCheck": true,
     "types": ["@cloudflare/workers-types", "@cloudflare/vitest-plugin/types", "node"],
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
 }

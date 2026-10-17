@@ -6,7 +6,8 @@ import {
   kindForName,
   mediaPath,
 } from "./media.ts";
-import { galleryPage } from "./page.ts";
+import { GalleryContent } from "./page.tsx";
+import { renderer } from "./renderer.tsx";
 
 export interface Env {
   MEDIA: R2Bucket;
@@ -92,9 +93,11 @@ async function serveObject(request: Request, bucket: R2Bucket, key: string): Pro
 
 const app = new Hono<{ Bindings: Env }>();
 
+app.use(renderer);
+
 app.get("/", (c) => {
   const email = accessEmail(c.req.raw);
-  return c.html(galleryPage(email));
+  return c.render(<GalleryContent email={email} />, { title: "フォトギャラリー" });
 });
 
 app.get("/api/media", async (c) => {

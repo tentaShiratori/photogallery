@@ -16,14 +16,14 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
-          include: ["test/**/*.test.ts"],
+          include: ["test/**/*.test.ts", "test/**/*.test.tsx"],
           exclude: ["test/worker.test.ts", "**/node_modules/**"],
         },
       },
       {
         plugins: [
           cloudflareTest({
-            main: "src/index.ts",
+            main: "src/index.tsx",
             wrangler: { configPath: "wrangler.jsonc" },
           }),
         ],

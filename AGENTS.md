@@ -20,22 +20,22 @@ pnpm typecheck
 pnpm exec vp fmt
 pnpm exec vp lint
 pnpm test run test/media.test.ts
-pnpm test run test/page.test.ts
+pnpm test run test/page.test.tsx
 pnpm test run test/worker.test.ts
 ```
 
 テストはファイルを指定して実行する。全テストファイルをまとめて実行しない。
 
 - `test/media.test.ts` — Node 環境。`src/media.ts` の純粋関数を検証する
-- `test/page.test.ts` — Node 環境。`src/page.ts` の HTML 生成を検証する
+- `test/page.test.tsx` — Node 環境。`src/page.tsx` の JSX コンポーネントを検証する
 - `test/worker.test.ts` — Worker 環境（Miniflare）。`GET /`、`GET /api/media`、`GET /media/*`（Range 206 を含む）を Worker ランタイムで検証する
 
 アップロードは引数フォルダの直下だけ。サブフォルダは対象外。対象拡張子の判定は `src/media.ts` の `selectUploadNames` に寄せる。
 
 ## 触るファイル
 
-1. `src/index.ts` — リクエストの振り分け、R2 の一覧と配信
-2. `src/page.ts` — ギャラリー HTML
+1. `src/index.tsx` — Hono アプリケーション。ルーティング、R2 の一覧と配信
+2. `src/page.tsx` — ギャラリー画面の JSX コンポーネント（hono/jsx）
 3. `src/media.ts` — 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
 4. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード
 5. `infra/terraform` — Cloudflare リソース
@@ -43,6 +43,5 @@ pnpm test run test/worker.test.ts
 次: 変更がテスト対象なら対応するテストを実行する。
 
 - `src/media.ts` を変えたら `pnpm test run test/media.test.ts`
-- `src/page.ts` を変えたら `pnpm test run test/page.test.ts`
-- `src/index.ts` やルーティング、R2 配信を変えたら `pnpm test run test/worker.test.ts`
-- Hono 化、JSX / React 化、撮影年での分類を追加するときも Worker 統合テストで確認する
+- `src/page.tsx` を変えたら `pnpm test run test/page.test.tsx`
+- `src/index.tsx` やルーティング、R2 配信を変えたら `pnpm test run test/worker.test.ts`

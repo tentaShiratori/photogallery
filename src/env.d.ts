@@ -5,7 +5,7 @@ declare global {
     }
 
     interface GlobalProps {
-      mainModule: typeof import("./index.ts");
+      mainModule: typeof import("./index.tsx");
     }
   }
 }
