@@ -42,7 +42,6 @@ export const GalleryContent: FC<{ email: string | null }> = ({ email }) => (
         <p class={statusClass}>読み込み中です。</p>
       </div>
     </main>
-    <script type="module" src="/client.js" />
   </>
 );
 

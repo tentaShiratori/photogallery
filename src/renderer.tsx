@@ -1,5 +1,6 @@
 import { css, Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
+import { Script, ViteClient } from "vite-ssr-components/hono";
 
 const globalClass = css`
   :-hono-global {
@@ -37,7 +38,9 @@ export const renderer = jsxRenderer(
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
         <title>{title}</title>
+        <ViteClient />
         <Style />
+        <Script src="/src/routes/lib/client.tsx" />
       </head>
       <body>{children}</body>
     </html>
