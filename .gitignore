@@ -17,3 +17,4 @@ override.tf.json
 tmp-preview/
 keys
 .vitest/
+.cursor/skills/
