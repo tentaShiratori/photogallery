@@ -19,9 +19,14 @@ pnpm upload -- <フォルダ>
 pnpm typecheck
 pnpm test run test/media.test.ts
 pnpm test run test/page.test.ts
+pnpm test run test/worker.test.ts
 ```
 
 テストはファイルを指定して実行する。全テストファイルをまとめて実行しない。
+
+- `test/media.test.ts` — Node 環境。`src/media.ts` の純粋関数を検証する
+- `test/page.test.ts` — Node 環境。`src/page.ts` の HTML 生成を検証する
+- `test/worker.test.ts` — Worker 環境（Miniflare）。`GET /`、`GET /api/media`、`GET /media/*`（Range 206 を含む）を Worker ランタイムで検証する
 
 アップロードは引数フォルダの直下だけ。サブフォルダは対象外。対象拡張子の判定は `src/media.ts` の `selectUploadNames` に寄せる。
 
@@ -33,4 +38,9 @@ pnpm test run test/page.test.ts
 4. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード
 5. `infra/terraform` — Cloudflare リソース
 
-次: 変更がテスト対象なら `pnpm test run test/media.test.ts` を実行する。画面なら `pnpm test run test/page.test.ts`。
+次: 変更がテスト対象なら対応するテストを実行する。
+
+- `src/media.ts` を変えたら `pnpm test run test/media.test.ts`
+- `src/page.ts` を変えたら `pnpm test run test/page.test.ts`
+- `src/index.ts` やルーティング、R2 配信を変えたら `pnpm test run test/worker.test.ts`
+- Hono 化、JSX / React 化、撮影年での分類を追加するときも Worker 統合テストで確認する
