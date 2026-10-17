@@ -42,5 +42,4 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm test run test/media.test.ts
-      - run: pnpm test run test/page.test.ts
+      - run: pnpm test run
