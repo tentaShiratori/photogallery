@@ -2,7 +2,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { contentTypeForName, selectUploadNames } from "../src/media.ts";
+import { contentTypeForName, selectUploadNames } from "../src/lib/media.ts";
 
 const CONCURRENCY = 4;
 

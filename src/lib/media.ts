@@ -96,3 +96,10 @@ export function byteContentRange(
   if (length < 0) return null;
   return contentRangeHeader(range.offset, length, size);
 }
+export type MediaItem = {
+  key: string;
+  kind: "image" | "video";
+  size: number;
+  uploaded: string;
+  url: string;
+};
