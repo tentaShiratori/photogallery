@@ -1,0 +1,62 @@
+# Dependabot の minor / patch を、CI が通ったあとだけマージする。
+# リポジトリの auto-merge 設定は使わない。required checks がなくても CI 完了を待つ。
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    name: merge minor/patch
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Merge Dependabot PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          pr_json="$(gh pr list --repo "$REPO" --head "$HEAD_BRANCH" --state open --json number,author)"
+          pr_number="$(printf '%s' "$pr_json" | jq -r '.[0].number // empty')"
+          if [[ -z "$pr_number" ]]; then
+            echo "開いている PR がない"
+            exit 0
+          fi
+
+          author="$(printf '%s' "$pr_json" | jq -r '.[0].author.login')"
+          if [[ "$author" != "app/dependabot" && "$author" != "dependabot[bot]" ]]; then
+            echo "Dependabot ではない ($author)"
+            exit 0
+          fi
+
+          current_sha="$(gh pr view "$pr_number" --repo "$REPO" --json headRefOid --jq .headRefOid)"
+          if [[ "$current_sha" != "$HEAD_SHA" ]]; then
+            echo "HEAD が CI 実行時と違う"
+            exit 0
+          fi
+
+          bodies="$(gh pr view "$pr_number" --repo "$REPO" --json commits --jq '[.commits[].messageBody] | join("\n")')"
+          if ! printf '%s' "$bodies" | bash .github/scripts/dependabot-should-merge.sh; then
+            echo "自動マージしない"
+            exit 0
+          fi
+
+          gh pr merge "$pr_number" --repo "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
