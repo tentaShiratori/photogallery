@@ -34,3 +34,7 @@ pnpm test run test/page.test.ts
 5. `infra/terraform` — Cloudflare リソース
 
 次: 変更がテスト対象なら `pnpm test run test/media.test.ts` を実行する。画面なら `pnpm test run test/page.test.ts`。
+
+## Cursor Cloud specific instructions
+
+`pnpm install` は esbuild と workerd のビルドスクリプトを無視する警告を出す。`pnpm-workspace.yaml` の `allowBuilds` は pnpm 10.26 以降の記法で、`packageManager` の pnpm 10.18.2 は読まない。警告のあとでも `pnpm dev`（ポート 8787）と上のテストは動く。プラットフォーム向けのバイナリは依存関係として入る。ローカルの R2 へ置くコマンドは README の「今すぐ見る」。
