@@ -11,6 +11,7 @@ import { renderer } from "./renderer.tsx";
 
 export interface Env {
   MEDIA: R2Bucket;
+  ASSETS: Fetcher;
 }
 
 const LIST_PAGE_SIZE = 1000;
