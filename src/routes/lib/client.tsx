@@ -1,9 +1,20 @@
+import { css } from "hono/css";
 import { render } from "hono/jsx/dom";
 import { useState, useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
 import { MediaItem } from "../../lib/media";
+
+const statusClass = css`
+  color: var(--muted);
+`;
+
+const gridClass = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+`;
 
 const Gallery: FC = () => {
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -30,10 +41,10 @@ const Gallery: FC = () => {
 
   return (
     <>
-      <p class="status" id="status">
+      <p class={statusClass} id="status">
         {status}
       </p>
-      <div class="grid" id="grid">
+      <div class={gridClass} id="grid">
         {items.map((item) => (
           <MediaTile key={item.key} item={item} onClick={() => setSelectedItem(item)} />
         ))}

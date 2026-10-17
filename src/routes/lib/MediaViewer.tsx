@@ -1,7 +1,41 @@
+import { css } from "hono/css";
 import { useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import type { MediaItem } from "../../lib/media";
 import { fileName } from "./string";
+
+const dialogClass = css`
+  width: min(960px, calc(100vw - 32px));
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #111;
+  color: #f4f1ea;
+  &::backdrop {
+    background: rgb(0 0 0 / 72%);
+  }
+`;
+
+const dialogMediaClass = css`
+  display: block;
+  max-width: 100%;
+  max-height: 78vh;
+  margin: 0 auto;
+`;
+
+const dialogCaptionClass = css`
+  margin: 10px 4px 4px;
+  font-size: 0.85rem;
+`;
+
+const closeClass = css`
+  float: right;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+`;
 
 export const MediaViewer: FC<{
   item: MediaItem | null;
@@ -17,19 +51,21 @@ export const MediaViewer: FC<{
   }, [item]);
 
   return (
-    <dialog id="viewer">
-      <button class="close" type="button" onClick={onClose}>
+    <dialog class={dialogClass} id="viewer">
+      <button class={closeClass} type="button" onClick={onClose}>
         閉じる
       </button>
       <div id="stage">
         {item &&
           (item.kind === "video" ? (
-            <video src={item.url} controls autoplay />
+            <video class={dialogMediaClass} src={item.url} controls autoplay />
           ) : (
-            <img src={item.url} alt={fileName(item.key)} />
+            <img class={dialogMediaClass} src={item.url} alt={fileName(item.key)} />
           ))}
       </div>
-      <p id="caption">{item ? fileName(item.key) : ""}</p>
+      <p class={dialogCaptionClass} id="caption">
+        {item ? fileName(item.key) : ""}
+      </p>
     </dialog>
   );
 };

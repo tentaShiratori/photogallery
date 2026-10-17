@@ -36,6 +36,8 @@ describe("Worker 統合テスト", () => {
       const html = await response.text();
       expect(html).toContain("フォトギャラリー");
       expect(html).toContain("<!DOCTYPE html>");
+      expect(html).toContain('id="hono-css"');
+      expect(html).toContain("--bg:#f4f1ea");
     });
   });
 

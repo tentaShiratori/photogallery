@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vite-plus/test";
 import { GalleryContent } from "./index.tsx";
 
-function renderToString(element: unknown): string {
-  return String(element);
+async function renderToString(element: { toString(): string | Promise<string> }): Promise<string> {
+  const html = await element.toString();
+  return html.toString();
 }
 
 describe("GalleryContent", () => {
-  it("認証メールをエスケープして出す", () => {
-    const html = renderToString(<GalleryContent email="<img src=x onerror=alert(1)>@example.com" />);
+  it("認証メールをエスケープして出す", async () => {
+    const html = await renderToString(
+      <GalleryContent email="<img src=x onerror=alert(1)>@example.com" />,
+    );
     expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;@example.com");
     expect(html).not.toContain("<img src=x onerror");
   });
 
-  it("メールが無いときはローカルプレビューと出す", () => {
-    const html = renderToString(<GalleryContent email={null} />);
+  it("メールが無いときはローカルプレビューと出す", async () => {
+    const html = await renderToString(<GalleryContent email={null} />);
     expect(html).toContain("ローカルプレビュー");
   });
 });
