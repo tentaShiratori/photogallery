@@ -63,11 +63,7 @@ function accessEmail(request: Request): string | null {
   return email;
 }
 
-async function serveObject(
-  request: Request,
-  bucket: R2Bucket,
-  key: string,
-): Promise<Response> {
+async function serveObject(request: Request, bucket: R2Bucket, key: string): Promise<Response> {
   const range = request.headers.get("Range");
   const object = await bucket.get(key, range ? { range: request.headers } : undefined);
   if (object === null) {

@@ -31,9 +31,7 @@ describe("Worker 統合テスト", () => {
     it("ギャラリーページを返す", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/"));
       expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")?.toLowerCase()).toBe(
-        "text/html; charset=utf-8",
-      );
+      expect(response.headers.get("content-type")?.toLowerCase()).toBe("text/html; charset=utf-8");
 
       const html = await response.text();
       expect(html).toContain("フォトギャラリー");
