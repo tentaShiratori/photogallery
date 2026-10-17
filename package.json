@@ -12,7 +12,8 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1152.0"
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "hono": "^4.13.13"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.4",
