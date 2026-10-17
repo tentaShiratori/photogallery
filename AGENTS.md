@@ -10,13 +10,15 @@
 
 ## 実行するコマンド
 
-ツールは mise（`mise.toml`）。依存関係は pnpm。
+ツールは mise（`mise.toml`）。依存関係は pnpm。fmt と lint は Vite+（`vp fmt` / `vp lint`）。コミット時は lefthook がステージしたファイルに対して実行する。エージェントがファイルを編集したあとは `.cursor/hooks.json` が同じコマンドをそのファイルに実行する。Vite+ の Git hook（`.vite-hooks`）は使わない。
 
 ```powershell
 pnpm dev
 pnpm deploy
 pnpm upload -- <フォルダ>
 pnpm typecheck
+pnpm exec vp fmt
+pnpm exec vp lint
 pnpm test run test/media.test.ts
 pnpm test run test/page.test.ts
 pnpm test run test/worker.test.ts

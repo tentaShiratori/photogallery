@@ -1,13 +1,4 @@
-const IMAGE_EXTENSIONS = new Set([
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "webp",
-  "avif",
-  "heic",
-  "heif",
-]);
+const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "heif"]);
 
 const VIDEO_EXTENSIONS = new Set(["mp4", "mov", "webm", "m4v"]);
 
@@ -55,7 +46,10 @@ export function selectUploadNames(names: string[]): string[] {
 }
 
 export function mediaPath(key: string): string {
-  const encoded = key.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+  const encoded = key
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
   return `/media/${encoded}`;
 }
 
@@ -84,11 +78,7 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-export function contentRangeHeader(
-  offset: number,
-  length: number,
-  size: number,
-): string {
+export function contentRangeHeader(offset: number, length: number, size: number): string {
   const end = offset + length - 1;
   return `bytes ${offset}-${end}/${size}`;
 }

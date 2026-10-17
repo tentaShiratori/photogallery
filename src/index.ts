@@ -1,4 +1,10 @@
-import { byteContentRange, contentTypeForName, keyFromMediaPath, kindForName, mediaPath } from "./media.ts";
+import {
+  byteContentRange,
+  contentTypeForName,
+  keyFromMediaPath,
+  kindForName,
+  mediaPath,
+} from "./media.ts";
 import { galleryPage } from "./page.ts";
 
 export interface Env {
@@ -16,7 +22,9 @@ type MediaItem = {
   url: string;
 };
 
-export async function listMedia(bucket: R2Bucket): Promise<{ items: MediaItem[]; truncated: boolean }> {
+export async function listMedia(
+  bucket: R2Bucket,
+): Promise<{ items: MediaItem[]; truncated: boolean }> {
   const items: MediaItem[] = [];
   let cursor: string | undefined;
   let pages = 0;

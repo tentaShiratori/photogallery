@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "node .cursor/hooks/fmt-lint.mjs",
+        "timeout": 120,
+        "failClosed": true
+      }
+    ]
+  }
+}

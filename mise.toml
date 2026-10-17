@@ -1,4 +1,5 @@
 [tools]
+lefthook = "2.2.2"
 node = "26.12.0"
 "npm:@antfu/ni" = "30.6.0"
 "npm:skills" = "1.7.2"

@@ -103,7 +103,7 @@ Workers の実行言語は JavaScript / TypeScript が第一級。Python は対�
 
 Cloudflare には AWS CloudFormation に当たるスタックサービスはない。インフラは Terraform の公式プロバイダ（v5）。Worker のソース配置だけは Wrangler。Terraform がバージョンまで持つと、デプロイのたびに両方が同じ Worker を取り合う。
 
-ツールは [mise](https://mise.jdx.dev/) が Node.js 26、pnpm 12、Terraform 1.16 を入れる。
+ツールは [mise](https://mise.jdx.dev/) が Node.js 26、pnpm 12、Terraform 1.16、lefthook 2.2 を入れる。`mise install` のあと `lefthook install` を一度実行すると、コミット前に `vp fmt --check` と `vp lint` が走る。
 
 ## 画面
 
