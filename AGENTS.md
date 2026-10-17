@@ -39,7 +39,7 @@ pnpm test run test/worker.test.ts
 3. `src/routes/index.tsx` — `GET /`。ギャラリーのサーバー JSX
 4. `src/routes/api/media.ts` — `GET /api/media`。R2 の一覧
 5. `src/routes/media.ts` — `GET /media/*`。R2 の配信と Range
-6. `src/routes/lib/client.tsx` — ブラウザ側のギャラリー（`hono/jsx/dom`）。エントリは `vite.client.config.ts`。タイルとダイアログは同じディレクトリの `MediaTile.tsx` / `MediaViewer.tsx`。`hono/css` はそのファイルで定義する
+6. `src/routes/lib/client.tsx` — ブラウザ側のギャラリー（`hono/jsx/dom`）。`src/renderer.tsx` の `Script` がエントリ。タイルとダイアログは同じディレクトリの `MediaTile.tsx` / `MediaViewer.tsx`。`hono/css` はそのファイルで定義する
 7. `src/lib/media.ts` — 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
 8. `src/lib/types.ts` — `Env` とハンドラ型
 9. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード

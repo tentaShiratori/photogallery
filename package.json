@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm build:client && wrangler dev",
-    "build:client": "vp build --config vite.client.config.ts",
-    "deploy": "pnpm build:client && wrangler deploy",
+    "dev": "vp dev",
+    "build": "vp build",
+    "deploy": "pnpm build && wrangler deploy",
     "typecheck": "tsc --noEmit",
     "fmt": "vp fmt",
     "lint": "vp lint",
@@ -17,12 +17,14 @@
     "hono": "^4.13.13"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.64.0",
     "@cloudflare/vitest-plugin": "^1.4.4",
     "@cloudflare/workers-types": "^5.20261016.1",
     "@types/node": "^26.6.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vite-plus": "catalog:",
+    "vite-ssr-components": "^0.8.0",
     "vitest": "catalog:",
     "wrangler": "^4.151.1"
   },

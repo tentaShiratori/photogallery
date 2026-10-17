@@ -1,7 +1,19 @@
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import ssrPlugin from "vite-ssr-components/plugin";
 import { defineConfig } from "vite-plus";
 
-export default defineConfig({
+export default defineConfig(() => ({
+  server: {
+    port: 8787,
+  },
+  oxc: {
+    jsx: {
+      runtime: "automatic",
+      importSource: "hono/jsx",
+    },
+  },
+  plugins: process.env.VITEST ? [ssrPlugin()] : [cloudflare(), ssrPlugin()],
   fmt: {
     endOfLine: "lf",
   },
@@ -39,4 +51,4 @@ export default defineConfig({
       },
     ],
   },
-});
+}));
