@@ -1,3 +1,4 @@
+import { Hono } from "hono";
 import {
   byteContentRange,
   contentTypeForName,
@@ -62,7 +63,11 @@ function accessEmail(request: Request): string | null {
   return email;
 }
 
-async function serveObject(request: Request, bucket: R2Bucket, key: string): Promise<Response> {
+async function serveObject(
+  request: Request,
+  bucket: R2Bucket,
+  key: string,
+): Promise<Response> {
   const range = request.headers.get("Range");
   const object = await bucket.get(key, range ? { range: request.headers } : undefined);
   if (object === null) {
@@ -89,31 +94,28 @@ async function serveObject(request: Request, bucket: R2Bucket, key: string): Pro
   return new Response(object.body, { headers });
 }
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
+const app = new Hono<{ Bindings: Env }>();
 
-    if (url.pathname === "/") {
-      return new Response(galleryPage(accessEmail(request)), {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
+app.get("/", (c) => {
+  const email = accessEmail(c.req.raw);
+  return c.html(galleryPage(email));
+});
 
-    if (url.pathname === "/api/media") {
-      const body = await listMedia(env.MEDIA);
-      return Response.json(body, {
-        headers: { "cache-control": "private, no-store" },
-      });
-    }
+app.get("/api/media", async (c) => {
+  const body = await listMedia(c.env.MEDIA);
+  return c.json(body, {
+    headers: { "cache-control": "private, no-store" },
+  });
+});
 
-    if (url.pathname.startsWith("/media/")) {
-      const key = keyFromMediaPath(url.pathname);
-      if (!key || !kindForName(key)) {
-        return new Response("見つかりません。", { status: 404 });
-      }
-      return serveObject(request, env.MEDIA, key);
-    }
+app.get("/media/*", async (c) => {
+  const key = keyFromMediaPath(c.req.path);
+  if (!key || !kindForName(key)) {
+    return c.text("見つかりません。", 404);
+  }
+  return serveObject(c.req.raw, c.env.MEDIA, key);
+});
 
-    return new Response("見つかりません。", { status: 404 });
-  },
-};
+app.notFound((c) => c.text("見つかりません。", 404));
+
+export default app;
