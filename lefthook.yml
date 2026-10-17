@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    fmt:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts,json,jsonc,md,yml,yaml,css,html}"
+      exclude:
+        - pnpm-lock.yaml
+      run: pnpm exec vp fmt --check {staged_files}
+    lint:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"
+      run: pnpm exec vp lint {staged_files}

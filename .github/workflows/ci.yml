@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   js:
-    name: typecheck / test
+    name: fmt / lint / typecheck / test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -41,5 +41,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vp fmt --check
+      - run: pnpm exec vp lint
       - run: pnpm typecheck
       - run: pnpm test run

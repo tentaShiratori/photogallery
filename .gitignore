@@ -16,3 +16,4 @@ override.tf.json
 *_override.tf.json
 tmp-preview/
 keys
+.vitest/
