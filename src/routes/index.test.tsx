@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { GalleryContent } from "../src/page.tsx";
+import { GalleryContent } from "./index.tsx";
 
 function renderToString(element: unknown): string {
   return String(element);

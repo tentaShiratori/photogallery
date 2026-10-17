@@ -1,66 +1,9 @@
 import { render } from "hono/jsx/dom";
 import { useState, useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
-
-type MediaItem = {
-  key: string;
-  kind: "image" | "video";
-  size: number;
-  uploaded: string;
-  url: string;
-};
-
-function fileName(key: string): string {
-  const parts = key.split("/");
-  return parts[parts.length - 1] || key;
-}
-
-const MediaViewer: FC<{
-  item: MediaItem | null;
-  onClose: () => void;
-}> = ({ item, onClose }) => {
-  useEffect(() => {
-    const dialog = document.getElementById("viewer") as HTMLDialogElement | null;
-    if (item) {
-      dialog?.showModal();
-    } else {
-      dialog?.close();
-    }
-  }, [item]);
-
-  return (
-    <dialog id="viewer">
-      <button class="close" type="button" onClick={onClose}>
-        閉じる
-      </button>
-      <div id="stage">
-        {item &&
-          (item.kind === "video" ? (
-            <video src={item.url} controls autoplay />
-          ) : (
-            <img src={item.url} alt={fileName(item.key)} />
-          ))}
-      </div>
-      <p id="caption">{item ? fileName(item.key) : ""}</p>
-    </dialog>
-  );
-};
-
-const MediaTile: FC<{
-  item: MediaItem;
-  onClick: () => void;
-}> = ({ item, onClick }) => (
-  <figure>
-    <button class="tile" type="button" onClick={onClick}>
-      {item.kind === "video" ? (
-        <video class="thumb" src={item.url} muted playsInline preload="metadata" />
-      ) : (
-        <img src={item.url} alt={fileName(item.key)} loading="lazy" />
-      )}
-    </button>
-    <figcaption>{fileName(item.key)}</figcaption>
-  </figure>
-);
+import { MediaTile } from "./MediaTile";
+import { MediaViewer } from "./MediaViewer";
+import { MediaItem } from "../../lib/media";
 
 const Gallery: FC = () => {
   const [items, setItems] = useState<MediaItem[]>([]);

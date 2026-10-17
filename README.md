@@ -21,8 +21,9 @@ Cloudflare R2 の画像と動画を、Workers の非公開ギャラリーで見�
 1 ファイルだけ指定する。所要は約 1 分。
 
 ```powershell
-pnpm test run test/media.test.ts
-pnpm test run test/page.test.ts
+pnpm test run src/lib/media.test.ts
+pnpm test run src/routes/index.test.tsx
+pnpm test run test/worker.test.ts
 ```
 
 ## Cloudflare へ出す
@@ -88,7 +89,7 @@ Windows のブラウザは HEIC / HEIF を表示できないことが多い。�
 
 ## 名前と役割
 
-バケット名と Worker 名は `infra/terraform/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
+バケット名と Worker 名は `infra/prd/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
 
 | もの                    | 役割                                                                        |
 | ----------------------- | --------------------------------------------------------------------------- |

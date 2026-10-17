@@ -5,7 +5,7 @@ export default defineConfig({
     outDir: "dist/static",
     emptyOutDir: true,
     lib: {
-      entry: "src/client.tsx",
+      entry: "src/routes/lib/client.tsx",
       formats: ["es"],
       fileName: () => "client.js",
     },
