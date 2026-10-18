@@ -3,6 +3,8 @@ import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import ssrPlugin from "vite-ssr-components/plugin";
 import { defineConfig } from "vite-plus";
 
+const persistPath = process.env.PHOTOGALLERY_PERSIST;
+
 export default defineConfig(() => ({
   server: {
     port: 8787,
@@ -13,7 +15,9 @@ export default defineConfig(() => ({
       importSource: "hono/jsx",
     },
   },
-  plugins: process.env.VITEST ? [ssrPlugin()] : [cloudflare(), ssrPlugin()],
+  plugins: process.env.VITEST
+    ? [ssrPlugin()]
+    : [cloudflare(persistPath ? { persistState: { path: persistPath } } : {}), ssrPlugin()],
   fmt: {
     endOfLine: "lf",
   },
