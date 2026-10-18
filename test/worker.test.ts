@@ -1,5 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
+import type { MediaItem, MediaList } from "../src/lib/gallery";
+import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
 
 const SAMPLE_IMAGE = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
@@ -25,6 +27,18 @@ describe("Worker 統合テスト", () => {
     await env.MEDIA.put("folder/nested.jpg", SAMPLE_IMAGE, {
       httpMetadata: { contentType: "image/jpeg" },
     });
+    await env.MEDIA.put("2024-08-02T12-00-00.jpg", jpegExif("2024:08:02 12:00:00"), {
+      httpMetadata: { contentType: "image/jpeg" },
+    });
+    await env.MEDIA.put(
+      "2023-05-01T08-30-00.mp4",
+      mp4({
+        creationSeconds: macSeconds(2023, 5, 1, 8, 30, 0),
+        moov: "after-mdat",
+        wideMdat: true,
+      }).bytes,
+      { httpMetadata: { contentType: "video/mp4" } },
+    );
   });
 
   describe("GET /", () => {
@@ -47,29 +61,60 @@ describe("Worker 統合テスト", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
 
-      const data = (await response.json()) as { items: unknown[]; truncated: boolean };
+      const data = (await response.json()) as MediaList & { items?: unknown };
       expect(data.truncated).toBe(false);
-      expect(data.items.length).toBe(3);
+      expect(Object.hasOwn(data, "items")).toBe(false);
+      expect(data.groups.map((group) => group.label)).toEqual(["2024", "2023", "年不明"]);
+
+      const jpeg = data.groups[0]?.items.find((item) => item.key === "2024-08-02T12-00-00.jpg");
+      expect(jpeg?.captured).toEqual({
+        year: 2024,
+        month: 8,
+        day: 2,
+        hour: 12,
+        minute: 0,
+        second: 0,
+      });
+      const video = data.groups[1]?.items.find((item) => item.key === "2023-05-01T08-30-00.mp4");
+      expect(video?.captured).toEqual({
+        year: 2023,
+        month: 5,
+        day: 1,
+        hour: 8,
+        minute: 30,
+        second: 0,
+      });
+      const unknown = data.groups.find((group) => group.year === null);
+      expect(unknown?.label).toBe("年不明");
+      expect(unknown?.items.map((item) => item.key).sort()).toEqual([
+        "folder/nested.jpg",
+        "test-image.png",
+        "test-video.mp4",
+      ]);
+      expect(unknown?.items.every((item) => item.captured === null)).toBe(true);
     });
 
     it("一覧の各アイテムに必要なフィールドがある", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/api/media"));
-      const data = (await response.json()) as {
-        items: {
-          key: string;
-          kind: "image" | "video";
-          size: number;
-          uploaded: string;
-          url: string;
-        }[];
-      };
+      const data = (await response.json()) as MediaList;
+      const items: MediaItem[] = [];
+      for (const group of data.groups) {
+        if (group.year === null) items.push(...group.items);
+        else items.push(...group.items);
+      }
 
-      for (const item of data.items) {
+      expect(items).toHaveLength(5);
+      for (const item of items) {
         expect(item.key).toBeDefined();
         expect(item.kind).toMatch(/^(image|video)$/);
         expect(typeof item.size).toBe("number");
         expect(item.uploaded).toMatch(/^\d{4}-\d{2}-\d{2}T/);
         expect(item.url).toMatch(/^\/media\//);
+        if (item.captured) {
+          expect(item.captured.year).toBeGreaterThan(0);
+        } else {
+          expect(item.captured).toBeNull();
+        }
       }
     });
   });

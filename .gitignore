@@ -17,5 +17,9 @@ override.tf.json
 tmp-preview/
 keys
 .vitest/
-.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/verify-photogallery/
+!.cursor/skills/verify-photogallery/**
+.cursor/skills/verify-photogallery/artifacts/
+.cursor/skills/verify-photogallery/runs/
 dist/
