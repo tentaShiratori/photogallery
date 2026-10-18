@@ -6,7 +6,7 @@
 2. インフラは `infra/prd`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
 3. `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `local.worker_name` / `local.bucket_name` と揃える。
 4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。配信は Worker の `/media/` だけ。
-5. 撮影年での分類は未実装。README の「追加機能メモ」以上に広げない。ファイルの更新日時を撮影年の代わりに使わない。
+5. 撮影年は `src/lib/gallery.ts` がバイト列から決める。月、アルバム、地図には広げない。ファイルの更新日時と R2 の `uploaded` を撮影時刻に使わない。
 
 ## 実行するコマンド
 

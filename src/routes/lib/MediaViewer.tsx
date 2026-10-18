@@ -1,7 +1,7 @@
 import { css } from "hono/css";
 import { useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
-import type { MediaItem } from "../../lib/media";
+import type { MediaItem } from "../../lib/gallery";
 import { fileName } from "./string";
 
 const dialogClass = css`
