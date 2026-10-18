@@ -1,8 +1,24 @@
-const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "heif"]);
+export const IMAGE_EXTENSIONS = [
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "webp",
+  "avif",
+  "heic",
+  "heif",
+] as const;
 
-const VIDEO_EXTENSIONS = new Set(["mp4", "mov", "webm", "m4v"]);
+export const VIDEO_EXTENSIONS = ["mp4", "mov", "webm", "m4v"] as const;
 
-const CONTENT_TYPES: Record<string, string> = {
+export type ImageExtension = (typeof IMAGE_EXTENSIONS)[number];
+export type VideoExtension = (typeof VIDEO_EXTENSIONS)[number];
+export type MediaKind = "image" | "video";
+
+const IMAGE_EXTENSION_SET = new Set<string>(IMAGE_EXTENSIONS);
+const VIDEO_EXTENSION_SET = new Set<string>(VIDEO_EXTENSIONS);
+
+const CONTENT_TYPES = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png",
@@ -15,9 +31,7 @@ const CONTENT_TYPES: Record<string, string> = {
   mov: "video/quicktime",
   webm: "video/webm",
   m4v: "video/x-m4v",
-};
-
-export type MediaKind = "image" | "video";
+} as const satisfies Record<ImageExtension | VideoExtension, string>;
 
 export function extensionOf(name: string): string {
   const base = name.split(/[/\\]/).pop() ?? name;
@@ -28,13 +42,16 @@ export function extensionOf(name: string): string {
 
 export function kindForName(name: string): MediaKind | null {
   const extension = extensionOf(name);
-  if (IMAGE_EXTENSIONS.has(extension)) return "image";
-  if (VIDEO_EXTENSIONS.has(extension)) return "video";
+  if (IMAGE_EXTENSION_SET.has(extension)) return "image";
+  if (VIDEO_EXTENSION_SET.has(extension)) return "video";
   return null;
 }
 
 export function contentTypeForName(name: string): string {
-  return CONTENT_TYPES[extensionOf(name)] ?? "application/octet-stream";
+  const extension = extensionOf(name);
+  if (extension in CONTENT_TYPES)
+    return CONTENT_TYPES[extension as ImageExtension | VideoExtension];
+  return "application/octet-stream";
 }
 
 export function selectUploadNames(names: string[]): string[] {
@@ -96,10 +113,3 @@ export function byteContentRange(
   if (length < 0) return null;
   return contentRangeHeader(range.offset, length, size);
 }
-export type MediaItem = {
-  key: string;
-  kind: "image" | "video";
-  size: number;
-  uploaded: string;
-  url: string;
-};
