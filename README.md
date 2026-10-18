@@ -83,7 +83,7 @@ pnpm deploy
 pnpm upload D:\photos\2024-trip
 ```
 
-サブフォルダは見ない。拡張子は jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, m4v。`.` で始まる名前は除く。オブジェクトキーはファイル名。同名は上書きする。
+サブフォルダは見ない。拡張子は jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, m4v。`.` で始まる名前は除く。オブジェクトキーは撮影日時で、元のファイル名は残さない。同じ秒が重なったときだけ末尾に `-2` を付ける。同名は上書きする。
 
 Windows のブラウザは HEIC / HEIF を表示できないことが多い。ファイル自体は置ける。
 
@@ -114,4 +114,4 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 
 ログイン済みのときは `Cf-Access-Authenticated-User-Email` を見出しに出す。本番の拒否は Access が先に行う。
 
-画面は年の見出しで分かれ、新しい年が先、読めないファイルは「年不明」の下に並ぶ。
+画面は年の見出しで分かれ、新しい年が先、キーから年を読めないファイルは「年不明」の下に並ぶ。

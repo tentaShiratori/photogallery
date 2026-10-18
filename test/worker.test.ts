@@ -27,11 +27,11 @@ describe("Worker 統合テスト", () => {
     await env.MEDIA.put("folder/nested.jpg", SAMPLE_IMAGE, {
       httpMetadata: { contentType: "image/jpeg" },
     });
-    await env.MEDIA.put("dated-2024.jpg", jpegExif("2024:08:02 12:00:00"), {
+    await env.MEDIA.put("2024-08-02T12-00-00.jpg", jpegExif("2024:08:02 12:00:00"), {
       httpMetadata: { contentType: "image/jpeg" },
     });
     await env.MEDIA.put(
-      "dated-2023.mp4",
+      "2023-05-01T08-30-00.mp4",
       mp4({
         creationSeconds: macSeconds(2023, 5, 1, 8, 30, 0),
         moov: "after-mdat",
@@ -66,7 +66,7 @@ describe("Worker 統合テスト", () => {
       expect(Object.hasOwn(data, "items")).toBe(false);
       expect(data.groups.map((group) => group.label)).toEqual(["2024", "2023", "年不明"]);
 
-      const jpeg = data.groups[0]?.items.find((item) => item.key === "dated-2024.jpg");
+      const jpeg = data.groups[0]?.items.find((item) => item.key === "2024-08-02T12-00-00.jpg");
       expect(jpeg?.captured).toEqual({
         year: 2024,
         month: 8,
@@ -75,7 +75,7 @@ describe("Worker 統合テスト", () => {
         minute: 0,
         second: 0,
       });
-      const video = data.groups[1]?.items.find((item) => item.key === "dated-2023.mp4");
+      const video = data.groups[1]?.items.find((item) => item.key === "2023-05-01T08-30-00.mp4");
       expect(video?.captured).toEqual({
         year: 2023,
         month: 5,

@@ -1,6 +1,6 @@
 # Gallery
 
-The gallery lists every image and video in local R2, newest upload first, and tells the user how many there are.
+The gallery lists every image and video in local R2 under year headings taken from the object key, and tells the user how many there are. Keys that are not a capture time sit under 年不明.
 
 ## Sub-features
 

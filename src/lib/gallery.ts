@@ -5,7 +5,7 @@ import {
   type ImageExtension,
   type MediaKind,
   type VideoExtension,
-} from "./media";
+} from "./media.ts";
 
 export type ObjectHead = {
   readonly key: string;
@@ -65,7 +65,6 @@ const CAPTURE_METHOD = {
   webm: "none",
 } as const satisfies Record<ImageExtension | VideoExtension, CaptureMethod>;
 
-const READ_CONCURRENCY = 8;
 const MAX_BOX_STEPS = 64;
 const MAX_CHUNK_STEPS = 64;
 const EXIF_CAP = 256 * 1024;
@@ -73,14 +72,28 @@ const META_CAP = 1024 * 1024;
 const MAC_EPOCH_MS = BigInt(Date.UTC(1904, 0, 1));
 
 class CaptureInstant {
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+  readonly hour: number;
+  readonly minute: number;
+  readonly second: number;
+
   private constructor(
-    readonly year: number,
-    readonly month: number,
-    readonly day: number,
-    readonly hour: number,
-    readonly minute: number,
-    readonly second: number,
-  ) {}
+    year: number,
+    month: number,
+    day: number,
+    hour: number,
+    minute: number,
+    second: number,
+  ) {
+    this.year = year;
+    this.month = month;
+    this.day = day;
+    this.hour = hour;
+    this.minute = minute;
+    this.second = second;
+  }
 
   static tryCreate(
     year: number,
@@ -737,28 +750,91 @@ function groupItems(items: readonly MediaItem[]): YearGroup[] {
   return groups;
 }
 
-export async function assembleGallery(
-  heads: readonly ObjectHead[],
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DATED_KEY = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})(?:-\d+)?\.[a-z0-9]+$/;
+
+export function captureFromKey(key: string): CivilCapture | null {
+  const base = key.split("/").pop() ?? key;
+  const match = DATED_KEY.exec(base);
+  if (!match) return null;
+  if (kindForName(base) === null) return null;
+  const instant = CaptureInstant.tryCreate(
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+    Number(match[6]),
+  );
+  return instant ? instant.toCivil() : null;
+}
+
+export function captureFromMtime(mtime: Date, now: Date): CivilCapture | null {
+  if (now.getTime() - mtime.getTime() <= WEEK_MS) return null;
+  const instant = CaptureInstant.tryCreate(
+    mtime.getFullYear(),
+    mtime.getMonth() + 1,
+    mtime.getDate(),
+    mtime.getHours(),
+    mtime.getMinutes(),
+    mtime.getSeconds(),
+  );
+  return instant ? instant.toCivil() : null;
+}
+
+export function objectKey(
+  capture: CivilCapture | null,
+  extension: string,
+  unknownId: string,
+  taken: Set<string>,
+): string {
+  const ext = extension.toLowerCase();
+  const base = capture ? `${formatCapture(capture)}.${ext}` : `u-${unknownId}.${ext}`;
+  return claimKey(base, taken);
+}
+
+export async function embeddedCapture(
+  name: string,
+  size: number,
   read: RangeRead,
-): Promise<GalleryView> {
+): Promise<CivilCapture | null> {
+  const instant = await captureOf({ key: name, size, uploaded: "" }, read);
+  return instant ? instant.toCivil() : null;
+}
+
+function formatCapture(capture: CivilCapture): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${capture.year}-${pad(capture.month)}-${pad(capture.day)}T${pad(capture.hour)}-${pad(capture.minute)}-${pad(capture.second)}`;
+}
+
+function claimKey(base: string, taken: Set<string>): string {
+  if (!taken.has(base)) {
+    taken.add(base);
+    return base;
+  }
+  const dot = base.lastIndexOf(".");
+  const stem = base.slice(0, dot);
+  const ext = base.slice(dot);
+  let suffix = 2;
+  while (taken.has(`${stem}-${suffix}${ext}`)) suffix += 1;
+  const key = `${stem}-${suffix}${ext}`;
+  taken.add(key);
+  return key;
+}
+
+export function assembleGallery(heads: readonly ObjectHead[]): GalleryView {
   const items: MediaItem[] = [];
-  const media = heads.filter((head) => kindForName(head.key) !== null);
-  for (let index = 0; index < media.length; index += READ_CONCURRENCY) {
-    const batch = media.slice(index, index + READ_CONCURRENCY);
-    const captured = await Promise.all(batch.map((head) => captureOf(head, read)));
-    for (const [slot, head] of batch.entries()) {
-      const kind = kindForName(head.key);
-      if (!kind) continue;
-      const instant = captured[slot] ?? null;
-      items.push({
-        key: head.key,
-        kind,
-        size: head.size,
-        uploaded: head.uploaded,
-        url: mediaPath(head.key),
-        captured: instant ? instant.toCivil() : null,
-      });
-    }
+  for (const head of heads) {
+    const kind = kindForName(head.key);
+    if (!kind) continue;
+    items.push({
+      key: head.key,
+      kind,
+      size: head.size,
+      uploaded: head.uploaded,
+      url: mediaPath(head.key),
+      captured: captureFromKey(head.key),
+    });
   }
   return { groups: groupItems(items) };
 }

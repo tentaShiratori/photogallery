@@ -31,22 +31,9 @@ async function listHeads(bucket: R2Bucket): Promise<{ heads: ObjectHead[]; trunc
   return { heads, truncated };
 }
 
-async function readObjectRange(
-  bucket: R2Bucket,
-  key: string,
-  offset: number,
-  length: number,
-): Promise<Uint8Array> {
-  const object = await bucket.get(key, { range: { offset, length } });
-  if (!object) return new Uint8Array();
-  return new Uint8Array(await object.arrayBuffer());
-}
-
 export const get: AppHanlder = async (c) => {
   const listed = await listHeads(c.env.MEDIA);
-  const view = await assembleGallery(listed.heads, (key, offset, length) =>
-    readObjectRange(c.env.MEDIA, key, offset, length),
-  );
+  const view = assembleGallery(listed.heads);
   return c.json({ truncated: listed.truncated, groups: view.groups } satisfies MediaList, {
     headers: { "cache-control": "private, no-store" },
   });
