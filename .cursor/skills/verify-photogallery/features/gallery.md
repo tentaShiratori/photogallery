@@ -1,6 +1,6 @@
 # Gallery
 
-The gallery lists every image and video in local R2, newest upload first, and tells the user how many there are.
+The gallery lists every image and video in local R2 under year headings taken from the object key, and tells the user how many there are. Keys that are not a capture time sit under 年不明.
 
 ## Sub-features
 
@@ -22,8 +22,8 @@ Preconditions:
 
 - **Open the gallery.** Open the recorded URL. The heading reads `フォトギャラリー` and the secondary text reads `ローカルプレビュー`.
 - **Wait for the list.** Wait until `#status` text is `2 件`. `#grid` contains a button named `verify.png` and a figcaption `verify.mp4`.
-- **Confirm the list API.** Run `curl.exe -sS "http://127.0.0.1:8797/api/media"`. Status 200, `truncated` is false, and `items` includes keys `verify.png` (`kind` `image`) and `verify.mp4` (`kind` `video`).
-- **Empty gallery.** On the `--empty` instance, wait until `#status` is `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。` `#grid` has no buttons. `curl.exe -sS "http://127.0.0.1:8797/api/media"` returns `items` as `[]`.
+- **Confirm the list API.** Run `curl.exe -sS "http://127.0.0.1:8797/api/media"`. Status 200, `truncated` is false, and the body has `groups` with no top-level `items`. Flatten `groups[].items`. That list includes `verify.png` (`kind` `image`) and `verify.mp4` (`kind` `video`).
+- **Empty gallery.** On the `--empty` instance, wait until `#status` is `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。` `#grid` has no buttons. `curl.exe -sS "http://127.0.0.1:8797/api/media"` returns `groups` as `[]`.
 - **Proof.** Save the seeded state. Write an accessibility snapshot to `.cursor/skills/verify-photogallery/artifacts/gallery/seeded.aria.txt` and a screenshot to `.cursor/skills/verify-photogallery/artifacts/gallery/seeded.png`. Both show `フォトギャラリー`, `2 件`, and `verify.png`. Save the API body to `.cursor/skills/verify-photogallery/artifacts/gallery/api-media.json`.
 
 ## Gotchas

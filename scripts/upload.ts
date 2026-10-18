@@ -1,8 +1,10 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { readdir, stat } from "node:fs/promises";
+import { open, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { contentTypeForName, selectUploadNames } from "../src/lib/media.ts";
+import { captureFromMtime, embeddedCapture, objectKey } from "../src/lib/gallery.ts";
+import { contentTypeForName, extensionOf, selectUploadNames } from "../src/lib/media.ts";
 
 const CONCURRENCY = 4;
 
@@ -19,24 +21,55 @@ async function fileNamesIn(folder: string): Promise<string[]> {
   return entries.filter((entry) => entry.isFile()).map((entry) => entry.name);
 }
 
+async function sha12(filePath: string): Promise<string> {
+  const hash = createHash("sha256");
+  await new Promise<void>((resolve, reject) => {
+    const stream = createReadStream(filePath);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("error", reject);
+    stream.on("end", () => resolve());
+  });
+  return hash.digest("hex").slice(0, 12);
+}
+
+async function planKey(folder: string, name: string, taken: Set<string>): Promise<string> {
+  const filePath = path.join(folder, name);
+  const info = await stat(filePath);
+  const handle = await open(filePath, "r");
+  let embedded: Awaited<ReturnType<typeof embeddedCapture>> = null;
+  try {
+    embedded = await embeddedCapture(name, info.size, async (_key, offset, length) => {
+      const buf = Buffer.alloc(length);
+      const { bytesRead } = await handle.read(buf, 0, length, offset);
+      return buf.subarray(0, bytesRead);
+    });
+  } finally {
+    await handle.close();
+  }
+  const captured = embedded ?? captureFromMtime(info.mtime, new Date());
+  const unknownId = captured ? "" : await sha12(filePath);
+  return objectKey(captured, extensionOf(name), unknownId, taken);
+}
+
 async function uploadOne(
   client: S3Client,
   bucket: string,
   folder: string,
   name: string,
+  key: string,
 ): Promise<void> {
   const filePath = path.join(folder, name);
   const info = await stat(filePath);
   await client.send(
     new PutObjectCommand({
       Bucket: bucket,
-      Key: name,
+      Key: key,
       Body: createReadStream(filePath),
       ContentLength: info.size,
       ContentType: contentTypeForName(name),
     }),
   );
-  console.log(`uploaded ${name} (${info.size} bytes)`);
+  console.log(`uploaded ${name} -> ${key} (${info.size} bytes)`);
 }
 
 async function main(): Promise<void> {
@@ -71,21 +104,27 @@ async function main(): Promise<void> {
   });
 
   console.log(`${selected.length} 件を ${bucket} へアップロードします。`);
+  const taken = new Set<string>();
+  const planned: { name: string; key: string }[] = [];
+  for (const name of selected) {
+    planned.push({ name, key: await planKey(folder, name, taken) });
+  }
+
   let index = 0;
   const failures: string[] = [];
 
   async function worker(): Promise<void> {
-    while (index < selected.length) {
+    while (index < planned.length) {
       const current = index;
       index += 1;
-      const name = selected[current];
-      if (!name) return;
+      const item = planned[current];
+      if (!item) return;
       try {
-        await uploadOne(client, bucket, folder, name);
+        await uploadOne(client, bucket, folder, item.name, item.key);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        failures.push(`${name}: ${message}`);
-        console.error(`failed ${name}: ${message}`);
+        failures.push(`${item.name}: ${message}`);
+        console.error(`failed ${item.name}: ${message}`);
       }
     }
   }

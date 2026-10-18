@@ -1,18 +1,11 @@
-import { kindForName, MediaItem } from "../../lib/media";
+import { assembleGallery, type MediaList, type ObjectHead } from "../../lib/gallery";
 import { AppHanlder } from "../../lib/types";
-function mediaPath(key: string): string {
-  const encoded = key
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-  return `/media/${encoded}`;
-}
 
 const LIST_PAGE_SIZE = 1000;
 const MAX_LIST_PAGES = 20;
 
-async function listMedia(bucket: R2Bucket): Promise<{ items: MediaItem[]; truncated: boolean }> {
-  const items: MediaItem[] = [];
+async function listHeads(bucket: R2Bucket): Promise<{ heads: ObjectHead[]; truncated: boolean }> {
+  const heads: ObjectHead[] = [];
   let cursor: string | undefined;
   let pages = 0;
   let truncated = false;
@@ -21,14 +14,10 @@ async function listMedia(bucket: R2Bucket): Promise<{ items: MediaItem[]; trunca
     const listed = await bucket.list({ cursor, limit: LIST_PAGE_SIZE });
     pages += 1;
     for (const object of listed.objects) {
-      const kind = kindForName(object.key);
-      if (!kind) continue;
-      items.push({
+      heads.push({
         key: object.key,
-        kind,
         size: object.size,
         uploaded: object.uploaded.toISOString(),
-        url: mediaPath(object.key),
       });
     }
     if (!listed.truncated || !listed.cursor) {
@@ -39,13 +28,13 @@ async function listMedia(bucket: R2Bucket): Promise<{ items: MediaItem[]; trunca
     truncated = pages >= MAX_LIST_PAGES;
   }
 
-  items.sort((a, b) => b.uploaded.localeCompare(a.uploaded) || a.key.localeCompare(b.key));
-  return { items, truncated };
+  return { heads, truncated };
 }
 
 export const get: AppHanlder = async (c) => {
-  const body = await listMedia(c.env.MEDIA);
-  return c.json(body, {
+  const listed = await listHeads(c.env.MEDIA);
+  const view = assembleGallery(listed.heads);
+  return c.json({ truncated: listed.truncated, groups: view.groups } satisfies MediaList, {
     headers: { "cache-control": "private, no-store" },
   });
 };

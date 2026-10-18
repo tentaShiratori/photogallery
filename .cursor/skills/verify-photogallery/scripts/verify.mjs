@@ -182,6 +182,19 @@ function launch() {
   });
 }
 
+function keysFromGroups(body) {
+  if (!body || typeof body !== "object" || !Array.isArray(body.groups)) return null;
+  const keys = [];
+  for (const group of body.groups) {
+    if (!group || typeof group !== "object" || !Array.isArray(group.items)) return null;
+    for (const item of group.items) {
+      if (!item || typeof item.key !== "string") return null;
+      keys.push(item.key);
+    }
+  }
+  return keys;
+}
+
 async function doctor() {
   const state = readCurrent();
   if (!state) fail("no verification server is recorded. Launch one before doctor.");
@@ -206,9 +219,8 @@ async function doctor() {
   }
   const list = await fetch(`${state.url}/api/media`);
   const body = await list.json();
-  if (list.status !== 200 || !Array.isArray(body.items))
-    fail("GET /api/media did not return items");
-  const keys = body.items.map((item) => item.key);
+  const keys = keysFromGroups(body);
+  if (list.status !== 200 || !keys) fail("GET /api/media did not return groups");
   if (state.seeded) {
     for (const key of ["verify.png", "verify.mp4"]) {
       if (!keys.includes(key)) fail(`seeded key ${key} is missing from /api/media`);
