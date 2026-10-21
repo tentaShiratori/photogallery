@@ -1,5 +1,7 @@
 # フォトギャラリー
 
+挙動の正は [仕様](docs/spec/README.md)。
+
 今すぐ見る。所要は約 5 分。
 
 1. このリポジトリのルートで `mise install` を実行する
@@ -13,9 +15,7 @@ pnpm exec wrangler r2 object put photogallery-media/t/2024-08-02T12-00-00.webp -
 pnpm exec wrangler r2 object put photogallery-media/2024-08-02T12-00-00.png --file=.\sample.png --local
 ```
 
-ここまでで画面に「ローカルプレビュー」と `2024-08-02T12-00-00.png` が出る。先の WebP はタイルの静止画、あとの PNG は開いたあとの本体です。ファイルを 1 つだけ置いても一覧には出ません。このとき R2 はローカルの模擬バケットです。Access は通りません。
-
-Cloudflare R2 の画像と動画を、Workers の非公開ギャラリーで見る。入口は Cloudflare Access の Google ログイン。
+ここまでで画面に「ローカルプレビュー」と `2024-08-02T12-00-00.png` が出る。先の WebP はサムネイル、あとの PNG は本体。ファイルを 1 つだけ置いても一覧には出ない。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。画面は [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。
 
 ## テスト
 
@@ -44,7 +44,7 @@ pnpm test run test/worker.test.ts
 3. Access の Apps and Policies の Write
 4. Access の Organizations, Identity Providers, and Groups の Write
 
-写真を上げるときの R2 キーも、同じファイルの `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` に書く。Google のクライアント ID とシークレットはここには書かず、`terraform.tfvars` に置く。
+画像と動画を上げるときの R2 キーも、同じファイルの `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` に書く。Google のクライアント ID とシークレットはここには書かず、`terraform.tfvars` に置く。
 
 ### 2. Google ログインを作る
 
@@ -66,7 +66,7 @@ terraform init
 terraform apply
 ```
 
-作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。Access の宛先は Worker そのものなので、`workers.dev` もプレビューも同じポリシーの奥に入る。
+作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。誰がギャラリーに届くかは [ログイン表示](docs/spec/login.md)。
 
 ### 4. Worker のコードを出す
 
@@ -76,32 +76,30 @@ terraform apply
 pnpm deploy
 ```
 
-### 5. 写真を上げる
+### 5. 画像と動画を上げる
 
 1. ダッシュボードの R2 > Manage R2 API Tokens で、対象バケットへの Object Read & Write を持つ S3 互換キーを作る。このキーは Terraform の API トークンとは別
 2. `.env` の `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` を埋める
-3. フォルダの直下だけを上げる
+3. フォルダを指定して上げる
 
 ```powershell
-pnpm upload D:\photos\2024-trip
+pnpm upload -- D:\photos\2024-trip
 ```
 
-サブフォルダは見ない。拡張子は jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, m4v。`.` で始まる名前は除く。オブジェクトキーは撮影日時で、元のファイル名は残らない。同じ秒のファイルは拡張子が違っても 1 つのステムを共有できない。2 件目以降は末尾に `-2`、`-3` と付く。サムネイルは `t/{ステム}.webp` で、長辺 320 の WebP です。スクリプトはサムネイルを書いてから本体を書く。同名は上書きする。
-
-Windows のブラウザは HEIC / HEIF を表示できないことが多い。ファイル自体は置ける。
+何が上がり、どんな名前になるかは [アップロード](docs/spec/upload.md)。画面での見え方は [ギャラリー](docs/spec/gallery.md) と [配信](docs/spec/delivery.md)。
 
 ## 名前と役割
 
 バケット名と Worker 名は `infra/prd/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
 
-| もの                    | 役割                                                                        |
-| ----------------------- | --------------------------------------------------------------------------- |
-| R2 `photogallery-media` | 非公開の画像・動画。場所の希望は `apac`                                     |
-| Worker `photogallery`   | 一覧と配信。R2 はバインディング経由で読む                                   |
-| Access                  | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く |
-| `scripts/upload.ts`     | 指定フォルダの直下だけを R2 の S3 API へ上げる                              |
+| もの                    | 役割                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| R2 `photogallery-media` | 非公開の画像・動画。場所の希望は `apac`                                          |
+| Worker `photogallery`   | 一覧と配信。R2 はバインディング経由で読む                                        |
+| Access                  | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く      |
+| `scripts/upload.ts`     | 指定フォルダを R2 の S3 API へ上げる。対象は [アップロード](docs/spec/upload.md) |
 
-バケットは公開しない。ブラウザは Worker の `/media/...` だけを見る。
+バケットは公開しない。ブラウザから中身を見るときの挙動は [配信](docs/spec/delivery.md)。
 
 Workers の実行言語は JavaScript / TypeScript が第一級。Python は対応範囲が狭く、Go はそのままでは動かない。Worker もアップロードスクリプトも TypeScript。
 
@@ -111,10 +109,7 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 
 ## 画面
 
-- `/` ギャラリー
-- `/api/media` 一覧 JSON。各要素は `bodyKey`、`kind`、`bodyUrl`、`thumbUrl`、`caption`
-- `/media/<key>` 本体またはサムネイル。動画の本体はシーク用に Range を返す
-
-ログイン済みのときは `Cf-Access-Authenticated-User-Email` を見出しに出す。本番の拒否は Access が先に行う。
-
-画面は年の見出しで分かれ、新しい年が先です。撮影日時が本体キーから読めないメディアは「年不明」の下に並びます。本体とサムネイルが揃ったものだけが一覧に出ます。タイルはサムネイルの静止画です。開くと本体が出ます。
+- [ギャラリー](docs/spec/gallery.md)
+- [拡大表示](docs/spec/viewer.md)
+- [ログイン表示](docs/spec/login.md)
+- [配信](docs/spec/delivery.md)
