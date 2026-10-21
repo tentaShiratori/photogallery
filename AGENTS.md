@@ -5,8 +5,10 @@
 1. Worker と `scripts/upload.ts` は TypeScript。Workers は JavaScript が第一級。Python は範囲が狭く、Go は非対応。
 2. インフラは `infra/prd`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
 3. `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `local.worker_name` / `local.bucket_name` と揃える。
-4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。配信は Worker の `/media/` だけ。
-5. 撮影日時はアップロード時に `src/lib/gallery.ts` がバイト列から決める。日付タグが無いときだけ、アップロード時刻より 7 日より古いファイルの更新日時を使う。オブジェクトキーは `YYYY-MM-DDTHH-mm-ss.拡張子`。日付が決まらないキーは年不明。月、アルバム、地図には広げない。R2 の `uploaded` は撮影時刻に使わない。
+4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。
+5. 撮影日時はアップロード時に `src/lib/gallery.ts` がバイト列から決める。
+
+挙動を変える PR は同じ PR で [docs/spec](docs/spec/README.md) を直し、触った UC ID を本文に書く。
 
 ## 実行するコマンド
 
@@ -30,7 +32,7 @@ pnpm test run test/worker.test.ts
 - `src/routes/index.test.tsx` — Node 環境。`src/routes/index.tsx` の JSX を検証する
 - `test/worker.test.ts` — Worker 環境（Miniflare）。`GET /`、`GET /api/media`、`GET /media/*`（Range 206 を含む）を Worker ランタイムで検証する
 
-アップロードは引数フォルダの直下だけ。サブフォルダは対象外。対象拡張子の判定は `src/lib/media.ts` の `selectUploadNames` に寄せる。
+アップロード対象の判定は `src/lib/media.ts` の `selectUploadNames` に寄せる。
 
 ## 触るファイル
 
@@ -39,7 +41,7 @@ pnpm test run test/worker.test.ts
 3. `src/routes/index.tsx` — `GET /`。ギャラリーのサーバー JSX
 4. `src/routes/api/media.ts` — `GET /api/media`。R2 の一覧
 5. `src/routes/media.ts` — `GET /media/*`。R2 の配信と Range
-6. `src/routes/lib/client.tsx` — ブラウザ側のギャラリー（`hono/jsx/dom`）。`src/renderer.tsx` の `Script` がエントリ。タイルとダイアログは同じディレクトリの `MediaTile.tsx` / `MediaViewer.tsx`。`hono/css` はそのファイルで定義する
+6. `src/routes/lib/client.tsx` — ブラウザ側のギャラリー（`hono/jsx/dom`）。`src/renderer.tsx` の `Script` がエントリ。タイルと拡大表示は同じディレクトリの `MediaTile.tsx` / `MediaViewer.tsx`。`hono/css` はそのファイルで定義する
 7. `src/lib/media.ts` — 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
 8. `src/lib/types.ts` — `Env` とハンドラ型
 9. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード
