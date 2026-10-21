@@ -1,7 +1,6 @@
 import { css } from "hono/css";
 import type { FC } from "hono/jsx";
-import type { MediaItem } from "../../lib/gallery";
-import { fileName } from "./string";
+import type { ThumbUrl } from "../../lib/pair";
 
 const figureClass = css`
   margin: 0;
@@ -38,17 +37,14 @@ const captionClass = css`
 `;
 
 export const MediaTile: FC<{
-  item: MediaItem;
+  thumbUrl: ThumbUrl;
+  caption: string;
   onClick: () => void;
-}> = ({ item, onClick }) => (
+}> = ({ thumbUrl, caption, onClick }) => (
   <figure class={figureClass}>
     <button class={tileClass} type="button" onClick={onClick}>
-      {item.kind === "video" ? (
-        <video class={mediaClass} src={item.url} muted playsInline preload="metadata" />
-      ) : (
-        <img class={mediaClass} src={item.url} alt={fileName(item.key)} loading="lazy" />
-      )}
+      <img class={mediaClass} src={thumbUrl} alt={caption} loading="lazy" />
     </button>
-    <figcaption class={captionClass}>{fileName(item.key)}</figcaption>
+    <figcaption class={captionClass}>{caption}</figcaption>
   </figure>
 );

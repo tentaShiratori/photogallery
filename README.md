@@ -9,10 +9,11 @@
 5. 別の PowerShell で、次を実行する
 
 ```powershell
-pnpm exec wrangler r2 object put photogallery-media/sample.png --file=.\sample.png --local
+pnpm exec wrangler r2 object put photogallery-media/t/2024-08-02T12-00-00.webp --file=.\sample.webp --content-type=image/webp --local
+pnpm exec wrangler r2 object put photogallery-media/2024-08-02T12-00-00.png --file=.\sample.png --local
 ```
 
-ここまでで画面に「ローカルプレビュー」と `sample.png` が出る。このとき R2 はローカルの模擬バケット。Access は通らない。
+ここまでで画面に「ローカルプレビュー」と `2024-08-02T12-00-00.png` が出る。先の WebP はタイルの静止画、あとの PNG は開いたあとの本体です。ファイルを 1 つだけ置いても一覧には出ません。このとき R2 はローカルの模擬バケットです。Access は通りません。
 
 Cloudflare R2 の画像と動画を、Workers の非公開ギャラリーで見る。入口は Cloudflare Access の Google ログイン。
 
@@ -21,6 +22,8 @@ Cloudflare R2 の画像と動画を、Workers の非公開ギャラリーで見�
 1 ファイルだけ指定する。所要は約 1 分。
 
 ```powershell
+pnpm test run src/lib/pair.test.ts
+pnpm test run src/lib/gallery.test.ts
 pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
 pnpm test run test/worker.test.ts
@@ -83,7 +86,7 @@ pnpm deploy
 pnpm upload D:\photos\2024-trip
 ```
 
-サブフォルダは見ない。拡張子は jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, m4v。`.` で始まる名前は除く。オブジェクトキーは撮影日時で、元のファイル名は残さない。同じ秒が重なったときだけ末尾に `-2` を付ける。同名は上書きする。
+サブフォルダは見ない。拡張子は jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, m4v。`.` で始まる名前は除く。オブジェクトキーは撮影日時で、元のファイル名は残らない。同じ秒のファイルは拡張子が違っても 1 つのステムを共有できない。2 件目以降は末尾に `-2`、`-3` と付く。サムネイルは `t/{ステム}.webp` で、長辺 320 の WebP です。スクリプトはサムネイルを書いてから本体を書く。同名は上書きする。
 
 Windows のブラウザは HEIC / HEIF を表示できないことが多い。ファイル自体は置ける。
 
@@ -109,9 +112,9 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 ## 画面
 
 - `/` ギャラリー
-- `/api/media` 一覧 JSON
-- `/media/<key>` 本体。動画のシーク用に Range を返す
+- `/api/media` 一覧 JSON。各要素は `bodyKey`、`kind`、`bodyUrl`、`thumbUrl`、`caption`
+- `/media/<key>` 本体またはサムネイル。動画の本体はシーク用に Range を返す
 
 ログイン済みのときは `Cf-Access-Authenticated-User-Email` を見出しに出す。本番の拒否は Access が先に行う。
 
-画面は年の見出しで分かれ、新しい年が先、キーから年を読めないファイルは「年不明」の下に並ぶ。
+画面は年の見出しで分かれ、新しい年が先です。撮影日時が本体キーから読めないメディアは「年不明」の下に並びます。本体とサムネイルが揃ったものだけが一覧に出ます。タイルはサムネイルの静止画です。開くと本体が出ます。

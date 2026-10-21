@@ -9,6 +9,9 @@ const runsDir = resolve(skillDir, "runs");
 const currentPath = resolve(runsDir, "current.json");
 const port = 8797;
 const bucket = "photogallery-media";
+const imageKey = "2024-08-02T12-00-00.png";
+const videoKey = "2023-05-01T08-30-00.mp4";
+const seededKeys = [imageKey, videoKey];
 
 const png = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
@@ -96,15 +99,24 @@ function putObject(persist, key, file, contentType) {
   );
 }
 
-function seed(persist) {
+async function seed(persist) {
+  const { default: sharp } = await import("sharp");
   const fixtureDir = resolve(persist, "..", "fixtures");
   mkdirSync(fixtureDir, { recursive: true });
   const pngPath = resolve(fixtureDir, "verify.png");
-  const videoPath = resolve(fixtureDir, "verify.mp4");
+  const videoPath = resolve(fixtureDir, "clip.mp4");
+  const thumbPath = resolve(fixtureDir, "thumb.webp");
   writeFileSync(pngPath, png);
   writeFileSync(videoPath, video);
-  putObject(persist, "verify.png", pngPath, "image/png");
-  putObject(persist, "verify.mp4", videoPath, "video/mp4");
+  const thumb = await sharp(png)
+    .resize({ width: 320, height: 320, fit: "inside", withoutEnlargement: false })
+    .webp()
+    .toBuffer();
+  writeFileSync(thumbPath, thumb);
+  putObject(persist, imageKey, pngPath, "image/png");
+  putObject(persist, "t/2024-08-02T12-00-00.webp", thumbPath, "image/webp");
+  putObject(persist, videoKey, videoPath, "video/mp4");
+  putObject(persist, "t/2023-05-01T08-30-00.webp", thumbPath, "image/webp");
 }
 
 async function waitUntilReady(url, child) {
@@ -127,7 +139,7 @@ async function waitUntilReady(url, child) {
   fail(`timed out waiting for ${url} (${lastError})`);
 }
 
-function launch() {
+async function launch() {
   const empty = process.argv.includes("--empty");
   const existing = readCurrent();
   if (existing && pidAlive(existing.pid)) {
@@ -146,7 +158,7 @@ function launch() {
   const persist = resolve(runDir, "state");
   const logPath = resolve(runDir, "dev.log");
   mkdirSync(persist, { recursive: true });
-  if (!empty) seed(persist);
+  if (!empty) await seed(persist);
 
   const logFd = openSync(logPath, "a");
   const child = spawn(`pnpm dev -- --host 127.0.0.1 --port ${port} --strictPort`, [], {
@@ -188,8 +200,8 @@ function keysFromGroups(body) {
   for (const group of body.groups) {
     if (!group || typeof group !== "object" || !Array.isArray(group.items)) return null;
     for (const item of group.items) {
-      if (!item || typeof item.key !== "string") return null;
-      keys.push(item.key);
+      if (!item || typeof item.bodyKey !== "string") return null;
+      keys.push(item.bodyKey);
     }
   }
   return keys;
@@ -222,8 +234,8 @@ async function doctor() {
   const keys = keysFromGroups(body);
   if (list.status !== 200 || !keys) fail("GET /api/media did not return groups");
   if (state.seeded) {
-    for (const key of ["verify.png", "verify.mp4"]) {
-      if (!keys.includes(key)) fail(`seeded key ${key} is missing from /api/media`);
+    for (const key of seededKeys) {
+      if (!keys.includes(key)) fail(`seeded bodyKey ${key} is missing from /api/media`);
     }
   }
   console.log(

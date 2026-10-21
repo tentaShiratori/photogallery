@@ -1,6 +1,8 @@
 allowBuilds:
   esbuild: true
   workerd: true
+  ffmpeg-static: true
+  sharp: true
 minimumReleaseAgeExclude:
   - miniflare@5.20261012.1-beta
   - wrangler@4.151.1

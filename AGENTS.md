@@ -19,6 +19,8 @@ pnpm upload -- <フォルダ>
 pnpm typecheck
 pnpm exec vp fmt
 pnpm exec vp lint
+pnpm test run src/lib/pair.test.ts
+pnpm test run src/lib/gallery.test.ts
 pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
 pnpm test run test/worker.test.ts
@@ -26,6 +28,8 @@ pnpm test run test/worker.test.ts
 
 テストはファイルを指定して実行する。全テストファイルをまとめて実行しない。
 
+- `src/lib/pair.test.ts` — Node 環境。`src/lib/pair.ts` のステムと、揃った組だけの一覧を検証する
+- `src/lib/gallery.test.ts` — Node 環境。`src/lib/gallery.ts` の EXIF と更新日時を検証する
 - `src/lib/media.test.ts` — Node 環境。`src/lib/media.ts` の純粋関数を検証する
 - `src/routes/index.test.tsx` — Node 環境。`src/routes/index.tsx` の JSX を検証する
 - `test/worker.test.ts` — Worker 環境（Miniflare）。`GET /`、`GET /api/media`、`GET /media/*`（Range 206 を含む）を Worker ランタイムで検証する
@@ -41,12 +45,17 @@ pnpm test run test/worker.test.ts
 5. `src/routes/media.ts` — `GET /media/*`。R2 の配信と Range
 6. `src/routes/lib/client.tsx` — ブラウザ側のギャラリー（`hono/jsx/dom`）。`src/renderer.tsx` の `Script` がエントリ。タイルとダイアログは同じディレクトリの `MediaTile.tsx` / `MediaViewer.tsx`。`hono/css` はそのファイルで定義する
 7. `src/lib/media.ts` — 拡張子、キー、Range。Worker とアップロードスクリプトの共通部分
-8. `src/lib/types.ts` — `Env` とハンドラ型
-9. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード
-10. `infra/prd` — Cloudflare リソース
+8. `src/lib/pair.ts` — ステム、サムネイルキー、揃ったメディアの一覧
+9. `src/lib/gallery.ts` — バイト列からの撮影日時
+10. `src/lib/types.ts` — `Env` とハンドラ型
+11. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード。サムネイルのあと本体
+12. `scripts/thumbnail.ts` — 長辺 320 の WebP。動画は先頭フレーム
+13. `infra/prd` — Cloudflare リソース
 
 次: 変更がテスト対象なら対応するテストを実行する。
 
+- `src/lib/pair.ts` を変えたら `pnpm test run src/lib/pair.test.ts`
+- `src/lib/gallery.ts` を変えたら `pnpm test run src/lib/gallery.test.ts`
 - `src/lib/media.ts` を変えたら `pnpm test run src/lib/media.test.ts`
 - `src/routes/index.tsx` を変えたら `pnpm test run src/routes/index.test.tsx`
 - ルーティングや R2 配信を変えたら `pnpm test run test/worker.test.ts`
