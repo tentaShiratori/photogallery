@@ -1,8 +1,8 @@
 import { css } from "hono/css";
 import { useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
-import type { MediaItem } from "../../lib/gallery";
-import { fileName } from "./string";
+import type { MediaKind } from "../../lib/media";
+import type { BodyUrl } from "../../lib/pair";
 
 const dialogClass = css`
   width: min(960px, calc(100vw - 32px));
@@ -38,7 +38,7 @@ const closeClass = css`
 `;
 
 export const MediaViewer: FC<{
-  item: MediaItem | null;
+  item: { bodyUrl: BodyUrl; kind: MediaKind; caption: string } | null;
   onClose: () => void;
 }> = ({ item, onClose }) => {
   useEffect(() => {
@@ -58,13 +58,13 @@ export const MediaViewer: FC<{
       <div id="stage">
         {item &&
           (item.kind === "video" ? (
-            <video class={dialogMediaClass} src={item.url} controls autoplay />
+            <video class={dialogMediaClass} src={item.bodyUrl} controls autoplay />
           ) : (
-            <img class={dialogMediaClass} src={item.url} alt={fileName(item.key)} />
+            <img class={dialogMediaClass} src={item.bodyUrl} alt={item.caption} />
           ))}
       </div>
       <p class={dialogCaptionClass} id="caption">
-        {item ? fileName(item.key) : ""}
+        {item ? item.caption : ""}
       </p>
     </dialog>
   );

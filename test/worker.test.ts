@@ -1,7 +1,12 @@
 import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
-import type { MediaItem, MediaList } from "../src/lib/gallery";
+import type { MediaList } from "../src/lib/pair";
 import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
+
+const SAMPLE_THUMB = new Uint8Array([
+  0x52, 0x49, 0x46, 0x46, 0x1a, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x4c,
+  0x0d, 0x00, 0x00, 0x00, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x07, 0x10, 0x11, 0x11, 0x88, 0x88, 0xfe,
+]);
 
 const SAMPLE_IMAGE = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
@@ -27,8 +32,17 @@ describe("Worker 統合テスト", () => {
     await env.MEDIA.put("folder/nested.jpg", SAMPLE_IMAGE, {
       httpMetadata: { contentType: "image/jpeg" },
     });
+    await env.MEDIA.put("2022-01-01T00-00-00.jpg", SAMPLE_IMAGE, {
+      httpMetadata: { contentType: "image/jpeg" },
+    });
+    await env.MEDIA.put("t/2019-01-01T00-00-00.webp", SAMPLE_THUMB, {
+      httpMetadata: { contentType: "image/webp" },
+    });
     await env.MEDIA.put("2024-08-02T12-00-00.jpg", jpegExif("2024:08:02 12:00:00"), {
       httpMetadata: { contentType: "image/jpeg" },
+    });
+    await env.MEDIA.put("t/2024-08-02T12-00-00.webp", SAMPLE_THUMB, {
+      httpMetadata: { contentType: "image/webp" },
     });
     await env.MEDIA.put(
       "2023-05-01T08-30-00.mp4",
@@ -39,6 +53,15 @@ describe("Worker 統合テスト", () => {
       }).bytes,
       { httpMetadata: { contentType: "video/mp4" } },
     );
+    await env.MEDIA.put("t/2023-05-01T08-30-00.webp", SAMPLE_THUMB, {
+      httpMetadata: { contentType: "image/webp" },
+    });
+    await env.MEDIA.put("u-abc123def456.png", SAMPLE_IMAGE, {
+      httpMetadata: { contentType: "image/png" },
+    });
+    await env.MEDIA.put("t/u-abc123def456.webp", SAMPLE_THUMB, {
+      httpMetadata: { contentType: "image/webp" },
+    });
   });
 
   describe("GET /", () => {
@@ -66,55 +89,47 @@ describe("Worker 統合テスト", () => {
       expect(Object.hasOwn(data, "items")).toBe(false);
       expect(data.groups.map((group) => group.label)).toEqual(["2024", "2023", "年不明"]);
 
-      const jpeg = data.groups[0]?.items.find((item) => item.key === "2024-08-02T12-00-00.jpg");
-      expect(jpeg?.captured).toEqual({
-        year: 2024,
-        month: 8,
-        day: 2,
-        hour: 12,
-        minute: 0,
-        second: 0,
-      });
-      const video = data.groups[1]?.items.find((item) => item.key === "2023-05-01T08-30-00.mp4");
-      expect(video?.captured).toEqual({
-        year: 2023,
-        month: 5,
-        day: 1,
-        hour: 8,
-        minute: 30,
-        second: 0,
-      });
+      const jpeg = data.groups[0]?.items.find((item) => item.bodyKey === "2024-08-02T12-00-00.jpg");
+      expect(jpeg?.bodyUrl).toBe("/media/2024-08-02T12-00-00.jpg");
+      expect(jpeg?.thumbUrl).toBe("/media/t/2024-08-02T12-00-00.webp");
+      expect(jpeg?.caption).toBe("2024-08-02T12-00-00.jpg");
+      expect(jpeg?.kind).toBe("image");
+      const video = data.groups[1]?.items.find(
+        (item) => item.bodyKey === "2023-05-01T08-30-00.mp4",
+      );
+      expect(video?.bodyUrl).toBe("/media/2023-05-01T08-30-00.mp4");
+      expect(video?.thumbUrl).toBe("/media/t/2023-05-01T08-30-00.webp");
+      expect(video?.kind).toBe("video");
       const unknown = data.groups.find((group) => group.year === null);
       expect(unknown?.label).toBe("年不明");
-      expect(unknown?.items.map((item) => item.key).sort()).toEqual([
-        "folder/nested.jpg",
-        "test-image.png",
-        "test-video.mp4",
-      ]);
-      expect(unknown?.items.every((item) => item.captured === null)).toBe(true);
+      expect(unknown?.items.map((item) => item.bodyKey)).toEqual(["u-abc123def456.png"]);
     });
 
     it("一覧の各アイテムに必要なフィールドがある", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/api/media"));
       const data = (await response.json()) as MediaList;
-      const items: MediaItem[] = [];
-      for (const group of data.groups) {
-        if (group.year === null) items.push(...group.items);
-        else items.push(...group.items);
-      }
+      const items = data.groups.flatMap((group) => group.items);
+      const absent = [
+        "test-image.png",
+        "test-video.mp4",
+        "folder/nested.jpg",
+        "2022-01-01T00-00-00.jpg",
+        "t/2019-01-01T00-00-00.webp",
+        "t/2024-08-02T12-00-00.webp",
+      ];
 
-      expect(items).toHaveLength(5);
+      expect(items).toHaveLength(3);
       for (const item of items) {
-        expect(item.key).toBeDefined();
+        expect(item.bodyKey).toBeTruthy();
         expect(item.kind).toMatch(/^(image|video)$/);
-        expect(typeof item.size).toBe("number");
-        expect(item.uploaded).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-        expect(item.url).toMatch(/^\/media\//);
-        if (item.captured) {
-          expect(item.captured.year).toBeGreaterThan(0);
-        } else {
-          expect(item.captured).toBeNull();
-        }
+        expect(item.bodyUrl).toBe(`/media/${item.bodyKey}`);
+        expect(item.thumbUrl).toMatch(/^\/media\/t\/.+\.webp$/);
+        expect(item.caption).toBe(item.bodyKey);
+        expect(Object.hasOwn(item, "key")).toBe(false);
+        expect(Object.hasOwn(item, "url")).toBe(false);
+        expect(Object.hasOwn(item, "uploaded")).toBe(false);
+        expect(Object.hasOwn(item, "size")).toBe(false);
+        expect(absent).not.toContain(item.bodyKey);
       }
     });
   });
@@ -166,6 +181,16 @@ describe("Worker 統合テスト", () => {
 
       const body = new Uint8Array(await response.arrayBuffer());
       expect(body.length).toBe(50);
+    });
+
+    it("サムネイルキーのバイトを返す", async () => {
+      const response = await exports.default.fetch(
+        new Request("http://localhost/media/t/2024-08-02T12-00-00.webp"),
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("image/webp");
+      const body = new Uint8Array(await response.arrayBuffer());
+      expect(body).toEqual(SAMPLE_THUMB);
     });
 
     it("ネストされたパスのメディアを返す", async () => {

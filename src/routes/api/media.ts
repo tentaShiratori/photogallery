@@ -1,11 +1,11 @@
-import { assembleGallery, type MediaList, type ObjectHead } from "../../lib/gallery";
+import { galleryFromHeads, type BucketHead } from "../../lib/pair";
 import { AppHanlder } from "../../lib/types";
 
 const LIST_PAGE_SIZE = 1000;
 const MAX_LIST_PAGES = 20;
 
-async function listHeads(bucket: R2Bucket): Promise<{ heads: ObjectHead[]; truncated: boolean }> {
-  const heads: ObjectHead[] = [];
+async function listHeads(bucket: R2Bucket): Promise<{ heads: BucketHead[]; truncated: boolean }> {
+  const heads: BucketHead[] = [];
   let cursor: string | undefined;
   let pages = 0;
   let truncated = false;
@@ -33,8 +33,7 @@ async function listHeads(bucket: R2Bucket): Promise<{ heads: ObjectHead[]; trunc
 
 export const get: AppHanlder = async (c) => {
   const listed = await listHeads(c.env.MEDIA);
-  const view = assembleGallery(listed.heads);
-  return c.json({ truncated: listed.truncated, groups: view.groups } satisfies MediaList, {
+  return c.json(galleryFromHeads(listed.heads, listed.truncated), {
     headers: { "cache-control": "private, no-store" },
   });
 };
