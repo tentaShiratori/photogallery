@@ -11,16 +11,19 @@
 5. 別の PowerShell で、次を実行する
 
 ```powershell
-pnpm exec wrangler r2 object put photogallery-media/sample.png --file=.\sample.png --local
+pnpm exec wrangler r2 object put photogallery-media/t/2024-08-02T12-00-00.webp --file=.\sample.webp --content-type=image/webp --local
+pnpm exec wrangler r2 object put photogallery-media/2024-08-02T12-00-00.png --file=.\sample.png --local
 ```
 
-このとき R2 はローカルの模擬バケットで、Google のログインは通らない。画面に出るものは [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。
+ここまでで画面に「ローカルプレビュー」と `2024-08-02T12-00-00.png` が出る。先の WebP はサムネイル、あとの PNG は本体。ファイルを 1 つだけ置いても一覧には出ない。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。画面は [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。
 
 ## テスト
 
 1 ファイルだけ指定する。所要は約 1 分。
 
 ```powershell
+pnpm test run src/lib/pair.test.ts
+pnpm test run src/lib/gallery.test.ts
 pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
 pnpm test run test/worker.test.ts

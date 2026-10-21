@@ -11,7 +11,7 @@ Run every command from the repository root. The helper is `node .cursor/skills/v
 
 ## Launch
 
-Start one isolated instance. It creates an empty persist directory, seeds `verify.png` and `verify.mp4` into local R2 bucket `photogallery-media`, then starts `pnpm dev` on port `8797` with `PHOTOGALLERY_PERSIST` pointed at that directory.
+Start one isolated instance. It creates an empty persist directory, seeds two pairs into local R2 bucket `photogallery-media`, then starts `pnpm dev` on port `8797` with `PHOTOGALLERY_PERSIST` pointed at that directory. The pairs are `2024-08-02T12-00-00.png` with `t/2024-08-02T12-00-00.webp`, and `2023-05-01T08-30-00.mp4` with `t/2023-05-01T08-30-00.webp`.
 
 ```powershell
 node .cursor/skills/verify-photogallery/scripts/verify.mjs launch
@@ -37,11 +37,11 @@ Run this first whenever the page, API, or process looks wrong.
 node .cursor/skills/verify-photogallery/scripts/verify.mjs doctor
 ```
 
-It is read-only. It passes only when the recorded pid is alive, that pid's tree owns port `8797`, the persist path is not `.wrangler/state`, `GET /` contains `フォトギャラリー` and `ローカルプレビュー`, and `GET /api/media` returns JSON. A seeded run must list `verify.png` and `verify.mp4`.
+It is read-only. It passes only when the recorded pid is alive, that pid's tree owns port `8797`, the persist path is not `.wrangler/state`, `GET /` contains `フォトギャラリー` and `ローカルプレビュー`, and `GET /api/media` returns JSON. A seeded run must list body keys `2024-08-02T12-00-00.png` and `2023-05-01T08-30-00.mp4`.
 
 ## Drive
 
-Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#grid`, `button` whose accessible name is the image alt (`verify.png`), `dialog#viewer`, the button named `閉じる`, and `#caption`. Video tiles have no alt text; use the figcaption `verify.mp4`.
+Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#grid`, `button` whose accessible name is the image alt (`2024-08-02T12-00-00.png`), `dialog#viewer`, the button named `閉じる`, and `#caption`. Every tile is an `img`. The video tile's alt and figcaption are `2023-05-01T08-30-00.mp4`. The dialog image or video uses the body URL.
 
 Wait until `#status` is no longer `読み込み中です。` The seeded status is `2 件`. The empty status is `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。`
 
@@ -51,15 +51,15 @@ HTTP checks, with `<url>` taken from the launch JSON:
 
 ```powershell
 curl.exe -sS "<url>/api/media"
-curl.exe -sS -D - -o NUL "<url>/media/verify.png"
-curl.exe -sS -D - -o NUL -H "Range: bytes=0-15" "<url>/media/verify.png"
+curl.exe -sS -D - -o NUL "<url>/media/2024-08-02T12-00-00.png"
+curl.exe -sS -D - -o NUL -H "Range: bytes=0-15" "<url>/media/2023-05-01T08-30-00.mp4"
 curl.exe -sS -D - -o NUL -H "Cf-Access-Authenticated-User-Email: verify@example.com" "<url>/"
 curl.exe -sS -D - "<url>/missing"
 ```
 
 Browser checks use the Cursor browser: open `<url>/`, snapshot, then click. Exercise the page a user sees. Do not call test-only endpoints. `GET /api/media` and `GET /media/*` are the production routes the page uses.
 
-`verify.mp4` is 1024 bytes of non-decodable data with `video/mp4`. A video element and a `206` range response are observable. A moving picture is not, until a decodable file is seeded. Do not treat a failed decode as a passed playback journey.
+`2023-05-01T08-30-00.mp4` is 1024 bytes of non-decodable data with `video/mp4`. A video element and a `206` range response are observable. A moving picture is not, until a decodable file is seeded. Do not treat a failed decode as a passed playback journey. The seeded thumbnail is a WebP still, not a frame from that file.
 
 ## Evidence
 

@@ -1,17 +1,4 @@
-import {
-  extensionOf,
-  kindForName,
-  mediaPath,
-  type ImageExtension,
-  type MediaKind,
-  type VideoExtension,
-} from "./media.ts";
-
-export type ObjectHead = {
-  readonly key: string;
-  readonly size: number;
-  readonly uploaded: string;
-};
+import { extensionOf, type ImageExtension, type VideoExtension } from "./media.ts";
 
 export type CivilCapture = {
   readonly year: number;
@@ -20,30 +7,6 @@ export type CivilCapture = {
   readonly hour: number;
   readonly minute: number;
   readonly second: number;
-};
-
-export type MediaItem = {
-  readonly key: string;
-  readonly kind: MediaKind;
-  readonly size: number;
-  readonly uploaded: string;
-  readonly url: string;
-  readonly captured: CivilCapture | null;
-};
-
-export type CapturedMedia = MediaItem & { readonly captured: CivilCapture };
-export type UncapturedMedia = MediaItem & { readonly captured: null };
-
-export type YearGroup =
-  | { readonly label: string; readonly year: number; readonly items: readonly CapturedMedia[] }
-  | { readonly label: string; readonly year: null; readonly items: readonly UncapturedMedia[] };
-
-export type GalleryView = {
-  readonly groups: readonly YearGroup[];
-};
-
-export type MediaList = GalleryView & {
-  readonly truncated: boolean;
 };
 
 type RangeRead = (key: string, offset: number, length: number) => Promise<Uint8Array>;
@@ -132,6 +95,18 @@ class CaptureInstant {
       second: this.second,
     };
   }
+}
+
+export function civilFromParts(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+): CivilCapture | null {
+  const instant = CaptureInstant.tryCreate(year, month, day, hour, minute, second);
+  return instant ? instant.toCivil() : null;
 }
 
 function daysInMonth(year: number, month: number): number {
@@ -673,105 +648,37 @@ async function instantFromBmffCreate(
   return null;
 }
 
-async function captureOf(head: ObjectHead, read: RangeRead): Promise<CaptureInstant | null> {
+async function captureOf(
+  key: string,
+  size: number,
+  read: RangeRead,
+): Promise<CaptureInstant | null> {
   try {
-    switch (methodFor(head.key)) {
+    switch (methodFor(key)) {
       case "none":
         return null;
       case "jpeg-exif":
-        return await instantFromJpeg(head.key, head.size, read);
+        return await instantFromJpeg(key, size, read);
       case "png-exif":
-        return await instantFromPng(head.key, head.size, read);
+        return await instantFromPng(key, size, read);
       case "webp-exif":
-        return await instantFromWebp(head.key, head.size, read);
+        return await instantFromWebp(key, size, read);
       case "bmff-exif":
-        return await instantFromBmffExif(head.key, head.size, read);
+        return await instantFromBmffExif(key, size, read);
       case "bmff-create":
-        return await instantFromBmffCreate(head.key, head.size, read);
+        return await instantFromBmffCreate(key, size, read);
     }
   } catch {
-    console.error(head.key);
+    console.error(key);
     return null;
   }
 }
 
-function isCaptured(item: MediaItem): item is CapturedMedia {
-  return item.captured !== null;
-}
-
-function isUncaptured(item: MediaItem): item is UncapturedMedia {
-  return item.captured === null;
-}
-
-function compareUploadedThenKey(a: MediaItem, b: MediaItem): number {
-  return b.uploaded.localeCompare(a.uploaded) || a.key.localeCompare(b.key);
-}
-
-function compareCaptured(a: CapturedMedia, b: CapturedMedia): number {
-  const left = a.captured;
-  const right = b.captured;
-  const byCivil =
-    right.year - left.year ||
-    right.month - left.month ||
-    right.day - left.day ||
-    right.hour - left.hour ||
-    right.minute - left.minute ||
-    right.second - left.second;
-  if (byCivil !== 0) return byCivil;
-  return compareUploadedThenKey(a, b);
-}
-
-function groupItems(items: readonly MediaItem[]): YearGroup[] {
-  const byYear = new Map<number, CapturedMedia[]>();
-  const unknown: UncapturedMedia[] = [];
-  for (const item of items) {
-    if (isUncaptured(item)) {
-      unknown.push(item);
-    } else if (isCaptured(item)) {
-      const bucket = byYear.get(item.captured.year);
-      if (bucket) bucket.push(item);
-      else byYear.set(item.captured.year, [item]);
-    }
-  }
-  const groups: YearGroup[] = [...byYear.keys()]
-    .sort((left, right) => right - left)
-    .map((year) => ({
-      label: String(year),
-      year,
-      items: (byYear.get(year) ?? []).sort(compareCaptured),
-    }));
-  if (unknown.length > 0) {
-    groups.push({
-      label: "年不明",
-      year: null,
-      items: unknown.sort(compareUploadedThenKey),
-    });
-  }
-  return groups;
-}
-
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const DATED_KEY = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})(?:-\d+)?\.[a-z0-9]+$/;
-
-export function captureFromKey(key: string): CivilCapture | null {
-  const base = key.split("/").pop() ?? key;
-  const match = DATED_KEY.exec(base);
-  if (!match) return null;
-  if (kindForName(base) === null) return null;
-  const instant = CaptureInstant.tryCreate(
-    Number(match[1]),
-    Number(match[2]),
-    Number(match[3]),
-    Number(match[4]),
-    Number(match[5]),
-    Number(match[6]),
-  );
-  return instant ? instant.toCivil() : null;
-}
 
 export function captureFromMtime(mtime: Date, now: Date): CivilCapture | null {
   if (now.getTime() - mtime.getTime() <= WEEK_MS) return null;
-  const instant = CaptureInstant.tryCreate(
+  return civilFromParts(
     mtime.getFullYear(),
     mtime.getMonth() + 1,
     mtime.getDate(),
@@ -779,18 +686,6 @@ export function captureFromMtime(mtime: Date, now: Date): CivilCapture | null {
     mtime.getMinutes(),
     mtime.getSeconds(),
   );
-  return instant ? instant.toCivil() : null;
-}
-
-export function objectKey(
-  capture: CivilCapture | null,
-  extension: string,
-  unknownId: string,
-  taken: Set<string>,
-): string {
-  const ext = extension.toLowerCase();
-  const base = capture ? `${formatCapture(capture)}.${ext}` : `u-${unknownId}.${ext}`;
-  return claimKey(base, taken);
 }
 
 export async function embeddedCapture(
@@ -798,43 +693,6 @@ export async function embeddedCapture(
   size: number,
   read: RangeRead,
 ): Promise<CivilCapture | null> {
-  const instant = await captureOf({ key: name, size, uploaded: "" }, read);
+  const instant = await captureOf(name, size, read);
   return instant ? instant.toCivil() : null;
-}
-
-function formatCapture(capture: CivilCapture): string {
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${capture.year}-${pad(capture.month)}-${pad(capture.day)}T${pad(capture.hour)}-${pad(capture.minute)}-${pad(capture.second)}`;
-}
-
-function claimKey(base: string, taken: Set<string>): string {
-  if (!taken.has(base)) {
-    taken.add(base);
-    return base;
-  }
-  const dot = base.lastIndexOf(".");
-  const stem = base.slice(0, dot);
-  const ext = base.slice(dot);
-  let suffix = 2;
-  while (taken.has(`${stem}-${suffix}${ext}`)) suffix += 1;
-  const key = `${stem}-${suffix}${ext}`;
-  taken.add(key);
-  return key;
-}
-
-export function assembleGallery(heads: readonly ObjectHead[]): GalleryView {
-  const items: MediaItem[] = [];
-  for (const head of heads) {
-    const kind = kindForName(head.key);
-    if (!kind) continue;
-    items.push({
-      key: head.key,
-      kind,
-      size: head.size,
-      uploaded: head.uploaded,
-      url: mediaPath(head.key),
-      captured: captureFromKey(head.key),
-    });
-  }
-  return { groups: groupItems(items) };
 }

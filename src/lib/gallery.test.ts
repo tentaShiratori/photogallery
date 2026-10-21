@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
+import { captureFromMtime, embeddedCapture } from "./gallery.ts";
 import {
-  assembleGallery,
-  captureFromKey,
-  captureFromMtime,
-  embeddedCapture,
-  objectKey,
-  type ObjectHead,
-} from "./gallery.ts";
-import {
-  barePng,
   heicExif,
   jpegDateTime,
   jpegExif,
@@ -26,10 +18,6 @@ const noon = {
   minute: 0,
   second: 0,
 };
-
-function head(key: string, size: number, uploaded: string): ObjectHead {
-  return { key, size, uploaded };
-}
 
 function openFiles(files: Map<string, Uint8Array>) {
   const calls: { key: string; offset: number; length: number }[] = [];
@@ -195,81 +183,5 @@ describe("captureFromMtime", () => {
     expect(captureFromMtime(recent, now)).toBeNull();
     expect(captureFromMtime(exact, now)).toBeNull();
     expect(captureFromMtime(older, now)?.year).toBe(older.getFullYear());
-  });
-});
-
-describe("objectKey", () => {
-  it("撮影日時をファイル名にし、同じ秒は -2 を付ける", () => {
-    const taken = new Set<string>();
-    expect(objectKey(noon, "JPG", "", taken)).toBe("2024-08-02T12-00-00.jpg");
-    expect(objectKey(noon, "jpg", "", taken)).toBe("2024-08-02T12-00-00-2.jpg");
-  });
-
-  it("日付が無いときは内容の識別子を使い、元の名前は残さない", () => {
-    const taken = new Set<string>();
-    expect(objectKey(null, "png", "abc123def456", taken)).toBe("u-abc123def456.png");
-  });
-});
-
-describe("assembleGallery", () => {
-  it("キーの撮影日時で年を分け、読めないキーは年不明", () => {
-    const view = assembleGallery([
-      head("u-abc.png", 10, "2026-10-18T09:00:00.000Z"),
-      head("2020-01-01T00-00-01.jpg", 10, "2026-10-01T00:00:00.000Z"),
-      head("2024-08-02T12-00-00.jpg", 10, "2026-10-18T01:00:00.000Z"),
-      head("folder/nested.jpg", 10, "2026-10-18T08:00:00.000Z"),
-    ]);
-    expect(view.groups.map((group) => group.label)).toEqual(["2024", "2020", "年不明"]);
-    expect(view.groups[2]?.year).toBeNull();
-    expect(view.groups[2]?.items.map((item) => item.key)).toEqual([
-      "u-abc.png",
-      "folder/nested.jpg",
-    ]);
-    expect(captureFromKey("2024-08-02T12-00-00-2.jpg")).toEqual(noon);
-    expect(captureFromKey("not-a-date.jpg")).toBeNull();
-  });
-
-  it("年内は暦の降順、同じ秒は uploaded の次に key", () => {
-    const view = assembleGallery([
-      head("2024-08-02T12-00-00-3.jpg", 10, "2026-01-01T00:00:00.000Z"),
-      head("2024-08-02T12-00-00-2.jpg", 10, "2026-01-02T00:00:00.000Z"),
-      head("2024-08-02T12-00-00.jpg", 10, "2026-01-02T00:00:00.000Z"),
-      head("2024-01-02T08-00-00.jpg", 10, "2026-06-01T00:00:00.000Z"),
-      head("2024-12-02T08-00-00.jpg", 10, "2026-01-01T00:00:00.000Z"),
-    ]);
-    expect(view.groups[0]?.items.map((item) => item.key)).toEqual([
-      "2024-12-02T08-00-00.jpg",
-      "2024-08-02T12-00-00-2.jpg",
-      "2024-08-02T12-00-00.jpg",
-      "2024-08-02T12-00-00-3.jpg",
-      "2024-01-02T08-00-00.jpg",
-    ]);
-  });
-
-  it("全部に日付があれば年不明は付かない", () => {
-    const view = assembleGallery([
-      head("2020-01-01T00-00-01.jpg", 10, "2026-10-01T00:00:00.000Z"),
-      head("2024-08-02T12-00-00.jpg", 10, "2026-10-18T01:00:00.000Z"),
-    ]);
-    expect(view.groups.map((group) => group.label)).toEqual(["2024", "2020"]);
-  });
-
-  it("動画と画像を種類付きで返す", () => {
-    const view = assembleGallery([
-      head("verify.mp4", 10, "2026-10-17T09:00:00.000Z"),
-      head("2020-01-01T00-00-01.jpg", 10, "2026-10-01T00:00:00.000Z"),
-      head("2024-08-02T12-00-00.jpg", 10, "2026-10-18T01:00:00.000Z"),
-      head("2024-08-02T15-00-00.mov", 10, "2026-10-18T02:00:00.000Z"),
-      head("verify.png", barePng.length, "2026-10-18T09:00:00.000Z"),
-    ]);
-    expect(view.groups.map((group) => group.label)).toEqual(["2024", "2020", "年不明"]);
-    expect(view.groups[0]?.items.map((item) => item.key)).toEqual([
-      "2024-08-02T15-00-00.mov",
-      "2024-08-02T12-00-00.jpg",
-    ]);
-    expect(view.groups[0]?.items[0]?.url).toBe("/media/2024-08-02T15-00-00.mov");
-    expect(view.groups[0]?.items[0]?.kind).toBe("video");
-    expect(view.groups[0]?.items[1]?.kind).toBe("image");
-    expect(view.groups[2]?.items.map((item) => item.key)).toEqual(["verify.png", "verify.mp4"]);
   });
 });
