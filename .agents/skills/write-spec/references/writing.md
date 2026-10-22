@@ -1,44 +1,46 @@
 # How to write
 
+The live files under `docs/spec` stay in Japanese and keep the field labels already used there. Match a neighboring UC or rule file when you edit. The English names below are this skill's terms for that shape.
+
 ## Use cases
 
-One UC is one goal the user or the script reaches in one go. End the name with a verb. The primary actor is exactly one of ユーザー, アドミン, or スクリプト. A UC about the screen uses ユーザー. Upload uses スクリプト.
+One UC is one goal the user or the script reaches in one go. End the name with a verb. The primary actor is exactly one of User, Admin, or Script. A UC about the screen uses User. Upload uses Script.
 
 Do not put a decision or a promise that is not that goal into a UC. Write it as a rule and refer to it by ID from the UC.
 
-Required fields are ID, 名前, 主アクター, 事前条件, 事後条件（成功）, 事後条件（失敗）, and フロー. The ID is `UC-番号` and matches the heading. Do not leave gaps in the numbering. Put one UC per file under `docs/spec`. Name the file `UC-番号-名前.md`. A precondition is already true when the UC starts. Use 「なし」 when there is none. If there is no failure path, 事後条件（失敗） is 「なし」.
+Required fields are ID, Name, Primary actor, Preconditions, Postconditions (success), Postconditions (failure), and Flow. The ID is `UC-NN` and matches the heading. Do not leave gaps in the numbering. Put one UC per file under `docs/spec`. Name the file `UC-NN-<name>.md`. A precondition is already true when the UC starts. Use `none` when there is none. If there is no failure path, Postconditions (failure) is `none`.
 
-Number the flow from 1. One subject and one action per line. The subject is the primary actor, ブラウザ, or スクリプト. Do not make a screen part the subject. Write only the change in the flow. Do not end a path with a line that only restates the previous step. Put the end state in 事後条件.
+Number the flow from 1. One subject and one action per line. The subject is the primary actor, the browser, or the script. Do not make a screen part the subject. Write only the change in the flow. Do not end a path with a line that only restates the previous step. Put the end state in Postconditions.
 
 Put an alternate directly under its step as `- 3a.`, then `- 3b.`. Put an exception as `- 3e.`, then `- 3f.`. Indent the steps of that path one level further. Do not send the reader to another step number. If more changes belong to that path, write them inside it.
 
-事後条件 holds only the change that remains at the end of that path. Write something that disappears mid-flow in the flow, not in 事後条件.
+Postconditions holds only the change that remains at the end of that path. Write something that disappears mid-flow in the flow, not in Postconditions.
 
 Leave out layout and position that a person can see on the screen. Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
 
-Keep the current UI and console string in 「」. Use the words from `GLOSSARY.md`.
+Keep the current UI and console string in quotation marks, exactly as it appears in the product. Use the words from `GLOSSARY.md`.
 
-Add トリガー, 関連, or 未決 only when the field has text.
+Add Trigger, Related, or Open only when the field has text.
 
 ```markdown
-## UC-01 ギャラリーを見る
+## UC-01 View the gallery
 
 - ID: UC-01
-- 名前: ギャラリーを見る
-- 主アクター: ユーザー
-- 事前条件: なし
-- 関連: 年は R-MEDIA-02。順番は R-GAL-01。
-- 事後条件（成功）:
-- 事後条件（失敗）:
+- Name: View the gallery
+- Primary actor: User
+- Preconditions: none
+- Related: Year is R-MEDIA-02. Order is R-GAL-01.
+- Postconditions (success):
+- Postconditions (failure):
 
-### フロー
+### Flow
 
-1. ユーザーがギャラリーを開く。
-   - 1a. 別の成功する道。
-     1. ブラウザはその変化を行う。
-   - 1e. 目的が達しない道。
-     1. ブラウザは失敗の変化を行う。
-2. ブラウザは成功の変化を行う。
+1. The user opens the gallery.
+   - 1a. Another successful path.
+     1. The browser makes that change.
+   - 1e. The goal is not reached.
+     1. The browser makes the failure change.
+2. The browser makes the success change.
 ```
 
 ## Rules

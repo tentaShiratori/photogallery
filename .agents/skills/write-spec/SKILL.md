@@ -17,4 +17,4 @@ Update the UC or the rule in the same PR. List the UC IDs and the rule IDs in th
 
 ## IDs already folded in
 
-The empty gallery, the login label next to the heading, and loading the next page of tiles are alternates of UC-01. Video in the viewer and closing with 「閉じる」 or Escape are paths of UC-02. Do not open a new UC that only repeats one of those branches. Naming, year, capture time, and extensions are rules under `domain/media.md`. Sort order, list caps, list API shape, and delivery are rules under `app/gallery.md`.
+The empty gallery, the login label next to the heading, and loading the next page of tiles are alternates of UC-01. Video in the viewer and closing with Close or Escape are paths of UC-02. Do not open a new UC that only repeats one of those branches. Naming, year, capture time, and extensions are rules under `domain/media.md`. Sort order, list caps, list API shape, and delivery are rules under `app/gallery.md`.
