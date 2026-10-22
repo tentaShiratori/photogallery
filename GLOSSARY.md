@@ -1,88 +1,88 @@
-# フォトギャラリー
+# Photo Gallery (フォトギャラリー)
 
-限られた人だけが見る、画像と動画の集まり。
+A collection of images and videos that only a limited set of people can view.
 
-## 画面
+## Screen
 
-**ギャラリー**:
-メディアを、撮った年ごとに並べた画面。
-_Avoid_: アルバム, ライブラリ, フィード
+**Gallery (ギャラリー)**:
+The screen that lists media grouped by the year it was captured.
+_Avoid_: album, library, feed
 
-**タブの印**:
-ギャラリーのタブに出る、文字の無い色の輪の花。
-_Avoid_: favicon, アイコン, ファビコン
+**Tab mark (タブの印)**:
+The wordless colored ring flower shown on the gallery tab.
+_Avoid_: favicon, icon
 
-**タイル**:
-ギャラリーに並ぶ、メディア 1 件の区画。
-_Avoid_: カード
+**Tile (タイル)**:
+One slot in the gallery for a single piece of media.
+_Avoid_: card
 
-**拡大表示**:
-選んだ 1 件の本体を大きく見せる画面。
-_Avoid_: ビューア, ライトボックス, ダイアログ, モーダル
+**Enlarged view (拡大表示)**:
+The screen that shows the body of one selected item large.
+_Avoid_: viewer, lightbox, dialog, modal
 
-**ログイン表示**:
-ギャラリーの見出しの横に出る、今見ている人の表示。
-_Avoid_: ユーザー名, プロフィール
+**Login label (ログイン表示)**:
+The label beside the gallery heading that shows who is viewing.
+_Avoid_: username, profile
 
-**ローカルプレビュー**:
-ログインのメールが無いときに、見出しの横へ出る文言。
-_Avoid_: 開発モード, 未ログイン, ゲスト
+**Local preview (ローカルプレビュー)**:
+The text beside the heading when there is no login email.
+_Avoid_: dev mode, logged out, guest
 
-**年不明**:
-撮影日時の年が決まらないメディアに付く見出し。
-_Avoid_: 未分類, その他
+**Unknown year (年不明)**:
+The heading used for media whose capture date-time year cannot be determined.
+_Avoid_: uncategorized, other
 
-## 時間
+## Time
 
-**撮影日時**:
-画像または動画が撮られた暦の日時。秒まで含む。
-_Avoid_: EXIF, タイムスタンプ, DateTimeOriginal, uploaded
+**Capture date-time (撮影日時)**:
+The calendar date and time when an image or video was captured, including seconds.
+_Avoid_: EXIF, timestamp, DateTimeOriginal, uploaded
 
-**作成日時**:
-動画ファイルの中に記録された、そのファイルが作られた暦の日時。
-_Avoid_: 変更日時
+**Creation date-time (作成日時)**:
+The calendar date and time recorded inside a video file as when that file was created.
+_Avoid_: modification date-time
 
-**Android の印**:
-動画の中に、Android の機器が付けた項目があること。
+**Android mark (Android の印)**:
+That a video contains fields the Android device added.
 _Avoid_: com.android, manufacturer, model, capture.fps
 
-**更新日時**:
-手元のファイルが最後に更新された暦の日時。
-_Avoid_: mtime, 更新時刻
+**Modification date-time (更新日時)**:
+The calendar date and time when the file on disk was last updated.
+_Avoid_: mtime
 
-**アップロード時刻**:
-画像または動画を置いた時刻。
+**Upload time (アップロード時刻)**:
+The time when an image or video was placed in storage.
 
-## 中身
+## Content
 
-**メディア**:
-本体とサムネイルが揃った、ギャラリーに 1 件として数える画像または動画。片方だけではメディアではない。
-_Avoid_: ファイル, オブジェクト
+**Media (メディア)**:
+An image or video counted as one gallery item when body and thumbnail are both present. Either alone is not media.
+_Avoid_: file, object
 
-**画像**:
-メディアのうち、静止画。拡張子は jpg、jpeg、png、gif、webp、avif、heic、heif。
-_Avoid_: 写真, イメージ
+**Image (画像)**:
+Still media. Extensions are jpg, jpeg, png, gif, webp, avif, heic, heif.
+_Avoid_: photo
 
-**動画**:
-メディアのうち、映像。拡張子は mp4、mov、webm、m4v。
-_Avoid_: ビデオ, クリップ, ムービー
+**Video (動画)**:
+Moving media. Extensions are mp4, mov, webm, m4v.
+_Avoid_: clip, movie
 
-**本体**:
-メディアの完全な画像または動画。拡大表示に使う。
-_Avoid_: 元画像, オリジナル, ソース
+**Body (本体)**:
+The full image or video of a media item. Used in the enlarged view.
+_Avoid_: original, source
 
-**サムネイル**:
-メディアから作った、ギャラリーに出すための小さい静止画。それ自体はメディアではない。動画では先頭フレームの 1 枚。
-_Avoid_: プレビュー, 縮小, サムネ, ポスター
+**Thumbnail (サムネイル)**:
+A small still image made from media for the gallery. It is not media by itself. For video, one frame from the start.
+_Avoid_: preview, poster
 
-**名前**:
-1 件のメディアを区別する本体の呼び名。スラッシュは含まない。
-_Avoid_: オブジェクトキー, タイトル
+**Name (名前)**:
+The name of a media item's body that distinguishes it. Does not contain slashes.
+_Avoid_: object key, title
 
-**アップロード**:
-手元のフォルダにある画像と動画を、ギャラリーの置き場へ写す操作。サムネイルと本体の組を置く。
-_Avoid_: インポート, 同期, デプロイ
+**Upload (アップロード)**:
+Copying images and videos from a folder on disk into gallery storage. Places thumbnail and body as a pair.
+_Avoid_: import, sync, deploy
 
-**配信**:
-置いてある本体またはサムネイルの中身を、見ているブラウザが受け取る経路。
-_Avoid_: ダウンロード
+**Delivery (配信)**:
+The path by which the browser receives the bytes of a stored body or thumbnail.
+_Avoid_: download

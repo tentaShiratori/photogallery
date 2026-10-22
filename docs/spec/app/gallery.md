@@ -1,64 +1,64 @@
-# ギャラリー
+# Gallery
 
-用語は [GLOSSARY.md](../../../GLOSSARY.md)。
+Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 
-## R-GAL-01 並び順
+## R-GAL-01 Sort order
 
-- 年どうしでは、新しい年が先で、「年不明」は最後である。メディアの無い年には見出しが無い。どの年に属するかは [R-MEDIA-02](../domain/media.md#r-media-02-年の決め方) を見る。
-- 年の見出しは、その年の最初のタイルと一緒に出る。「年不明」の見出しも、その最初のタイルと一緒に出る。
-- 同じ年では、撮影日時の新しいものが先である。同じ秒は、アップロード時刻の新しいものが先である。それも同じときは、名前の文字順で早いものが先である。例として、`2024-08-02T12-00-00-2.jpg` は `2024-08-02T12-00-00.jpg` より先になる。
-- 「年不明」では、アップロード時刻の新しいものが先である。同じときは、名前の文字順で早いものが先である。
-- タイルを 60 件ずつ出しても、その年のメディアを全部並べた順のまま出る。
+- Among years, newer years come first; 「年不明」 is last. Years without media have no heading. Which year an item belongs to is in [R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided).
+- A year heading appears with that year's first tile. The 「年不明」 heading appears with its first tile.
+- Within a year, newer capture date-time comes first. Same second: newer upload time first. Same again: earlier name in lexicographic order. Example: `2024-08-02T12-00-00-2.jpg` comes before `2024-08-02T12-00-00.jpg`.
+- In 「年不明」, newer upload time comes first. Same again: earlier name in lexicographic order.
+- Showing tiles 60 at a time preserves the full sort order for that year's media.
 
-## R-GAL-02 一覧の上限
+## R-GAL-02 List limit
 
-- ある年、または「年不明」の本体とサムネイルが、合わせて 20,000 より多いとき、一覧は上限で止まる。
-- その年の本体とサムネイルを、同じ数ずつ交互に、合わせて 20,000 まで見る。20,000 を見たあとにも続きがあるとき、その年の一覧を止める。
-- 見えたメディアが 1 件以上あるとき、その年の見出しの横で、件数のうしろに「（上限で打ち切っています）」が付く。例は「10000 件（上限で打ち切っています）」である。タイルは見えた分だけ出る。
-- 見えたメディアが 0 件のとき、その年の見出しは無い。その年を飛ばして次の年の一覧を取る。
+- When bodies and thumbnails for a year or 「年不明」 total more than 20,000, the list stops at the limit.
+- Bodies and thumbnails for that year are visited alternately in equal counts, up to 20,000 combined. When more remain after 20,000, the list for that year stops.
+- When at least one media item is visible, the count beside that year's heading is followed by 「（上限で打ち切っています）」. Example: 「10000 件（上限で打ち切っています）」. Tiles show only the visible portion.
+- When zero media items are visible, that year has no heading. Fetch the list for the next year.
 
-## R-GAL-03 一覧 API の形
+## R-GAL-03 List API shape
 
-- JSON は `group` と `next` を持つ。1 回の応答で本体とサムネイルを見るのは、1 年分だけである。
-- `/api/media` は一番新しい年の分である。`/api/media?after=年` は、その年より古い年のうち一番新しい年の分である。どちらも、その年が無ければ「年不明」の分である。
-- `group` は `label`、`truncated`、`items` を持つ。年では `label` がその年の数字（[R-MEDIA-02](../domain/media.md#r-media-02-年の決め方)）、「年不明」では「年不明」である。`truncated` は、[R-GAL-02](#r-gal-02-一覧の上限) の上限で止めたとき true である。`items` は [R-GAL-01](#r-gal-01-並び順) の順で 1 件以上あり、その数が見出しの横の件数になる。
-- その分にメディアが無いとき、`group` は null である。
-- `items` の各要素は `bodyKey`（本体の名前）、`kind`（`image` または `video`）、`bodyUrl`（本体の配信）、`thumbUrl`（サムネイルの配信）、`caption`（本体の名前）である。
-- `next` は続きの場所で、年の分では `/api/media?after=その年`、「年不明」の分では null である。
-- `Cache-Control` は `private, no-store` である。
-- `after` が、1 から 9999 の先頭に 0 の無い数字でないとき、状態は 400 である。本文は「after が年ではありません。」である。
-- 年を探すのに、名前を 1 回 1,000 件で 20 回見ても、まだ数字で始まる名前が続くとき、状態は 500 である。
+- JSON has `group` and `next`. One response covers bodies and thumbnails for one year only.
+- `/api/media` is for the newest year. `/api/media?after=year` is for the newest year older than that year. When that year has no media, both use the 「年不明」 slice.
+- `group` has `label`, `truncated`, and `items`. For a year, `label` is the year digits ([R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided)); for 「年不明」, `label` is 「年不明」. `truncated` is true when stopped by the [R-GAL-02](#r-gal-02-list-limit) limit. `items` has one or more entries in [R-GAL-01](#r-gal-01-sort-order) order; the count matches the heading count.
+- When that slice has no media, `group` is null.
+- Each `items` element has `bodyKey` (body name), `kind` (`image` or `video`), `bodyUrl` (body delivery), `thumbUrl` (thumbnail delivery), and `caption` (body name).
+- `next` is the continuation URL: for a year slice `/api/media?after=that year`; for 「年不明」, null.
+- `Cache-Control` is `private, no-store`.
+- When `after` is not a number from 1 through 9999 without leading zeros, status is 400. The body is 「after が年ではありません。」.
+- When scanning names in batches of 1,000 up to 20 times still finds names starting with digits while searching for a year, status is 500.
 
-## R-GAL-04 中身を渡す
+## R-GAL-04 Serve content
 
-- その名前の画像か動画が置いてあるとき、状態は 200 である。本文はその画像か動画の中身である。
-- 開く URL は `/media/` に名前を続ける。フォルダで区切られた名前は、区切りを含んだまま続ける。空白や `#` は、URL ではエンコードして開く。
-- `Content-Type` は、置いたときに付いていればそれである。無ければ拡張子で決まる。jpg と jpeg は `image/jpeg`、png は `image/png`、gif は `image/gif`、webp は `image/webp`、avif は `image/avif`、heic は `image/heic`、heif は `image/heif`、mp4 は `video/mp4`、mov は `video/quicktime`、webm は `video/webm`、m4v は `video/x-m4v` である。
-- `Accept-Ranges` は `bytes` である。
-- `Cache-Control` は `private, max-age=3600` である。
-- 開けない形は [R-GAL-07](#r-gal-07-開けない配信を拒む) を見る。範囲は [R-GAL-05](#r-gal-05-範囲を渡す) を見る。
+- When an image or video with that name is stored, status is 200. The body is those bytes.
+- The URL is `/media/` followed by the name. Names with folder separators keep the separators. Spaces and `#` are percent-encoded in the URL.
+- `Content-Type` is the value stored at upload if present; otherwise it follows the extension. jpg and jpeg are `image/jpeg`, png `image/png`, gif `image/gif`, webp `image/webp`, avif `image/avif`, heic `image/heic`, heif `image/heif`, mp4 `video/mp4`, mov `video/quicktime`, webm `video/webm`, m4v `video/x-m4v`.
+- `Accept-Ranges` is `bytes`.
+- `Cache-Control` is `private, max-age=3600`.
+- Undeliverable paths are in [R-GAL-07](#r-gal-07-reject-undeliverable-paths). Ranges are in [R-GAL-05](#r-gal-05-serve-ranges).
 
-## R-GAL-05 範囲を渡す
+## R-GAL-05 Serve ranges
 
-- その名前の画像か動画が置いてあるとき、同じ URL に `Range` を付けて取れる。
-- `Range: bytes=開始-終了` では、状態は 206 である。本文は両端を含むバイトである。`Content-Range` は `bytes 開始-終了/全体の長さ` である。例として、長さ 1024 の `bytes=0-99` に対し `bytes 0-99/1024` で、本文は 100 バイトである。
-- `Range: bytes=-長さ` では、状態は 206 である。本文は末尾からその長さである。例として、長さ 1024 の `bytes=-50` に対し `bytes 974-1023/1024` で、本文は 50 バイトである。
+- When an image or video with that name is stored, the same URL accepts a `Range` request.
+- For `Range: bytes=start-end`, status is 206. The body is the inclusive byte range. `Content-Range` is `bytes start-end/total length`. Example: length 1024, `bytes=0-99` yields `bytes 0-99/1024` and 100 bytes.
+- For `Range: bytes=-length`, status is 206. The body is the last `length` bytes. Example: length 1024, `bytes=-50` yields `bytes 974-1023/1024` and 50 bytes.
 
-## R-GAL-06 HEIC と HEIF を渡す
+## R-GAL-06 Serve HEIC and HEIF
 
-- HEIC または HEIF の画像が置いてあるとき、中身は [R-GAL-04](#r-gal-04-中身を渡す) のとおり渡る。`Content-Type` も [R-GAL-04](#r-gal-04-中身を渡す) と同じ規則である。
-- ギャラリーのタイルでその画像を見るとき、または [R-GAL-04](#r-gal-04-中身を渡す) で中身を取るとき、ブラウザは中身を受け取る。
-- Windows のブラウザでは、画像として出ないことが多い。
+- When a HEIC or HEIF image is stored, bytes are served as in [R-GAL-04](#r-gal-04-serve-content). `Content-Type` follows the same rules as [R-GAL-04](#r-gal-04-serve-content).
+- When viewing that image in a gallery tile or fetching bytes via [R-GAL-04](#r-gal-04-serve-content), the browser receives the bytes.
+- On Windows browsers, the image often does not render.
 
-## R-GAL-07 開けない配信を拒む
+## R-GAL-07 Reject undeliverable paths
 
-- `/media/` の下を開くとき、パスが空、`..` を含む、`\` を含む、先頭が `/`、空の区切りを含む、壊れた `%`、画像でも動画でもない拡張子、または置いていない名前であるとき、状態は 404 である。本文は「見つかりません。」である。
-- 画像でも動画でもない拡張子は、中身が置いてあっても同じである。
+- For paths under `/media/`, when the path is empty, contains `..`, contains `\`, starts with `/`, contains an empty segment, has a broken `%`, has a non-image non-video extension, or names something not stored, status is 404. The body is 「見つかりません。」.
+- A non-image non-video extension yields 404 even when bytes are stored.
 
-## R-GAL-08 無い場所を拒む
+## R-GAL-08 Reject unknown locations
 
-- `/`、`/api/media`、`/media/`、タブの印、以外の場所を開いたとき、状態は 404 である。本文は「見つかりません。」である。
+- For locations other than `/`, `/api/media`, `/media/`, and the tab mark, status is 404. The body is 「見つかりません。」.
 
-## R-GAL-09 検索結果に出さない
+## R-GAL-09 Keep out of search results
 
-- ギャラリーの画面は、検索結果に出さない指定が付いている。
+- The gallery page has a directive to keep it out of search results.

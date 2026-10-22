@@ -1,27 +1,27 @@
-# 仕様
+# Specification
 
-挙動の正はここにある。用語は [GLOSSARY.md](../../GLOSSARY.md)。
+Behavior is defined here. Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 
-## 一覧
+## Index
 
-### ユースケース
+### Use cases
 
-| ID    | 名前                           | ファイル                                                                           |
-| ----- | ------------------------------ | ---------------------------------------------------------------------------------- |
-| UC-01 | ギャラリーを見る               | [UC-01-ギャラリーを見る.md](UC-01-ギャラリーを見る.md)                             |
-| UC-02 | ギャラリーのメディアを拡大する | [UC-02-ギャラリーのメディアを拡大する.md](UC-02-ギャラリーのメディアを拡大する.md) |
-| UC-03 | 本番のギャラリーに入る         | [UC-03-本番のギャラリーに入る.md](UC-03-本番のギャラリーに入る.md)                 |
-| UC-04 | フォルダをアップロードする     | [UC-04-フォルダをアップロードする.md](UC-04-フォルダをアップロードする.md)         |
+| ID    | Name                     | File                                                                   |
+| ----- | ------------------------ | ---------------------------------------------------------------------- |
+| UC-01 | View gallery             | [UC-01-view-gallery.md](UC-01-view-gallery.md)                         |
+| UC-02 | Enlarge gallery media    | [UC-02-enlarge-gallery-media.md](UC-02-enlarge-gallery-media.md)       |
+| UC-03 | Enter production gallery | [UC-03-enter-production-gallery.md](UC-03-enter-production-gallery.md) |
+| UC-04 | Upload a folder          | [UC-04-upload-folder.md](UC-04-upload-folder.md)                       |
 
-### モデルのルール（domain）
+### Domain rules
 
-| ファイル                           | 内容                                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------------- |
-| [domain/media.md](domain/media.md) | 名前の形、年の決め方、撮影日時の決め方、画像と動画の拡張子（`R-MEDIA-01` から） |
+| File                               | Contents                                                                                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [domain/media.md](domain/media.md) | Name shape, how the year is decided, how capture date-time is decided, image and video extensions (`R-MEDIA-01` onward) |
 
-### アプリのルール（app）
+### App rules
 
-| ファイル                         | 内容                                                                           |
-| -------------------------------- | ------------------------------------------------------------------------------ |
-| [app/gallery.md](app/gallery.md) | 並び順、一覧の上限、一覧 API の形、配信、検索結果に出さない（`R-GAL-01` から） |
-| [app/access.md](app/access.md)   | 本番の許可（`R-ACCESS-01`）                                                    |
+| File                             | Contents                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [app/gallery.md](app/gallery.md) | Sort order, list limit, list API shape, delivery, keep out of search results (`R-GAL-01` onward) |
+| [app/access.md](app/access.md)   | Production access (`R-ACCESS-01`)                                                                |

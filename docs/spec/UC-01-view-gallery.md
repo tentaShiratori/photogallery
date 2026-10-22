@@ -1,0 +1,61 @@
+# UC-01 View gallery
+
+Terms are in [GLOSSARY.md](../../GLOSSARY.md).
+
+- ID: UC-01
+- Name: View gallery
+- Primary actor: User
+- Preconditions: None
+- Related: R-MEDIA-02 is year. R-GAL-01 is sort order. R-GAL-02 is list limit. R-GAL-03 is list API shape. R-GAL-09 is keep out of search results.
+- Postconditions (success):
+  - The tab mark is on the tab.
+  - When there is no login email, the text beside the heading is 「ローカルプレビュー」.
+  - When there is an email, the text beside the heading is that email address. `<`, `>`, `&`, `'`, `"` appear as literal characters.
+  - When there is at least one media item, tiles for the first year that has media are shown. Beside that year's heading, 「N 件」 is shown. Thumbnails are shown; the accessible name is the body's name. Thumbnails are selectable.
+  - When tiles do not reach the bottom of the viewport, more tiles appear without the user scrolling.
+  - After more tiles are shown, when there is more to show, the tile count has increased.
+  - When tiles for a new year appear, 「N 件」 is shown beside that year's heading.
+  - When the added tiles do not reach the bottom of the viewport, more are shown without the user scrolling until they reach the bottom or everything is shown.
+  - When everything was already shown, no tiles or messages are added.
+  - When there are no images or videos, 「まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。」 is shown.
+- Postconditions (failure):
+  - When the first list cannot be fetched, 「一覧を取得できませんでした。」 is shown. No tiles are shown.
+  - When a continuation list cannot be fetched, the tiles that were shown remain. 「続きを取得できませんでした。」 and 「もう一度」 are shown.
+
+### Flow
+
+1. The user opens the gallery.
+2. The browser sets the tab title to 「フォトギャラリー」.
+3. The browser sets the heading to 「フォトギャラリー」.
+4. The browser shows the login label beside the heading.
+   - 4a. There is no login email.
+     1. The browser shows 「ローカルプレビュー」.
+   - 4b. There is an email.
+     1. The browser shows that email address.
+5. The browser sets the tab mark on the tab.
+6. The browser shows 「読み込み中です。」.
+7. The browser fetches lists in R-GAL-03 shape, one year at a time in R-GAL-01 order, up to the first year that has media.
+   - 7a. No year and no 「年不明」 has media.
+     1. The browser hides 「読み込み中です。」.
+     2. The browser shows 「まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。」.
+   - 7e. The list cannot be fetched.
+     1. The browser hides 「読み込み中です。」.
+     2. The browser shows 「一覧を取得できませんでした。」.
+8. The browser hides 「読み込み中です。」.
+9. The browser shows that year's heading with 「N 件」.
+10. The browser shows that year's media as tiles in R-GAL-01 order. Thumbnails are shown; the accessible name is the body's name.
+    - 10a. Tiles do not reach the bottom of the viewport.
+      1. The browser shows more without the user scrolling.
+11. The user scrolls to the bottom of the viewport.
+    - 11a. Tiles remain that have not been shown.
+      1. The browser shows more tiles.
+12. The browser fetches lists in R-GAL-03 shape, one year at a time in R-GAL-01 order, up to the next year that has media.
+    - 12e. The list cannot be fetched.
+      1. The browser shows 「続きを取得できませんでした。」 and 「もう一度」.
+      - 12e-a. The user chooses 「もう一度」.
+        1. The browser hides 「続きを取得できませんでした。」 and 「もう一度」.
+        2. The browser refetches lists one year at a time from the failed year up to the next year that has media.
+        3. The browser shows that year's heading with 「N 件」.
+        4. The browser shows that year's tiles.
+13. The browser shows that year's heading with 「N 件」.
+14. The browser shows that year's tiles.

@@ -1,9 +1,9 @@
-# 本番の許可
+# Production access
 
-用語は [GLOSSARY.md](../../../GLOSSARY.md)。
+Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 
-## R-ACCESS-01 本番の許可
+## R-ACCESS-01 Production access
 
-- 開いてよい Google アカウントのメールアドレスだけが、本番のギャラリーに入れる。
-- ログインしてから 24 時間で、そのログインは切れる。
-- 本番の公開先もプレビューも、同じ許可で守る。
+- Only Google account email addresses configured as allowed can enter the production gallery.
+- Login expires 24 hours after sign-in.
+- Production hostname and preview use the same access policy.
