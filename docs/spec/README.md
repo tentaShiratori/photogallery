@@ -2,7 +2,7 @@
 
 挙動の正はここにある。用語は [GLOSSARY.md](../../GLOSSARY.md)。
 
-書き方は [.agents/skills/write-spec](../../.agents/skills/write-spec/SKILL.md) に従う。正本は同フォルダの [references/書き方.md](../../.agents/skills/write-spec/references/書き方.md)。
+書き方は [.agents/skills/write-spec](../../.agents/skills/write-spec/SKILL.md) に従う。正本は同フォルダの [references/writing.md](../../.agents/skills/write-spec/references/writing.md)。
 
 ## 一覧
 

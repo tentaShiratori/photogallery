@@ -9,7 +9,7 @@ description: >-
 
 Behavior lives under `docs/spec`. Terms live in `GLOSSARY.md`.
 
-How to write lives only in [references/書き方.md](references/書き方.md). Follow that file. Do not restate those rules in `docs/spec/README.md` or elsewhere. Do not add a second copy of a UC in the skill or in the README.
+How to write lives only in [references/writing.md](references/writing.md). Follow that file. Do not restate those rules in `docs/spec/README.md` or elsewhere. Do not add a second copy of a UC in the skill or in the README.
 
 ## When a behavior changes
 
