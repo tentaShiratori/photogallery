@@ -5,7 +5,7 @@ A collection of images and videos that only a limited set of people can view.
 ## Screen
 
 **Gallery (ギャラリー)**:
-The screen that lists media grouped by the year it was captured.
+The screen that lists media grouped by the year they were captured.
 _Avoid_: album, library, feed
 
 **Tab mark (タブの印)**:
@@ -13,23 +13,23 @@ The wordless colored ring flower shown on the gallery tab.
 _Avoid_: favicon, icon
 
 **Tile (タイル)**:
-One slot in the gallery for a single piece of media.
+One slot in the gallery for a single media item.
 _Avoid_: card
 
 **Enlarged view (拡大表示)**:
-The screen that shows the body of one selected item large.
+The screen that shows one selected item's body at large size.
 _Avoid_: viewer, lightbox, dialog, modal
 
 **Login label (ログイン表示)**:
-The label beside the gallery heading that shows who is viewing.
+The label next to the gallery heading that shows who is viewing.
 _Avoid_: username, profile
 
 **Local preview (ローカルプレビュー)**:
-The text beside the heading when there is no login email.
+The text next to the heading when there is no login email.
 _Avoid_: dev mode, logged out, guest
 
 **Unknown year (年不明)**:
-The heading used for media whose capture date-time year cannot be determined.
+The heading for media whose capture date-time year cannot be determined.
 _Avoid_: uncategorized, other
 
 ## Time
@@ -43,7 +43,7 @@ The calendar date and time recorded inside a video file as when that file was cr
 _Avoid_: modification date-time
 
 **Android mark (Android の印)**:
-That a video contains fields the Android device added.
+Fields that an Android device added inside a video.
 _Avoid_: com.android, manufacturer, model, capture.fps
 
 **Modification date-time (更新日時)**:
@@ -56,15 +56,15 @@ The time when an image or video was placed in storage.
 ## Content
 
 **Media (メディア)**:
-An image or video counted as one gallery item when body and thumbnail are both present. Either alone is not media.
+An image or video counted as one gallery item when both body and thumbnail are present. Either alone is not media.
 _Avoid_: file, object
 
 **Image (画像)**:
-Still media. Extensions are jpg, jpeg, png, gif, webp, avif, heic, heif.
+Still-image media. Extensions are jpg, jpeg, png, gif, webp, avif, heic, heif.
 _Avoid_: photo
 
 **Video (動画)**:
-Moving media. Extensions are mp4, mov, webm, m4v.
+Moving-image media. Extensions are mp4, mov, webm, m4v.
 _Avoid_: clip, movie
 
 **Body (本体)**:
@@ -76,11 +76,11 @@ A small still image made from media for the gallery. It is not media by itself. 
 _Avoid_: preview, poster
 
 **Name (名前)**:
-The name of a media item's body that distinguishes it. Does not contain slashes.
+The body name that distinguishes a media item. It does not contain slashes.
 _Avoid_: object key, title
 
 **Upload (アップロード)**:
-Copying images and videos from a folder on disk into gallery storage. Places thumbnail and body as a pair.
+Copying images and videos from a folder on disk into gallery storage. Places the thumbnail and body as a pair.
 _Avoid_: import, sync, deploy
 
 **Delivery (配信)**:

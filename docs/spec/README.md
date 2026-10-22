@@ -1,6 +1,6 @@
 # Specification
 
-Behavior is defined here. Terms are in [GLOSSARY.md](../../GLOSSARY.md).
+This is the source of truth for behavior. Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 
 ## Index
 

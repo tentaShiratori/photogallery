@@ -6,4 +6,4 @@ Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 
 - Only Google account email addresses configured as allowed can enter the production gallery.
 - Login expires 24 hours after sign-in.
-- Production hostname and preview use the same access policy.
+- The production hostname and the preview use the same access policy.
