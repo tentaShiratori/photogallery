@@ -100,26 +100,30 @@ const Gallery: FC = () => {
 
   useEffect(() => {
     void (async () => {
-      const response = await fetch("/api/media");
-      if (!response.ok) {
-        setStatus("一覧を取得できませんでした。");
-        return;
-      }
-      let data: ParsedList;
       try {
-        data = parseMediaList(await response.json());
+        const response = await fetch("/api/media");
+        if (!response.ok) {
+          setStatus("一覧を取得できませんでした。");
+          return;
+        }
+        let data: ParsedList;
+        try {
+          data = parseMediaList(await response.json());
+        } catch {
+          setStatus("一覧を取得できませんでした。");
+          return;
+        }
+        const count = data.groups.reduce((sum, group) => sum + group.items.length, 0);
+        setGroups(data.groups);
+        if (count === 0 && data.truncated) {
+          setStatus("一覧が上限で止まりました。");
+        } else if (count === 0) {
+          setStatus("まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。");
+        } else {
+          setStatus(`${count} 件${data.truncated ? "（上限で打ち切っています）" : ""}`);
+        }
       } catch {
         setStatus("一覧を取得できませんでした。");
-        return;
-      }
-      const count = data.groups.reduce((sum, group) => sum + group.items.length, 0);
-      setGroups(data.groups);
-      if (count === 0 && data.truncated) {
-        setStatus("一覧が上限で止まりました。");
-      } else if (count === 0) {
-        setStatus("まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。");
-      } else {
-        setStatus(`${count} 件${data.truncated ? "（上限で打ち切っています）" : ""}`);
       }
     })();
   }, []);
