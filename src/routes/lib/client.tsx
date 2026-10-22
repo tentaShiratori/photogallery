@@ -1,11 +1,21 @@
 import { css } from "hono/css";
 import { render } from "hono/jsx/dom";
-import { useState, useEffect } from "hono/jsx";
+import { useEffect, useReducer, useRef, useState } from "hono/jsx";
 import type { FC } from "hono/jsx";
-import type { MediaKind } from "../../lib/media";
-import type { BodyUrl, ThumbUrl } from "../../lib/pair";
+import {
+  feedReducer,
+  feedView,
+  initialFeed,
+  MORE_FAILED,
+  nextStep,
+  parsePage,
+  RETRY,
+  type ParsedMedia,
+} from "./feed";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
+
+const NEAR_BOTTOM_PX = 600;
 
 const statusClass = css`
   color: var(--muted);
@@ -23,122 +33,62 @@ const headingClass = css`
   font-weight: 600;
 `;
 
-type ParsedMedia = {
-  readonly bodyKey: string;
-  readonly kind: MediaKind;
-  readonly bodyUrl: BodyUrl;
-  readonly thumbUrl: ThumbUrl;
-  readonly caption: string;
-};
-
-type ParsedGroup = {
-  readonly label: string;
-  readonly year: number | null;
-  readonly items: readonly ParsedMedia[];
-};
-
-type ParsedList = {
-  readonly groups: readonly ParsedGroup[];
-  readonly truncated: boolean;
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isBodyUrl(value: unknown): value is BodyUrl {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isThumbUrl(value: unknown): value is ThumbUrl {
-  return typeof value === "string" && value.length > 0;
-}
-
-function parseItem(value: unknown): ParsedMedia | null {
-  if (!isRecord(value)) return null;
-  const kind = value.kind;
-  if (kind !== "image" && kind !== "video") return null;
-  if (typeof value.bodyKey !== "string" || value.bodyKey.length === 0) return null;
-  if (typeof value.caption !== "string" || value.caption.length === 0) return null;
-  if (!isBodyUrl(value.bodyUrl) || !isThumbUrl(value.thumbUrl)) return null;
-  return {
-    bodyKey: value.bodyKey,
-    kind,
-    bodyUrl: value.bodyUrl,
-    thumbUrl: value.thumbUrl,
-    caption: value.caption,
-  };
-}
-
-function parseMediaList(input: unknown): ParsedList {
-  if (!isRecord(input) || typeof input.truncated !== "boolean" || !Array.isArray(input.groups)) {
-    throw new Error("一覧の形が違います。");
-  }
-  const groups: ParsedGroup[] = [];
-  for (const group of input.groups) {
-    if (!isRecord(group) || typeof group.label !== "string" || !Array.isArray(group.items)) {
-      throw new Error("一覧の形が違います。");
-    }
-    if (group.year !== null && typeof group.year !== "number") {
-      throw new Error("一覧の形が違います。");
-    }
-    const items: ParsedMedia[] = [];
-    for (const item of group.items) {
-      const parsed = parseItem(item);
-      if (!parsed) throw new Error("一覧の形が違います。");
-      items.push(parsed);
-    }
-    groups.push({ label: group.label, year: group.year, items });
-  }
-  return { truncated: input.truncated, groups };
-}
+const countClass = css`
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+`;
 
 const Gallery: FC = () => {
-  const [groups, setGroups] = useState<readonly ParsedGroup[]>([]);
-  const [status, setStatus] = useState("読み込み中です。");
+  const [feed, dispatch] = useReducer(feedReducer, initialFeed);
+  const [scrolls, setScrolls] = useState(0);
   const [selectedItem, setSelectedItem] = useState<ParsedMedia | null>(null);
+  const sentinel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const response = await fetch("/api/media");
-        if (!response.ok) {
-          setStatus("一覧を取得できませんでした。");
-          return;
-        }
-        let data: ParsedList;
-        try {
-          data = parseMediaList(await response.json());
-        } catch {
-          setStatus("一覧を取得できませんでした。");
-          return;
-        }
-        const count = data.groups.reduce((sum, group) => sum + group.items.length, 0);
-        setGroups(data.groups);
-        if (count === 0 && data.truncated) {
-          setStatus("一覧が上限で止まりました。");
-        } else if (count === 0) {
-          setStatus("まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。");
-        } else {
-          setStatus(`${count} 件${data.truncated ? "（上限で打ち切っています）" : ""}`);
-        }
-      } catch {
-        setStatus("一覧を取得できませんでした。");
-      }
-    })();
+    const target = sentinel.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(() => setScrolls((count) => count + 1), {
+      rootMargin: `0px 0px ${NEAR_BOTTOM_PX}px 0px`,
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    // Measured after commit: the observer's last entry still describes the layout before a reveal.
+    const top = sentinel.current?.getBoundingClientRect().top ?? Infinity;
+    const step = nextStep(feed, top <= window.innerHeight + NEAR_BOTTOM_PX);
+    if (step.kind === "reveal") dispatch({ type: "reveal" });
+    if (step.kind !== "fetch") return;
+    dispatch({ type: "fetch" });
+    void (async () => {
+      try {
+        const response = await fetch(step.href);
+        if (!response.ok) throw new Error(String(response.status));
+        dispatch({ type: "loaded", href: step.href, page: parsePage(await response.json()) });
+      } catch {
+        dispatch({ type: "failed", href: step.href });
+      }
+    })();
+  }, [feed, scrolls]);
+
+  const view = feedView(feed);
   return (
     <>
-      <p class={statusClass} id="status">
-        {status}
-      </p>
+      {view.status !== null && (
+        <p class={statusClass} id="status">
+          {view.status}
+        </p>
+      )}
       <div id="grid">
-        {groups.map((group) => (
+        {view.groups.map((group) => (
           <section key={group.label}>
-            <h2 class={headingClass}>{group.label}</h2>
+            <h2 class={headingClass}>
+              {group.label} <span class={countClass}>{group.count}</span>
+            </h2>
             <div class={gridClass}>
-              {group.items.map((item) => (
+              {group.tiles.map((item) => (
                 <MediaTile
                   key={item.bodyKey}
                   thumbUrl={item.thumbUrl}
@@ -150,6 +100,15 @@ const Gallery: FC = () => {
           </section>
         ))}
       </div>
+      {view.moreFailed && (
+        <div id="more">
+          <p class={statusClass}>{MORE_FAILED}</p>
+          <button type="button" onClick={() => dispatch({ type: "retry" })}>
+            {RETRY}
+          </button>
+        </div>
+      )}
+      <div ref={sentinel} id="sentinel" />
       <MediaViewer
         item={
           selectedItem
