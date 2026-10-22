@@ -13,12 +13,14 @@ export function resolveFolderArg(argv: readonly string[]): string {
 }
 
 export class FolderArgError extends Error {
-  constructor(
-    readonly reason: "missing" | "not-folder",
-    readonly folderPath?: string,
-  ) {
+  reason: "missing" | "not-folder";
+  folderPath?: string;
+
+  constructor(reason: "missing" | "not-folder", folderPath?: string) {
     super(reason);
     this.name = "FolderArgError";
+    this.reason = reason;
+    this.folderPath = folderPath;
   }
 }
 
