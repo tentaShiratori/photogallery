@@ -41,12 +41,10 @@ async function planFile(folder: string, name: string, stems: StemClaim): Promise
   return { name, filePath, plan: stems.plan(captured, extensionOf(name), unknownId) };
 }
 
-/** Direct-child names that UC-UPLOAD-02 accepts. */
 export async function listUploadTargets(folder: string): Promise<string[]> {
   return selectUploadNames(await fileNamesIn(folder));
 }
 
-/** Decide every object name before any put. */
 export async function planUploads(
   folder: string,
   names: readonly string[],
