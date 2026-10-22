@@ -50,6 +50,14 @@ export const MediaViewer: FC<{
     }
   }, [item]);
 
+  useEffect(() => {
+    const dialog = document.getElementById("viewer") as HTMLDialogElement | null;
+    if (!dialog) return;
+    const onDialogClose = () => onClose();
+    dialog.addEventListener("close", onDialogClose);
+    return () => dialog.removeEventListener("close", onDialogClose);
+  }, [onClose]);
+
   return (
     <dialog class={dialogClass} id="viewer">
       <button class={closeClass} type="button" onClick={onClose}>
