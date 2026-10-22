@@ -1,6 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import type { MediaList } from "../src/lib/pair";
+import { LIST_BUDGET } from "../src/routes/api/media";
 import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
 
 const SAMPLE_THUMB = new Uint8Array([
@@ -131,6 +132,10 @@ describe("Worker 統合テスト", () => {
         expect(Object.hasOwn(item, "size")).toBe(false);
         expect(absent).not.toContain(item.bodyKey);
       }
+    });
+
+    it("1 回 200 件、最大 100 回で見る", () => {
+      expect(LIST_BUDGET).toEqual({ pageSize: 200, maxPages: 100 });
     });
   });
 
