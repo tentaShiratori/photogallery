@@ -597,13 +597,11 @@ type VideoCaptureSource = {
   readonly decode: (payload: Uint8Array) => CaptureInstant | null;
 };
 
-// Japan has used UTC+9 with no daylight saving since 1952.
 const TOKYO_OFFSET_MS = 9n * 60n * 60n * 1000n;
 const CREATIONDATE_KEY = "com.apple.quicktime.creationdate";
 const MOOV_CHILD_STEPS = 32;
 
-function tokyoFromMac(seconds: bigint): CaptureInstant | null {
-  if (seconds === 0n) return null;
+function tokyoCivilFromMacEpoch(seconds: bigint): CaptureInstant | null {
   const ms = MAC_EPOCH_MS + seconds * 1000n + TOKYO_OFFSET_MS;
   if (ms > 8_640_000_000_000_000n || ms < -8_640_000_000_000_000n) return null;
   const date = new Date(Number(ms));
@@ -618,14 +616,19 @@ function tokyoFromMac(seconds: bigint): CaptureInstant | null {
   );
 }
 
+function captureFromMvhdCreationSeconds(seconds: bigint): CaptureInstant | null {
+  if (seconds === 0n) return null;
+  return tokyoCivilFromMacEpoch(seconds);
+}
+
 function tokyoFromMvhd(mvhd: Uint8Array): CaptureInstant | null {
   if (mvhd[0] === 0) {
     const seconds = u32be(mvhd, 4);
-    return seconds === null ? null : tokyoFromMac(BigInt(seconds));
+    return seconds === null ? null : captureFromMvhdCreationSeconds(BigInt(seconds));
   }
   if (mvhd[0] === 1) {
     const seconds = u64(mvhd, 4, false);
-    return seconds === null ? null : tokyoFromMac(seconds);
+    return seconds === null ? null : captureFromMvhdCreationSeconds(seconds);
   }
   return null;
 }
