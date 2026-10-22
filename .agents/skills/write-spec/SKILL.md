@@ -1,20 +1,55 @@
 ---
 name: write-spec
 description: >-
-  Write or revise photogallery use cases and rules in docs/spec.
-  Use when editing docs/spec, adding a UC or a rule, or recording a behavior change in the spec.
+  Use when editing docs/spec, adding or revising a photogallery use case (UC /
+  ユースケース) or rule (ルール), listing UC or rule IDs in a PR, seeing English or
+  source file names in a spec draft, writing 事後条件 or 代替フロー, deciding whether
+  a change is a new UC or a path of an existing one, or tempted to copy writing
+  rules into docs/spec/README.md.
 ---
 
 # Write spec
 
 Behavior lives under `docs/spec`. Terms live in `GLOSSARY.md`.
 
-How to write lives only in [references/writing.md](references/writing.md). Follow that file. Do not restate those rules in `docs/spec/README.md` or elsewhere. Do not add a second copy of a UC in the skill or in the README.
+**Open [references/writing.md](references/writing.md) before writing any spec line.** That file is the shape. This page is not a substitute. Do not write a UC or a rule from memory of this page.
 
 ## When a behavior changes
 
-Update the UC or the rule in the same PR. List the UC IDs and the rule IDs in the PR body. A new term goes in `GLOSSARY.md` in that PR. Do not put an external article URL in the repo.
+In the same PR: update the UC or the rule, list those IDs in the PR body, and add a new term to `GLOSSARY.md` if you named one. Do not put an external article URL in the repo.
 
-## IDs already folded in
+## Which file
 
-The empty gallery, the login label next to the heading, and loading the next page of tiles are alternates of UC-01. Video in the viewer and closing with Close or Escape are paths of UC-02. Do not open a new UC that only repeats one of those branches. Naming, year, capture time, and extensions are rules under `domain/media.md`. Sort order, list caps, list API shape, and delivery are rules under `app/gallery.md`.
+Look at the live files under `docs/spec`, not a remembered ID list.
+
+| If                                                                                      | Then                                                                                                                    |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Same primary actor and same goal as an existing UC                                      | Edit that UC. Put the change in the flow as an alternate (`Na`) or exception (`Ne`).                                    |
+| A standing promise with no user or script goal (name, year, order, API shape, delivery) | Edit or add a rule under `domain/` or `app/`. The UC names the rule by ID. Do not paste the rule's bullets into the UC. |
+| A new goal the actor reaches in one go                                                  | Add `UC-NN-<name>.md` and a README row.                                                                                 |
+
+Do not restate writing.md in `docs/spec/README.md`, in a UC, or in this skill. README stays an index.
+
+## Common mistakes
+
+| Excuse or draft                                                 | Do this                                                                            |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| "README needs the writing guide; contractors cannot see skills" | The skill lives in the repo. GitHub can open writing.md. README stays an index.    |
+| "do-not-restate is for agents, not humans"                      | Humans and agents read the same README. writing.md stays the one copy.             |
+| "QA only reads the UC; paste the rule into postconditions"      | `関連` names the rule ID. Do not copy the rule's bullets.                          |
+| Empty `Open` / `Trigger` on every UC                            | Add those fields only when they have text.                                         |
+| English draft with a source path and onClick                    | Match a neighboring Japanese UC. Subject is the actor, the browser, or the script. |
+| New UC whose actor and goal match an existing file              | Edit that file.                                                                    |
+| New goal, but the control appears on an existing screen         | Edit that screen's UC so the control is in its success state.                      |
+
+## Red flags
+
+- Writing a spec line without having opened writing.md
+- Pasting writing.md into README
+- Empty Open or Trigger on every UC
+- Rule bullets copied into a UC
+- Source path or onClick as a flow subject
+- New UC whose actor and goal match an existing file
+- New control on an existing screen without editing that screen's UC
+
+How to write: [references/writing.md](references/writing.md).
