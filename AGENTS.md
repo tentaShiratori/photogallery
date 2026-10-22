@@ -2,7 +2,7 @@
 
 コードを変える前に、下の 5 つを守る。ユーザー向けの手順は README。
 
-1. Worker と `scripts/upload.ts` は TypeScript。Workers は JavaScript が第一級。Python は範囲が狭く、Go は非対応。
+1. Worker とアップロードスクリプト（`scripts/upload-local.ts` / `scripts/upload-prd.ts`）は TypeScript。Workers は JavaScript が第一級。Python は範囲が狭く、Go は非対応。
 2. インフラは `infra/prd`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
 3. `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `local.worker_name` / `local.bucket_name` と揃える。
 4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。
@@ -17,7 +17,8 @@
 ```powershell
 pnpm dev
 pnpm deploy
-pnpm upload -- <フォルダ>
+pnpm upload:local <フォルダ>
+pnpm upload:prd <フォルダ>
 pnpm typecheck
 pnpm exec vp fmt
 pnpm exec vp lint
@@ -52,9 +53,10 @@ pnpm test run test/worker.test.ts
 8. `src/lib/pair.ts` — ステム、サムネイルキー、年を探して 1 年ずつ読む揃ったメディアの一覧
 9. `src/lib/gallery.ts` — バイト列からの撮影日時
 10. `src/lib/types.ts` — `Env` とハンドラ型
-11. `scripts/upload.ts` — ローカルから R2（S3 互換 API）へのアップロード。サムネイルのあと本体
-12. `scripts/thumbnail.ts` — 長辺 320 の WebP。動画は先頭フレーム
-13. `infra/prd` — Cloudflare リソース
+11. `scripts/upload-local.ts` — ローカルの模擬バケット（`pnpm dev` の `.wrangler/state`）へ上げる。`.env` 不要
+12. `scripts/upload-prd.ts` — 本番 R2（S3 互換 API）へ上げる。件数表示のあと `yes` で確定
+13. `scripts/lib/` — サムネイル、対象の選定と名前付け、ObjectSink への put。入口は上の 2 つ
+14. `infra/prd` — Cloudflare リソース
 
 次: 変更がテスト対象なら対応するテストを実行する。
 

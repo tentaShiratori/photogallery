@@ -8,14 +8,13 @@
 2. `pnpm install` を実行する
 3. `pnpm dev` を実行する
 4. ブラウザで `http://localhost:8787` を開く
-5. 別の PowerShell で、次を実行する
+5. 別の PowerShell で、画像や動画の入ったフォルダを指定して実行する
 
 ```powershell
-pnpm exec wrangler r2 object put photogallery-media/t/2024-08-02T12-00-00.webp --file=.\sample.webp --content-type=image/webp --local
-pnpm exec wrangler r2 object put photogallery-media/2024-08-02T12-00-00.png --file=.\sample.png --local
+pnpm upload:local D:\photos\sample
 ```
 
-ここまでで画面に「ローカルプレビュー」と `2024-08-02T12-00-00.png` が出る。先の WebP はサムネイル、あとの PNG は本体。ファイルを 1 つだけ置いても一覧には出ない。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。画面は [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。
+ここまでで画面に「ローカルプレビュー」と、撮影年ごとのサムネイルが出る。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。`.env` は不要。画面は [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。上げ方の詳細は [アップロード](docs/spec/upload.md)。
 
 ## テスト
 
@@ -81,10 +80,10 @@ pnpm deploy
 
 1. ダッシュボードの R2 > Manage R2 API Tokens で、対象バケットへの Object Read & Write を持つ S3 互換キーを作る。このキーは Terraform の API トークンとは別
 2. `.env` の `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` を埋める
-3. フォルダを指定して上げる
+3. フォルダを指定して上げる。最初の行のあと、`yes` と入力する
 
 ```powershell
-pnpm upload -- D:\photos\2024-trip
+pnpm upload:prd D:\photos\2024-trip
 ```
 
 何が上がり、どんな名前になるかは [アップロード](docs/spec/upload.md)。画面での見え方は [ギャラリー](docs/spec/gallery.md) と [配信](docs/spec/delivery.md)。
@@ -93,12 +92,13 @@ pnpm upload -- D:\photos\2024-trip
 
 バケット名と Worker 名は `infra/prd/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
 
-| もの                    | 役割                                                                             |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| R2 `photogallery-media` | 非公開の画像・動画。場所の希望は `apac`                                          |
-| Worker `photogallery`   | 一覧と配信。R2 はバインディング経由で読む                                        |
-| Access                  | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く      |
-| `scripts/upload.ts`     | 指定フォルダを R2 の S3 API へ上げる。対象は [アップロード](docs/spec/upload.md) |
+| もの                      | 役割                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| R2 `photogallery-media`   | 非公開の画像・動画。場所の希望は `apac`                                              |
+| Worker `photogallery`     | 一覧と配信。R2 はバインディング経由で読む                                            |
+| Access                    | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く          |
+| `scripts/upload-prd.ts`   | 指定フォルダを本番 R2 の S3 API へ上げる。対象は [アップロード](docs/spec/upload.md) |
+| `scripts/upload-local.ts` | 指定フォルダをローカルの模擬バケットへ上げる。対象は同じ                             |
 
 バケットは公開しない。ブラウザから中身を見るときの挙動は [配信](docs/spec/delivery.md)。
 

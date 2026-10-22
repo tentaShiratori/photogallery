@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "fmt": "vp fmt",
     "lint": "vp lint",
-    "upload": "node --experimental-strip-types scripts/upload.ts",
+    "upload:local": "node --experimental-strip-types scripts/upload-local.ts",
+    "upload:prd": "node --experimental-strip-types scripts/upload-prd.ts",
     "test": "vp test"
   },
   "dependencies": {
