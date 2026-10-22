@@ -77,14 +77,12 @@ function parseGroup(value: unknown): ParsedGroup {
   return { label: value.label, truncated: value.truncated, items: [first, ...rest] };
 }
 
-/** Strict parse of one `GET /api/media` body. Throws on any shape error. */
 export function parsePage(input: unknown): ParsedPage {
   if (!isRecord(input)) return shapeError();
   const next = input.next === null ? null : isHref(input.next) ? input.next : shapeError();
   return { group: input.group === null ? null : parseGroup(input.group), next };
 }
 
-/** Where the next group comes from. The href lives in the state that needs it. */
 export type Tail =
   | { readonly kind: "pending"; readonly href: Href }
   | { readonly kind: "loading"; readonly href: Href }
@@ -118,7 +116,6 @@ function tileCount(groups: readonly ParsedGroup[]): number {
   return groups.reduce((sum, group) => sum + group.items.length, 0);
 }
 
-/** Each event is a no-op outside its source state, so a stray or late event cannot corrupt the feed. */
 export function feedReducer(feed: Feed, event: FeedEvent): Feed {
   const { tail } = feed;
   switch (event.type) {
@@ -154,10 +151,6 @@ export type Step =
   | { readonly kind: "fetch"; readonly href: Href }
   | { readonly kind: "wait" };
 
-/**
- * The scroll policy. Hidden tiles are revealed before anything is fetched. With nothing on
- * screen, the feed fetches without waiting for the bottom, so empty years are skipped at once.
- */
 export function nextStep(feed: Feed, nearBottom: boolean): Step {
   if (feed.shown > 0 && !nearBottom) return { kind: "wait" };
   if (feed.shown < tileCount(feed.groups)) return { kind: "reveal" };

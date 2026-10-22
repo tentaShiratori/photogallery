@@ -56,7 +56,6 @@ const Gallery: FC = () => {
   }, []);
 
   useEffect(() => {
-    // Measured after commit: the observer's last entry still describes the layout before a reveal.
     const top = sentinel.current?.getBoundingClientRect().top ?? Infinity;
     const step = nextStep(feed, top <= window.innerHeight + NEAR_BOTTOM_PX);
     if (step.kind === "reveal") dispatch({ type: "reveal" });

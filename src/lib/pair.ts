@@ -29,7 +29,6 @@ declare const yearBrand: unique symbol;
 /** A capture year in 1..9999. The label is `String(year)`; the key prefix pads it to 4 digits. */
 export type Year = number & { readonly [yearBrand]: "Year" };
 
-/** One heading's complete, ranked content. `items.length` is the heading's count. */
 export type YearGroup = {
   readonly label: string;
   /** Some object under this heading's prefixes was not read because of the object budget. */
@@ -46,7 +45,6 @@ export type ListingPage = {
   readonly next: Year | null;
 };
 
-/** The part of `R2Bucket` that listing uses. */
 export type Lister = {
   list(options: Pick<R2ListOptions, "prefix" | "delimiter" | "cursor" | "limit">): Promise<
     {
@@ -108,7 +106,6 @@ const UNKNOWN_LABEL = "年不明";
 const LIST_PAGE_SIZE = 1000;
 const GROUP_OBJECT_CAP = 20_000;
 const DISCOVERY_PAGE_CAP = 20;
-/** The code point after "9". Every `YYYY-` delimited prefix sorts before it. */
 const PAST_YEAR_PREFIXES = ":";
 
 function suffixOk(raw: string | undefined): boolean {
@@ -349,7 +346,6 @@ function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
   return ranked;
 }
 
-/** Pairs and ranks the heads that belong to `id`. Null when `id` has no pair. */
 function groupFromHeads(
   id: GroupId,
   heads: readonly BucketHead[],
@@ -373,24 +369,20 @@ function toYear(value: number): Year | null {
   return Number.isInteger(value) && value >= 1 && value <= 9999 ? (value as Year) : null;
 }
 
-/** Parses the label form of a year ("2024", "7") from untrusted input. */
 export function parseYear(raw: string): Year | null {
   return /^[1-9]\d{0,3}$/.test(raw) ? toYear(Number(raw)) : null;
 }
 
-/** "2024-" → 2024. Body-side prefixes only: a year with thumbnails and no bodies has no pairs. */
 function yearFromDelimitedPrefix(prefix: string): Year | null {
   const match = /^(\d{4})-$/.exec(prefix);
   return match ? toYear(Number(match[1])) : null;
 }
 
-/** The two prefixes that hold a group, spelled as `formatCivil` and `thumbKeyFor` spell keys. */
 function prefixesOf(id: GroupId): { readonly body: string; readonly thumb: string } {
   const body = id.kind === "year" ? `${pad(id.year, 4)}-` : "u-";
   return { body, thumb: `t/${body}` };
 }
 
-/** Display order: the newest year below `after`, then 年不明. */
 function groupAfter(years: readonly Year[], after: Year | null): GroupId {
   let best: Year | null = null;
   for (const year of years) {
@@ -399,7 +391,6 @@ function groupAfter(years: readonly Year[], after: Year | null): GroupId {
   return best === null ? { kind: "unknown" } : { kind: "year", year: best };
 }
 
-/** Candidate years from `YYYY-` delimited prefixes. A candidate may have no pairs. */
 async function discoverYears(bucket: Lister): Promise<readonly Year[]> {
   const years: Year[] = [];
   let cursor: string | undefined;
@@ -419,7 +410,6 @@ async function discoverYears(bucket: Lister): Promise<readonly Year[]> {
   throw new Error("年を探す一覧が上限を超えました。");
 }
 
-/** Splits the remaining budget across one round's open sides. Each limit is 1..LIST_PAGE_SIZE. */
 function shareRoom(room: number, sides: number): number[] {
   const limits: number[] = [];
   for (let left = room; limits.length < sides && left > 0;) {
@@ -430,10 +420,6 @@ function shareRoom(room: number, sides: number): number[] {
   return limits;
 }
 
-/**
- * Lists every prefix in lockstep under GROUP_OBJECT_CAP objects in total. Bodies and thumbnails
- * sort their stems the same way, so lockstep keeps a capped group's sides on the same stems.
- */
 async function readGroup(
   bucket: Lister,
   prefixes: readonly string[],
@@ -472,11 +458,6 @@ async function readGroup(
   }
 }
 
-/**
- * Reads the group after `after` in display order; `after: null` reads the first group.
- * Each call lists for discovery, then at most one group's two prefixes.
- * Rejects when R2 fails or discovery passes DISCOVERY_PAGE_CAP pages.
- */
 export async function readPage(bucket: Lister, after: Year | null): Promise<ListingPage> {
   const id = groupAfter(await discoverYears(bucket), after);
   const next = id.kind === "year" ? id.year : null;
