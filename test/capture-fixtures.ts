@@ -192,7 +192,6 @@ export function mp4(options: {
     0,
     concat([be32(options.creationSeconds), be32(options.modificationSeconds ?? 0)]),
   );
-  // mvhd before meta, as on iPhone, so file order cannot select creationdate ahead of mvhd.
   const moov = box("moov", options.keys ? concat([mvhd, keyedMeta(options.keys)]) : mvhd);
   const headerSize = options.wideMdat ? 16 : 8;
   const parts = options.moov === "after-mdat" ? [ftyp, mdat, moov] : [ftyp, moov, mdat];

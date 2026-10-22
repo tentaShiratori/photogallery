@@ -38,7 +38,7 @@ function creationdateKeys(where: "moov" | "udta", creationdate: string) {
   return {
     in: where,
     items: [
-      ["com.apple.quicktime.make", "Apple"],
+      ["com.apple.quicktime.make", "1999-01-01T00:00:00+0000"],
       ["com.apple.quicktime.creationdate", creationdate],
     ] as const,
   };
@@ -61,14 +61,14 @@ describe("embeddedCapture", () => {
   });
 
   it("mdat の後ろの mvhd を読み、mdat 本体は読まない", async () => {
-    const creation = macSeconds(2024, 8, 2, 6, 0, 0);
+    const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "after-mdat", wideMdat: true });
     const { calls, read } = openFiles(new Map([["tail.mov", built.bytes]]));
     expect(await embeddedCapture("tail.mov", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
-      day: 2,
-      hour: 15,
+      day: 3,
+      hour: 0,
       minute: 0,
       second: 0,
     });
@@ -80,14 +80,14 @@ describe("embeddedCapture", () => {
   });
 
   it("moov が mdat より前でも同じ時刻になり、mdat 本体は読まない", async () => {
-    const creation = macSeconds(2024, 8, 2, 6, 0, 0);
+    const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "before-mdat" });
     const { calls, read } = openFiles(new Map([["head.m4v", built.bytes]]));
     expect(await embeddedCapture("head.m4v", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
-      day: 2,
-      hour: 15,
+      day: 3,
+      hour: 0,
       minute: 0,
       second: 0,
     });

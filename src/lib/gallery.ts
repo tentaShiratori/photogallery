@@ -178,11 +178,23 @@ async function take(
   return bytes;
 }
 
-const EXIF_TEXT = /^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+function civilFromExifText(text: string): CaptureInstant | null {
+  const match = /^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(text);
+  if (!match) return null;
+  return CaptureInstant.tryCreate(
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+    Number(match[6]),
+  );
+}
+
 const CREATIONDATE_TEXT = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})[+-]\d{4}$/;
 
-function civilFromText(pattern: RegExp, text: string): CaptureInstant | null {
-  const match = pattern.exec(text);
+function civilFromCreationdate(text: string): CaptureInstant | null {
+  const match = CREATIONDATE_TEXT.exec(text);
   if (!match) return null;
   return CaptureInstant.tryCreate(
     Number(match[1]),
@@ -262,7 +274,7 @@ function dateTimeOriginalFromTiff(bytes: Uint8Array): CaptureInstant | null {
   if (!exif || exif.type !== 4 || exif.count !== 1) return null;
   const text = asciiTag(bytes, exif.value, 0x9003, little);
   if (text === null) return null;
-  return civilFromText(EXIF_TEXT, text);
+  return civilFromExifText(text);
 }
 
 function exifApp1(payload: Uint8Array): CaptureInstant | null {
@@ -591,7 +603,6 @@ const CREATIONDATE_KEY = "com.apple.quicktime.creationdate";
 const MOOV_CHILD_STEPS = 32;
 
 function tokyoFromMac(seconds: bigint): CaptureInstant | null {
-  // mvhd stores zero when creation_time was left unset.
   if (seconds === 0n) return null;
   const ms = MAC_EPOCH_MS + seconds * 1000n + TOKYO_OFFSET_MS;
   if (ms > 8_640_000_000_000_000n || ms < -8_640_000_000_000_000n) return null;
@@ -620,7 +631,6 @@ function tokyoFromMvhd(mvhd: Uint8Array): CaptureInstant | null {
 }
 
 function metaChildren(meta: Uint8Array): SliceBox[] {
-  // ISO meta is a full box, so version/flags 0 leads the payload. QuickTime meta is a plain atom.
   const start = u32be(meta, 0) === 0 ? 4 : 0;
   return boxesIn(meta, start, meta.length);
 }
@@ -653,19 +663,24 @@ function keyIndex(keys: Uint8Array, name: string): number | null {
 }
 
 function creationdateFromMeta(meta: Uint8Array): CaptureInstant | null {
-  const children = metaChildren(meta);
-  const keys = children.find((box) => box.type === "keys");
-  const ilst = children.find((box) => box.type === "ilst");
-  if (!keys || !ilst) return null;
-  const index = keyIndex(meta.subarray(keys.start, keys.end), CREATIONDATE_KEY);
-  if (index === null) return null;
-  const item = boxesIn(meta, ilst.start, ilst.end).find((box) => box.type === indexFourcc(index));
-  if (!item) return null;
-  const data = boxesIn(meta, item.start, item.end).find((box) => box.type === "data");
-  if (!data) return null;
-  const value = meta.subarray(data.start + 8, data.end);
-  if (value.length === 0 || value.length > 64) return null;
-  return civilFromText(CREATIONDATE_TEXT, new TextDecoder().decode(value));
+  try {
+    const children = metaChildren(meta);
+    const keys = children.find((box) => box.type === "keys");
+    const ilst = children.find((box) => box.type === "ilst");
+    if (!keys || !ilst) return null;
+    const index = keyIndex(meta.subarray(keys.start, keys.end), CREATIONDATE_KEY);
+    if (index === null) return null;
+    const item = boxesIn(meta, ilst.start, ilst.end).find((box) => box.type === indexFourcc(index));
+    if (!item) return null;
+    const data = boxesIn(meta, item.start, item.end).find((box) => box.type === "data");
+    if (!data || data.end - data.start < 8) return null;
+    if (u32be(meta, data.start) !== 1) return null;
+    const value = meta.subarray(data.start + 8, data.end);
+    if (value.length === 0 || value.length > 64) return null;
+    return civilFromCreationdate(new TextDecoder().decode(value));
+  } catch {
+    return null;
+  }
 }
 
 const VIDEO_CAPTURE_SOURCES: readonly VideoCaptureSource[] = [
@@ -715,7 +730,13 @@ async function captureFromMoov(
       Math.min(box.size - box.headerSize, META_CAP),
     );
     for (const type of rest) payload = payload && childPayload(payload, type);
-    const instant = payload && source.decode(payload);
+    if (!payload) continue;
+    let instant: CaptureInstant | null = null;
+    try {
+      instant = source.decode(payload);
+    } catch {
+      instant = null;
+    }
     if (instant) return instant;
   }
   return null;
