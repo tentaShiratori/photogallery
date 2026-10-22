@@ -30,6 +30,12 @@
       "sourceType": "github",
       "skillPath": "skills/security-audit/SKILL.md",
       "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-skills/SKILL.md",
+      "computedHash": "5dfeb4768effae27e94cc7ce27420f461a09fbca4c6e3846cf7acb1765d5d3d7"
     }
   }
 }
