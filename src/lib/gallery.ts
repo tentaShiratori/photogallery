@@ -590,19 +590,17 @@ async function instantFromBmffExif(
   return null;
 }
 
-type MoovChild = "meta" | "udta" | "mvhd";
-
-type VideoCaptureSource = {
-  readonly path: readonly [MoovChild, ...string[]];
-  readonly decode: (payload: Uint8Array) => CaptureInstant | null;
-};
+type MvhdCivilKind = "utc" | "tokyo";
 
 const TOKYO_OFFSET_MS = 9n * 60n * 60n * 1000n;
 const CREATIONDATE_KEY = "com.apple.quicktime.creationdate";
+const ANDROID_KEY_PREFIX = "com.android.";
 const MOOV_CHILD_STEPS = 32;
+const META_PATHS = [["meta"], ["udta", "meta"]] as const;
 
-function tokyoCivilFromMacEpoch(seconds: bigint): CaptureInstant | null {
-  const ms = MAC_EPOCH_MS + seconds * 1000n + TOKYO_OFFSET_MS;
+function civilFromMacEpoch(seconds: bigint, kind: MvhdCivilKind): CaptureInstant | null {
+  const offset = kind === "tokyo" ? TOKYO_OFFSET_MS : 0n;
+  const ms = MAC_EPOCH_MS + seconds * 1000n + offset;
   if (ms > 8_640_000_000_000_000n || ms < -8_640_000_000_000_000n) return null;
   const date = new Date(Number(ms));
   if (Number.isNaN(date.getTime())) return null;
@@ -616,19 +614,22 @@ function tokyoCivilFromMacEpoch(seconds: bigint): CaptureInstant | null {
   );
 }
 
-function captureFromMvhdCreationSeconds(seconds: bigint): CaptureInstant | null {
+function captureFromMvhdCreationSeconds(
+  seconds: bigint,
+  kind: MvhdCivilKind,
+): CaptureInstant | null {
   if (seconds === 0n) return null;
-  return tokyoCivilFromMacEpoch(seconds);
+  return civilFromMacEpoch(seconds, kind);
 }
 
-function tokyoFromMvhd(mvhd: Uint8Array): CaptureInstant | null {
+function civilFromMvhd(mvhd: Uint8Array, kind: MvhdCivilKind): CaptureInstant | null {
   if (mvhd[0] === 0) {
     const seconds = u32be(mvhd, 4);
-    return seconds === null ? null : captureFromMvhdCreationSeconds(BigInt(seconds));
+    return seconds === null ? null : captureFromMvhdCreationSeconds(BigInt(seconds), kind);
   }
   if (mvhd[0] === 1) {
     const seconds = u64(mvhd, 4, false);
-    return seconds === null ? null : captureFromMvhdCreationSeconds(seconds);
+    return seconds === null ? null : captureFromMvhdCreationSeconds(seconds, kind);
   }
   return null;
 }
@@ -647,22 +648,43 @@ function indexFourcc(index: number): string {
   );
 }
 
-function keyIndex(keys: Uint8Array, name: string): number | null {
+function eachMdtaKey(keys: Uint8Array, visit: (name: string, index: number) => boolean): void {
   const count = u32be(keys, 4);
-  if (count === null) return null;
+  if (count === null) return;
   let pos = 8;
   for (let index = 1; index <= count && pos + 8 <= keys.length; index++) {
     const size = u32be(keys, pos);
-    if (size === null || size < 8 || pos + size > keys.length) return null;
-    if (
-      fourcc(keys, pos + 4) === "mdta" &&
-      new TextDecoder().decode(keys.subarray(pos + 8, pos + size)) === name
-    ) {
-      return index;
+    if (size === null || size < 8 || pos + size > keys.length) return;
+    if (fourcc(keys, pos + 4) === "mdta") {
+      const name = new TextDecoder().decode(keys.subarray(pos + 8, pos + size));
+      if (visit(name, index)) return;
     }
     pos += size;
   }
-  return null;
+}
+
+function keyIndex(keys: Uint8Array, name: string): number | null {
+  let found: number | null = null;
+  eachMdtaKey(keys, (keyName, index) => {
+    if (keyName === name) {
+      found = index;
+      return true;
+    }
+    return false;
+  });
+  return found;
+}
+
+function hasMdtaKeyPrefix(keys: Uint8Array, prefix: string): boolean {
+  let found = false;
+  eachMdtaKey(keys, (name) => {
+    if (name.startsWith(prefix)) {
+      found = true;
+      return true;
+    }
+    return false;
+  });
+  return found;
 }
 
 function creationdateFromMeta(meta: Uint8Array): CaptureInstant | null {
@@ -686,11 +708,16 @@ function creationdateFromMeta(meta: Uint8Array): CaptureInstant | null {
   }
 }
 
-const VIDEO_CAPTURE_SOURCES: readonly VideoCaptureSource[] = [
-  { path: ["meta"], decode: creationdateFromMeta },
-  { path: ["udta", "meta"], decode: creationdateFromMeta },
-  { path: ["mvhd"], decode: tokyoFromMvhd },
-];
+function metaHasAndroidKey(meta: Uint8Array): boolean {
+  try {
+    const children = metaChildren(meta);
+    const keys = children.find((box) => box.type === "keys");
+    if (!keys) return false;
+    return hasMdtaKeyPrefix(meta.subarray(keys.start, keys.end), ANDROID_KEY_PREFIX);
+  } catch {
+    return false;
+  }
+}
 
 function childPayload(bytes: Uint8Array, type: string): Uint8Array | null {
   const found = boxesIn(bytes, 0, bytes.length).find((box) => box.type === type);
@@ -715,6 +742,26 @@ async function moovChildren(
   return children;
 }
 
+async function pathPayload(
+  children: Box[],
+  path: readonly [string, ...string[]],
+  key: string,
+  fileSize: number,
+  read: RangeRead,
+): Promise<Uint8Array | null> {
+  const [first, ...rest] = path;
+  const box = children.find((child) => child.type === first);
+  if (!box) return null;
+  let payload: Uint8Array | null = await takeUpTo(
+    read,
+    key,
+    box.payloadOffset,
+    Math.min(box.size - box.headerSize, META_CAP),
+  );
+  for (const type of rest) payload = payload && childPayload(payload, type);
+  return payload;
+}
+
 async function captureFromMoov(
   key: string,
   moov: Box,
@@ -722,27 +769,32 @@ async function captureFromMoov(
   read: RangeRead,
 ): Promise<CaptureInstant | null> {
   const children = await moovChildren(key, moov, fileSize, read);
-  for (const source of VIDEO_CAPTURE_SOURCES) {
-    const [first, ...rest] = source.path;
-    const box = children.find((child) => child.type === first);
-    if (!box) continue;
-    let payload: Uint8Array | null = await takeUpTo(
-      read,
-      key,
-      box.payloadOffset,
-      Math.min(box.size - box.headerSize, META_CAP),
-    );
-    for (const type of rest) payload = payload && childPayload(payload, type);
+  let android = false;
+  for (const path of META_PATHS) {
+    const payload = await pathPayload(children, path, key, fileSize, read);
     if (!payload) continue;
     let instant: CaptureInstant | null = null;
     try {
-      instant = source.decode(payload);
+      instant = creationdateFromMeta(payload);
     } catch {
       instant = null;
     }
     if (instant) return instant;
+    if (metaHasAndroidKey(payload)) android = true;
   }
-  return null;
+  const mvhdBox = children.find((child) => child.type === "mvhd");
+  if (!mvhdBox) return null;
+  const mvhd = await takeUpTo(
+    read,
+    key,
+    mvhdBox.payloadOffset,
+    Math.min(mvhdBox.size - mvhdBox.headerSize, META_CAP),
+  );
+  try {
+    return civilFromMvhd(mvhd, android ? "utc" : "tokyo");
+  } catch {
+    return null;
+  }
 }
 
 async function instantFromBmffCreate(

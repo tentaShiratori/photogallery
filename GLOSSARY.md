@@ -38,6 +38,10 @@ _Avoid_: EXIF, タイムスタンプ, DateTimeOriginal, uploaded
 動画ファイルの中に記録された、そのファイルが作られた暦の日時。
 _Avoid_: 変更日時
 
+**Android の印**:
+動画の中に、Android の機器が付けた項目があること。
+_Avoid_: com.android, manufacturer, model, capture.fps
+
 **更新日時**:
 手元のファイルが最後に更新された暦の日時。
 _Avoid_: mtime, 更新時刻

@@ -44,6 +44,17 @@ function creationdateKeys(where: "moov" | "udta", creationdate: string) {
   };
 }
 
+function androidKeys(where: "moov" | "udta") {
+  return {
+    in: where,
+    items: [
+      ["com.android.manufacturer", "Google"],
+      ["com.android.model", "Pixel 7a"],
+      ["com.android.capture.fps", "30.000"],
+    ] as const,
+  };
+}
+
 describe("embeddedCapture", () => {
   it("JPEG の DateTimeOriginal を返し、DateTime だけでは null", async () => {
     const ii = jpegExif("2024:08:02 12:00:00", "II");
@@ -243,6 +254,63 @@ describe("embeddedCapture", () => {
       minute: 0,
       second: 0,
     });
+  });
+
+  it("com.android. キーがあるときは mvhd を協定世界時の暦のままにする", async () => {
+    const utc = {
+      year: 2025,
+      month: 12,
+      day: 8,
+      hour: 13,
+      minute: 7,
+      second: 51,
+    };
+    for (const where of ["moov", "udta"] as const) {
+      const built = mp4({
+        creationSeconds: macSeconds(2025, 12, 8, 13, 7, 51),
+        moov: "after-mdat",
+        keys: androidKeys(where),
+      });
+      const name = `pxl-android-${where}.mp4`;
+      const { read } = openFiles(new Map([[name, built.bytes]]));
+      expect(await embeddedCapture(name, built.bytes.length, read)).toEqual(utc);
+    }
+  });
+
+  it("creationdate があれば com.android. より先に使う", async () => {
+    const built = mp4({
+      creationSeconds: macSeconds(2025, 12, 8, 13, 7, 51),
+      moov: "after-mdat",
+      keys: {
+        in: "moov",
+        items: [
+          ["com.android.manufacturer", "Google"],
+          ["com.apple.quicktime.creationdate", "2024-08-02T15:00:00-0700"],
+        ] as const,
+      },
+    });
+    const { read } = openFiles(new Map([["android-with-creationdate.mov", built.bytes]]));
+    expect(
+      await embeddedCapture("android-with-creationdate.mov", built.bytes.length, read),
+    ).toEqual({
+      year: 2024,
+      month: 8,
+      day: 2,
+      hour: 15,
+      minute: 0,
+      second: 0,
+    });
+  });
+
+  it("com.android. があっても creation_time が 0 なら null", async () => {
+    const built = mp4({
+      creationSeconds: 0,
+      modificationSeconds: macSeconds(1999, 6, 1, 0, 0, 0),
+      moov: "after-mdat",
+      keys: androidKeys("moov"),
+    });
+    const { read } = openFiles(new Map([["android-unset.mp4", built.bytes]]));
+    expect(await embeddedCapture("android-unset.mp4", built.bytes.length, read)).toBeNull();
   });
 
   it("HEIC は iloc method 0 の DateTimeOriginal を使い、method 1 は null", async () => {
