@@ -1,4 +1,5 @@
 import path from "node:path";
+import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { getPlatformProxy } from "wrangler";
 import type { Env } from "../src/lib/types.ts";
@@ -7,13 +8,12 @@ import { destinationLine, type ObjectBody, type ObjectSink } from "./lib/object-
 import { listUploadTargets, planUploads } from "./lib/prepare.ts";
 import { putAll } from "./lib/put-all.ts";
 
-async function bodyBytes(body: ObjectBody): Promise<Uint8Array> {
+function localBody(body: ObjectBody, contentLength: number): Uint8Array | ReadableStream {
   if (body instanceof Uint8Array) return body;
-  const chunks: Buffer[] = [];
-  for await (const chunk of body) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks);
+  const stream = Readable.toWeb(body);
+  // Miniflare rejects a WHATWG stream unless this symbol carries the byte length.
+  Object.assign(stream, { [Symbol.for("miniflare.kStreamLength")]: contentLength });
+  return stream as ReadableStream;
 }
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -46,9 +46,9 @@ async function openLocalSink(): Promise<ObjectSink> {
   }
 
   return {
-    async put(key, body: ObjectBody, contentType, _contentLength) {
+    async put(key, body: ObjectBody, contentType, contentLength) {
       try {
-        await bucket.put(key, await bodyBytes(body), { httpMetadata: { contentType } });
+        await bucket.put(key, localBody(body, contentLength), { httpMetadata: { contentType } });
       } catch (error) {
         if (isBusyError(error)) throw new LocalBusyError();
         throw error;
