@@ -21,7 +21,7 @@ Choosing a video opens the body in the viewer. The tile shows the thumbnail. The
 Preconditions:
 
 - Doctor reports the seeded instance at `http://127.0.0.1:8797` with body keys `2024-08-02T12-00-00.png` and `2023-05-01T08-30-00.mp4`.
-- `#status` is `2 件`.
+- The headings `2024 65 件` and, after scrolling to the bottom twice, `2023 1 件` are shown.
 
 - **Image bytes.** Run `curl.exe -sS -D - -o .cursor/skills/verify-photogallery/artifacts/media-delivery/body.png "http://127.0.0.1:8797/media/2024-08-02T12-00-00.png"`. Status 200, `content-type` is `image/png`, and `accept-ranges` is `bytes`.
 - **Video tile.** In the browser, find the figcaption `2023-05-01T08-30-00.mp4`. Its tile contains an `img`, not a `video`. Click the button named `2023-05-01T08-30-00.mp4`. `dialog#viewer` contains a `video` whose `src` ends with `/media/2023-05-01T08-30-00.mp4`, and `#caption` reads `2023-05-01T08-30-00.mp4`.
