@@ -1,7 +1,20 @@
 import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
-import type { MediaList } from "../src/lib/pair";
+import app from "../src/index";
+import type { MediaPage } from "../src/routes/api/media";
 import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
+
+function withList(bucket: R2Bucket, list: R2Bucket["list"]): R2Bucket {
+  return new Proxy(bucket, {
+    get: (target, property) => (property === "list" ? list : Reflect.get(target, property)),
+  });
+}
+
+function fetchWith(bucket: R2Bucket, path: string): Promise<Response> {
+  return Promise.resolve(
+    app.fetch(new Request(`http://localhost${path}`), { ...env, MEDIA: bucket }),
+  );
+}
 
 const SAMPLE_THUMB = new Uint8Array([
   0x52, 0x49, 0x46, 0x46, 0x1a, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x4c,
@@ -79,58 +92,89 @@ describe("Worker 統合テスト", () => {
   });
 
   describe("GET /api/media", () => {
-    it("メディア一覧を JSON で返す", async () => {
-      const response = await exports.default.fetch(new Request("http://localhost/api/media"));
+    it("最初の応答は一番新しい年の本体とサムネイルだけを読む", async () => {
+      const calls: R2ListOptions[] = [];
+      const response = await fetchWith(
+        withList(env.MEDIA, (options) => {
+          calls.push(options ?? {});
+          return env.MEDIA.list(options);
+        }),
+        "/api/media",
+      );
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
 
-      const data = (await response.json()) as MediaList & { items?: unknown };
-      expect(data.truncated).toBe(false);
-      expect(Object.hasOwn(data, "items")).toBe(false);
-      expect(data.groups.map((group) => group.label)).toEqual(["2024", "2023", "年不明"]);
-
-      const jpeg = data.groups[0]?.items.find((item) => item.bodyKey === "2024-08-02T12-00-00.jpg");
-      expect(jpeg?.bodyUrl).toBe("/media/2024-08-02T12-00-00.jpg");
-      expect(jpeg?.thumbUrl).toBe("/media/t/2024-08-02T12-00-00.webp");
-      expect(jpeg?.caption).toBe("2024-08-02T12-00-00.jpg");
-      expect(jpeg?.kind).toBe("image");
-      const video = data.groups[1]?.items.find(
-        (item) => item.bodyKey === "2023-05-01T08-30-00.mp4",
-      );
-      expect(video?.bodyUrl).toBe("/media/2023-05-01T08-30-00.mp4");
-      expect(video?.thumbUrl).toBe("/media/t/2023-05-01T08-30-00.webp");
-      expect(video?.kind).toBe("video");
-      const unknown = data.groups.find((group) => group.year === null);
-      expect(unknown?.label).toBe("年不明");
-      expect(unknown?.items.map((item) => item.bodyKey)).toEqual(["u-abc123def456.png"]);
+      const page = (await response.json()) as MediaPage;
+      expect(Object.keys(page).sort()).toEqual(["group", "next"]);
+      expect(page.group?.label).toBe("2024");
+      expect(page.group?.truncated).toBe(false);
+      expect(page.next).toBe("/api/media?after=2024");
+      const listed = calls.filter((call) => call.delimiter === undefined);
+      expect(new Set(listed.map((call) => call.prefix))).toEqual(new Set(["2024-", "t/2024-"]));
+      expect(calls.filter((call) => call.delimiter !== undefined).length).toBeGreaterThan(0);
     });
 
-    it("一覧の各アイテムに必要なフィールドがある", async () => {
-      const response = await exports.default.fetch(new Request("http://localhost/api/media"));
-      const data = (await response.json()) as MediaList;
-      const items = data.groups.flatMap((group) => group.items);
-      const absent = [
-        "test-image.png",
-        "test-video.mp4",
-        "folder/nested.jpg",
-        "2022-01-01T00-00-00.jpg",
-        "t/2019-01-01T00-00-00.webp",
-        "t/2024-08-02T12-00-00.webp",
-      ];
-
-      expect(items).toHaveLength(3);
-      for (const item of items) {
-        expect(item.bodyKey).toBeTruthy();
-        expect(item.kind).toMatch(/^(image|video)$/);
-        expect(item.bodyUrl).toBe(`/media/${item.bodyKey}`);
-        expect(item.thumbUrl).toMatch(/^\/media\/t\/.+\.webp$/);
-        expect(item.caption).toBe(item.bodyKey);
-        expect(Object.hasOwn(item, "key")).toBe(false);
-        expect(Object.hasOwn(item, "url")).toBe(false);
-        expect(Object.hasOwn(item, "uploaded")).toBe(false);
-        expect(Object.hasOwn(item, "size")).toBe(false);
-        expect(absent).not.toContain(item.bodyKey);
+    it("next をたどると年ごとに今と同じ順で全部出る", async () => {
+      const steps: [string | null, string | null][] = [];
+      const items: NonNullable<MediaPage["group"]>["items"][number][] = [];
+      let href: string | null = "/api/media";
+      while (href !== null) {
+        const response = await exports.default.fetch(new Request(`http://localhost${href}`));
+        expect(response.status).toBe(200);
+        expect(response.headers.get("cache-control")).toBe("private, no-store");
+        const page = (await response.json()) as MediaPage;
+        steps.push([page.group?.label ?? null, page.next]);
+        items.push(...(page.group?.items ?? []));
+        href = page.next;
       }
+      expect(steps).toEqual([
+        ["2024", "/api/media?after=2024"],
+        ["2023", "/api/media?after=2023"],
+        [null, "/api/media?after=2022"],
+        ["年不明", null],
+      ]);
+      expect(items.map((item) => item.bodyKey)).toEqual([
+        "2024-08-02T12-00-00.jpg",
+        "2023-05-01T08-30-00.mp4",
+        "u-abc123def456.png",
+      ]);
+      expect(items.map((item) => item.kind)).toEqual(["image", "video", "image"]);
+      for (const item of items) {
+        expect(item.bodyUrl).toBe(`/media/${item.bodyKey}`);
+        expect(item.thumbUrl).toBe(
+          `/media/t/${item.bodyKey.slice(0, item.bodyKey.lastIndexOf("."))}.webp`,
+        );
+        expect(item.caption).toBe(item.bodyKey);
+        expect(Object.keys(item).sort()).toEqual([
+          "bodyKey",
+          "bodyUrl",
+          "caption",
+          "kind",
+          "thumbUrl",
+        ]);
+      }
+    });
+
+    it("after が年でないと 400 を返す", async () => {
+      for (const after of ["abc", "0", "2024x", ""]) {
+        const response = await exports.default.fetch(
+          new Request(`http://localhost/api/media?after=${after}`),
+        );
+        expect(response.status).toBe(400);
+      }
+    });
+
+    it("年を探す一覧が上限を超えると 500 を返す", async () => {
+      const response = await fetchWith(
+        withList(env.MEDIA, async (options) =>
+          options?.delimiter === undefined
+            ? env.MEDIA.list(options)
+            : { objects: [], delimitedPrefixes: ["1000-"], truncated: true, cursor: "more" },
+        ),
+        "/api/media",
+      );
+      expect(response.status).toBe(500);
     });
   });
 
