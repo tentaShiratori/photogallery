@@ -21,7 +21,7 @@ On a screen, the system subject is ブラウザ. In upload, the system subject i
 
 ## What to leave out
 
-Write the change that remains at the end of that path. In the flow, write the change where it happens.
+In the flow, write only the change where it happens. Do not end a path with a line that only restates the previous step. The end state belongs in 事後条件.
 
 Leave out layout and position that a person can see on the screen. Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
 
@@ -29,7 +29,7 @@ Keep the current UI string in 「」. Use glossary words.
 
 ## Flow
 
-Number the main steps from 1. One subject and one action per line. Put an alternate directly under its step as `- 3a.`, then `- 3b.`. Put an exception as `- 3e.`, then `- 3f.`. Indent the steps of that path one level further. The last line of a path states the change that remains. Do not send the reader to another step number. If more changes belong to that path, write them inside it.
+Number the main steps from 1. One subject and one action per line. Put an alternate directly under its step as `- 3a.`, then `- 3b.`. Put an exception as `- 3e.`, then `- 3f.`. Indent the steps of that path one level further. Do not send the reader to another step number. If more changes belong to that path, write them inside it.
 
 A precondition is already true when the UC starts. A check that chooses a path goes in the flow. If there is no failure path, 事後条件（失敗） is 「なし」. Add トリガー, 関連, or 未決 only when it has text.
 
