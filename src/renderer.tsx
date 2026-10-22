@@ -1,6 +1,7 @@
 import { css, Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Script, ViteClient } from "vite-ssr-components/hono";
+import { TAB_ICON_PATH } from "./lib/tab-icon.ts";
 
 const globalClass = css`
   :-hono-global {
@@ -38,6 +39,7 @@ export const renderer = jsxRenderer(
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
         <title>{title}</title>
+        <link rel="icon" href={TAB_ICON_PATH} type="image/svg+xml" />
         <ViteClient />
         <Style />
         <Script src="/src/routes/lib/client.tsx" />

@@ -88,6 +88,27 @@ describe("Worker 統合テスト", () => {
       expect(html).toContain("<!DOCTYPE html>");
       expect(html).toContain('id="hono-css"');
       expect(html).toContain("--bg:#f4f1ea");
+      expect(html).toContain('rel="icon"');
+      expect(html).toContain('type="image/svg+xml"');
+      expect(html).toContain('href="/favicon.svg"');
+    });
+  });
+
+  describe("GET /favicon.svg", () => {
+    it("タブの印を返す", async () => {
+      const response = await exports.default.fetch(new Request("http://localhost/favicon.svg"));
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")?.toLowerCase()).toBe(
+        "image/svg+xml; charset=utf-8",
+      );
+      expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+
+      const body = await response.text();
+      expect(body).toContain("<svg");
+      expect(body.match(/<use\b/g)?.length).toBe(8);
+      expect(body).not.toContain("見つかりません。");
+      expect(body).not.toContain("<text");
+      expect(body).not.toContain("<image");
     });
   });
 
@@ -264,6 +285,12 @@ describe("Worker 統合テスト", () => {
     it("404 を返す", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/unknown"));
       expect(response.status).toBe(404);
+    });
+
+    it("/favicon.ico は 404 で見つかりません。", async () => {
+      const response = await exports.default.fetch(new Request("http://localhost/favicon.ico"));
+      expect(response.status).toBe(404);
+      expect(await response.text()).toContain("見つかりません。");
     });
   });
 });
