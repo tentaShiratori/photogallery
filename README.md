@@ -14,7 +14,7 @@
 pnpm upload:local D:\photos\sample
 ```
 
-ここまでで画面に「ローカルプレビュー」と、撮影年ごとのサムネイルが出る。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。`.env` は不要。画面は [ログイン表示](docs/spec/login.md) と [ギャラリー](docs/spec/gallery.md)。上げ方の詳細は [アップロード](docs/spec/upload.md)。
+ここまでで画面に「ローカルプレビュー」と、撮影年ごとのサムネイルが出る。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。`.env` は不要。画面は [UC-01 ギャラリーを見る](docs/spec/UC-01-ギャラリーを見る.md)。上げ方の詳細は [UC-04 フォルダをアップロードする](docs/spec/UC-04-フォルダをアップロードする.md)。
 
 ## テスト
 
@@ -66,7 +66,7 @@ terraform init
 terraform apply
 ```
 
-作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。誰がギャラリーに届くかは [ログイン表示](docs/spec/login.md)。
+作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。誰がギャラリーに届くかは [UC-03 本番のギャラリーに入る](docs/spec/UC-03-本番のギャラリーに入る.md)。
 
 ### 4. Worker のコードを出す
 
@@ -86,21 +86,21 @@ pnpm deploy
 pnpm upload:prd D:\photos\2024-trip
 ```
 
-何が上がり、どんな名前になるかは [アップロード](docs/spec/upload.md)。画面での見え方は [ギャラリー](docs/spec/gallery.md) と [配信](docs/spec/delivery.md)。
+何が上がり、どんな名前になるかは [UC-04 フォルダをアップロードする](docs/spec/UC-04-フォルダをアップロードする.md) と [メディアのルール](docs/spec/domain/media.md)。画面での見え方は [UC-01 ギャラリーを見る](docs/spec/UC-01-ギャラリーを見る.md) と [ギャラリーのルール](docs/spec/app/gallery.md)。
 
 ## 名前と役割
 
 バケット名と Worker 名は `infra/prd/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
 
-| もの                      | 役割                                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| R2 `photogallery-media`   | 非公開の画像・動画。場所の希望は `apac`                                              |
-| Worker `photogallery`     | 一覧と配信。R2 はバインディング経由で読む                                            |
-| Access                    | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く          |
-| `scripts/upload-prd.ts`   | 指定フォルダを本番 R2 の S3 API へ上げる。対象は [アップロード](docs/spec/upload.md) |
-| `scripts/upload-local.ts` | 指定フォルダをローカルの模擬バケットへ上げる。対象は同じ                             |
+| もの                      | 役割                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| R2 `photogallery-media`   | 非公開の画像・動画。場所の希望は `apac`                                                                 |
+| Worker `photogallery`     | 一覧と配信。R2 はバインディング経由で読む                                                               |
+| Access                    | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く                             |
+| `scripts/upload-prd.ts`   | 指定フォルダを本番 R2 の S3 API へ上げる。対象は [UC-04](docs/spec/UC-04-フォルダをアップロードする.md) |
+| `scripts/upload-local.ts` | 指定フォルダをローカルの模擬バケットへ上げる。対象は同じ                                                |
 
-バケットは公開しない。ブラウザから中身を見るときの挙動は [配信](docs/spec/delivery.md)。
+バケットは公開しない。ブラウザから中身を見るときの挙動は [ギャラリーのルール](docs/spec/app/gallery.md)。
 
 Workers の実行言語は JavaScript / TypeScript が第一級。Python は対応範囲が狭く、Go はそのままでは動かない。Worker もアップロードスクリプトも TypeScript。
 
@@ -110,7 +110,8 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 
 ## 画面
 
-- [ギャラリー](docs/spec/gallery.md)
-- [拡大表示](docs/spec/viewer.md)
-- [ログイン表示](docs/spec/login.md)
-- [配信](docs/spec/delivery.md)
+- [UC-01 ギャラリーを見る](docs/spec/UC-01-ギャラリーを見る.md)
+- [UC-02 拡大して見る](docs/spec/UC-02-拡大して見る.md)
+- [UC-03 本番のギャラリーに入る](docs/spec/UC-03-本番のギャラリーに入る.md)
+- [メディアのルール](docs/spec/domain/media.md)
+- [ギャラリーのルール](docs/spec/app/gallery.md)
