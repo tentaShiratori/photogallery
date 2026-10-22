@@ -142,11 +142,47 @@ export function jpegDateTime(text: string): Uint8Array {
   return jpegWrap(tiff(0x0132, text, "MM", false));
 }
 
+export type QuickTimeKeys = {
+  readonly items: readonly (readonly [key: string, value: string])[];
+  readonly in: "moov" | "udta";
+};
+
+function indexedBox(index: number, payload: Uint8Array): Uint8Array {
+  return concat([be32(8 + payload.length), be32(index), payload]);
+}
+
+function keyedMeta(keys: QuickTimeKeys): Uint8Array {
+  const hdlr = fullBox(
+    "hdlr",
+    0,
+    concat([be32(0), ascii("mdta"), new Uint8Array(12), new Uint8Array(1)]),
+  );
+  const keysBox = fullBox(
+    "keys",
+    0,
+    concat([
+      be32(keys.items.length),
+      ...keys.items.map(([name]) => concat([be32(8 + name.length), ascii("mdta"), ascii(name)])),
+    ]),
+  );
+  const ilst = box(
+    "ilst",
+    concat(
+      keys.items.map(([, value], index) =>
+        indexedBox(index + 1, box("data", concat([be32(1), be32(0), ascii(value)]))),
+      ),
+    ),
+  );
+  const body = concat([hdlr, keysBox, ilst]);
+  return keys.in === "moov" ? box("meta", body) : box("udta", fullBox("meta", 0, body));
+}
+
 export function mp4(options: {
   creationSeconds: number;
   modificationSeconds?: number;
   moov: "before-mdat" | "after-mdat";
   wideMdat?: boolean;
+  keys?: QuickTimeKeys;
 }): { bytes: Uint8Array; mdatPayloadStart: number; mdatPayloadEnd: number } {
   const ftyp = box("ftyp", concat([ascii("isom"), be32(0)]));
   const payload = new Uint8Array(48).fill(0xab);
@@ -156,7 +192,8 @@ export function mp4(options: {
     0,
     concat([be32(options.creationSeconds), be32(options.modificationSeconds ?? 0)]),
   );
-  const moov = box("moov", mvhd);
+  // mvhd before meta, as on iPhone, so file order cannot select creationdate ahead of mvhd.
+  const moov = box("moov", options.keys ? concat([mvhd, keyedMeta(options.keys)]) : mvhd);
   const headerSize = options.wideMdat ? 16 : 8;
   const parts = options.moov === "after-mdat" ? [ftyp, mdat, moov] : [ftyp, moov, mdat];
   const bytes = concat(parts);
