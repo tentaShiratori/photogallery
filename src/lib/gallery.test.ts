@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { captureFromMtime, embeddedCapture } from "./gallery.ts";
+import { captureFromMtime, embeddedCapture, type CivilCapture } from "./gallery.ts";
 import {
   heicExif,
   jpegDateTime,
@@ -34,6 +34,36 @@ function overlaps(offset: number, length: number, start: number, end: number): b
   return offset < end && offset + length > start;
 }
 
+function civilFromUtcMac(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+): CivilCapture {
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
+  };
+}
+
+async function withTz<T>(tz: string, run: () => Promise<T> | T): Promise<T> {
+  const previous = process.env.TZ;
+  process.env.TZ = tz;
+  try {
+    return await run();
+  } finally {
+    if (previous === undefined) delete process.env.TZ;
+    else process.env.TZ = previous;
+  }
+}
+
 describe("embeddedCapture", () => {
   it("JPEG の DateTimeOriginal を返し、DateTime だけでは null", async () => {
     const ii = jpegExif("2024:08:02 12:00:00", "II");
@@ -54,14 +84,9 @@ describe("embeddedCapture", () => {
     const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "after-mdat", wideMdat: true });
     const { calls, read } = openFiles(new Map([["tail.mov", built.bytes]]));
-    expect(await embeddedCapture("tail.mov", built.bytes.length, read)).toEqual({
-      year: 2024,
-      month: 8,
-      day: 2,
-      hour: 15,
-      minute: 0,
-      second: 0,
-    });
+    expect(await embeddedCapture("tail.mov", built.bytes.length, read)).toEqual(
+      civilFromUtcMac(2024, 8, 2, 15, 0, 0),
+    );
     expect(
       calls.some((call) =>
         overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd),
@@ -73,19 +98,67 @@ describe("embeddedCapture", () => {
     const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "before-mdat" });
     const { calls, read } = openFiles(new Map([["head.m4v", built.bytes]]));
-    expect(await embeddedCapture("head.m4v", built.bytes.length, read)).toEqual({
-      year: 2024,
-      month: 8,
-      day: 2,
-      hour: 15,
-      minute: 0,
-      second: 0,
-    });
+    expect(await embeddedCapture("head.m4v", built.bytes.length, read)).toEqual(
+      civilFromUtcMac(2024, 8, 2, 15, 0, 0),
+    );
     expect(
       calls.some((call) =>
         overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd),
       ),
     ).toBe(false);
+  });
+
+  it("作成日時を Asia/Tokyo の現地暦にする", async () => {
+    await withTz("Asia/Tokyo", async () => {
+      const afternoon = mp4({
+        creationSeconds: macSeconds(2024, 8, 2, 15, 0, 0),
+        moov: "after-mdat",
+      });
+      const newYearEve = mp4({
+        creationSeconds: macSeconds(2023, 12, 31, 15, 0, 0),
+        moov: "before-mdat",
+      });
+      const { read } = openFiles(
+        new Map([
+          ["afternoon.mp4", afternoon.bytes],
+          ["new-year.mov", newYearEve.bytes],
+        ]),
+      );
+      expect(await embeddedCapture("afternoon.mp4", afternoon.bytes.length, read)).toEqual({
+        year: 2024,
+        month: 8,
+        day: 3,
+        hour: 0,
+        minute: 0,
+        second: 0,
+      });
+      expect(await embeddedCapture("new-year.mov", newYearEve.bytes.length, read)).toEqual({
+        year: 2024,
+        month: 1,
+        day: 1,
+        hour: 0,
+        minute: 0,
+        second: 0,
+      });
+    });
+  });
+
+  it("作成日時を America/Los_Angeles の現地暦にする", async () => {
+    await withTz("America/Los_Angeles", async () => {
+      const built = mp4({
+        creationSeconds: macSeconds(2024, 8, 2, 15, 0, 0),
+        moov: "after-mdat",
+      });
+      const { read } = openFiles(new Map([["pacific.m4v", built.bytes]]));
+      expect(await embeddedCapture("pacific.m4v", built.bytes.length, read)).toEqual({
+        year: 2024,
+        month: 8,
+        day: 2,
+        hour: 8,
+        minute: 0,
+        second: 0,
+      });
+    });
   });
 
   it("creation_time が 0 の mp4 は null", async () => {

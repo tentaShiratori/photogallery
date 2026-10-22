@@ -583,12 +583,12 @@ function instantFromMac(seconds: bigint): CaptureInstant | null {
   const date = new Date(Number(ms));
   if (Number.isNaN(date.getTime())) return null;
   return CaptureInstant.tryCreate(
-    date.getUTCFullYear(),
-    date.getUTCMonth() + 1,
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes(),
-    date.getUTCSeconds(),
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
   );
 }
 
