@@ -24,16 +24,39 @@ export type Media = {
   readonly caption: string;
 };
 
-export type YearGroup =
-  | { readonly label: string; readonly year: number; readonly items: readonly Media[] }
-  | { readonly label: string; readonly year: null; readonly items: readonly Media[] };
+declare const yearBrand: unique symbol;
 
-export type MediaList = {
-  readonly groups: readonly YearGroup[];
+/** A capture year in 1..9999. The label is `String(year)`; the key prefix pads it to 4 digits. */
+export type Year = number & { readonly [yearBrand]: "Year" };
+
+export type YearGroup = {
+  readonly label: string;
+  /** Some object under this heading's prefixes was not read because of the object budget. */
   readonly truncated: boolean;
+  readonly items: readonly [Media, ...Media[]];
 };
 
-export type BucketHead = {
+/**
+ * One step of the walk. A null `group` means this step had no pairs, not the end.
+ * `next` is the `after` for the following step; null ends the walk.
+ */
+export type ListingPage = {
+  readonly group: YearGroup | null;
+  readonly next: Year | null;
+};
+
+export type Lister = {
+  list(options: Pick<R2ListOptions, "prefix" | "delimiter" | "cursor" | "limit">): Promise<
+    {
+      readonly objects: readonly Pick<R2Object, "key" | "size" | "uploaded">[];
+      readonly delimitedPrefixes: readonly string[];
+    } & ({ readonly truncated: true; readonly cursor: string } | { readonly truncated: false })
+  >;
+};
+
+type GroupId = { readonly kind: "year"; readonly year: Year } | { readonly kind: "unknown" };
+
+type BucketHead = {
   readonly key: string;
   readonly size: number;
   readonly uploaded: string;
@@ -78,6 +101,12 @@ type Classified =
 
 const DATED_STEM = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})(?:-([1-9]\d*))?$/;
 const UNKNOWN_STEM = /^u-([0-9a-f]{12})(?:-([1-9]\d*))?$/;
+const UNKNOWN_LABEL = "年不明";
+
+const LIST_PAGE_SIZE = 1000;
+const GROUP_OBJECT_CAP = 20_000;
+const DISCOVERY_PAGE_CAP = 20;
+const PAST_YEAR_PREFIXES = ":";
 
 function suffixOk(raw: string | undefined): boolean {
   if (raw === undefined) return true;
@@ -130,8 +159,11 @@ function isThumbUrl(value: string): value is ThumbUrl {
   return stem.length > 0 && !stem.includes("/");
 }
 
+function pad(value: number, width: number): string {
+  return String(value).padStart(width, "0");
+}
+
 function formatCivil(capture: CivilCapture): string {
-  const pad = (value: number, width: number) => String(value).padStart(width, "0");
   return `${pad(capture.year, 4)}-${pad(capture.month, 2)}-${pad(capture.day, 2)}T${pad(capture.hour, 2)}-${pad(capture.minute, 2)}-${pad(capture.second, 2)}`;
 }
 
@@ -295,36 +327,7 @@ function compareUnknown(a: Ranked, b: Ranked): number {
   return b.uploaded.localeCompare(a.uploaded) || a.media.bodyKey.localeCompare(b.media.bodyKey);
 }
 
-function groupRanked(ranked: readonly Ranked[]): YearGroup[] {
-  const byYear = new Map<number, DatedRanked[]>();
-  const unknown: Ranked[] = [];
-  for (const item of ranked) {
-    if (!isDated(item)) {
-      unknown.push(item);
-      continue;
-    }
-    const bucket = byYear.get(item.captured.year);
-    if (bucket) bucket.push(item);
-    else byYear.set(item.captured.year, [item]);
-  }
-  const groups: YearGroup[] = [...byYear.keys()]
-    .sort((left, right) => right - left)
-    .map((year) => ({
-      label: String(year),
-      year,
-      items: (byYear.get(year) ?? []).sort(compareDated).map((item) => item.media),
-    }));
-  if (unknown.length > 0) {
-    groups.push({
-      label: "年不明",
-      year: null,
-      items: unknown.sort(compareUnknown).map((item) => item.media),
-    });
-  }
-  return groups;
-}
-
-export function galleryFromHeads(heads: readonly BucketHead[], listTruncated: boolean): MediaList {
+function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
   const slots = new Map<Stem, Slot>();
   for (const head of heads) {
     const found = classify(head.key);
@@ -340,5 +343,129 @@ export function galleryFromHeads(heads: readonly BucketHead[], listTruncated: bo
   for (const slot of slots.values()) {
     if (slot.status === "pair") ranked.push(mediaFromPair(slot.head, slot.bodyKey));
   }
-  return { groups: groupRanked(ranked), truncated: listTruncated };
+  return ranked;
+}
+
+function groupFromHeads(
+  id: GroupId,
+  heads: readonly BucketHead[],
+  truncated: boolean,
+): YearGroup | null {
+  const ranked = pairsFromHeads(heads);
+  const items =
+    id.kind === "year"
+      ? ranked
+          .filter(isDated)
+          .filter((item) => item.captured.year === id.year)
+          .sort(compareDated)
+      : ranked.filter((item) => !isDated(item)).sort(compareUnknown);
+  const [first, ...rest] = items.map((item) => item.media);
+  if (first === undefined) return null;
+  const label = id.kind === "year" ? String(id.year) : UNKNOWN_LABEL;
+  return { label, truncated, items: [first, ...rest] };
+}
+
+function toYear(value: number): Year | null {
+  return Number.isInteger(value) && value >= 1 && value <= 9999 ? (value as Year) : null;
+}
+
+export function parseYear(raw: string): Year | null {
+  return /^[1-9]\d{0,3}$/.test(raw) ? toYear(Number(raw)) : null;
+}
+
+function yearFromDelimitedPrefix(prefix: string): Year | null {
+  const match = /^(\d{4})-$/.exec(prefix);
+  return match ? toYear(Number(match[1])) : null;
+}
+
+function prefixesOf(id: GroupId): { readonly body: string; readonly thumb: string } {
+  const body = id.kind === "year" ? `${pad(id.year, 4)}-` : "u-";
+  return { body, thumb: `t/${body}` };
+}
+
+function groupAfter(years: readonly Year[], after: Year | null): GroupId {
+  let best: Year | null = null;
+  for (const year of years) {
+    if ((after === null || year < after) && (best === null || year > best)) best = year;
+  }
+  return best === null ? { kind: "unknown" } : { kind: "year", year: best };
+}
+
+async function discoverYears(bucket: Lister): Promise<readonly Year[]> {
+  const years: Year[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < DISCOVERY_PAGE_CAP; page++) {
+    const listed = await bucket.list({ delimiter: "-", cursor, limit: LIST_PAGE_SIZE });
+    for (const prefix of listed.delimitedPrefixes) {
+      const year = yearFromDelimitedPrefix(prefix);
+      if (year !== null) years.push(year);
+    }
+    if (!listed.truncated) return years;
+    const lastPrefix = listed.delimitedPrefixes.at(-1) ?? "";
+    const lastKey = listed.objects.at(-1)?.key ?? "";
+    if (lastPrefix >= PAST_YEAR_PREFIXES || lastKey >= PAST_YEAR_PREFIXES) return years;
+    cursor = listed.cursor;
+  }
+  // The unread pages would hold the newest years, so a partial answer would reorder the gallery.
+  throw new Error("年を探す一覧が上限を超えました。");
+}
+
+function shareRoom(room: number, sides: number): number[] {
+  const limits: number[] = [];
+  for (let left = room; limits.length < sides && left > 0;) {
+    const limit = Math.min(LIST_PAGE_SIZE, Math.ceil(left / (sides - limits.length)));
+    limits.push(limit);
+    left -= limit;
+  }
+  return limits;
+}
+
+async function readGroup(
+  bucket: Lister,
+  prefixes: readonly string[],
+): Promise<{ readonly heads: readonly BucketHead[]; readonly truncated: boolean }> {
+  const sides = prefixes.map((prefix) => ({
+    prefix,
+    cursor: undefined as string | undefined,
+    open: true,
+  }));
+  const heads: BucketHead[] = [];
+  let truncated = false;
+  for (;;) {
+    const open = sides.filter((side) => side.open);
+    if (open.length === 0) return { heads, truncated };
+    const limits = shareRoom(GROUP_OBJECT_CAP - heads.length, open.length);
+    if (limits.length === 0) return { heads, truncated: true };
+    const pages = await Promise.all(
+      limits.map((limit, index) =>
+        bucket.list({ prefix: open[index].prefix, cursor: open[index].cursor, limit }),
+      ),
+    );
+    for (const [index, page] of pages.entries()) {
+      const side = open[index];
+      for (const object of page.objects) {
+        heads.push({ key: object.key, size: object.size, uploaded: object.uploaded.toISOString() });
+      }
+      if (!page.truncated) {
+        side.open = false;
+      } else if (page.objects.length === 0 || page.cursor === side.cursor) {
+        side.open = false;
+        truncated = true;
+      } else {
+        side.cursor = page.cursor;
+      }
+    }
+  }
+}
+
+export async function readPage(bucket: Lister, after: Year | null): Promise<ListingPage> {
+  const id = groupAfter(await discoverYears(bucket), after);
+  const next = id.kind === "year" ? id.year : null;
+  const { body, thumb } = prefixesOf(id);
+  if (id.kind === "unknown") {
+    const probe = await bucket.list({ prefix: body, limit: 1 });
+    if (probe.objects.length === 0) return { group: null, next };
+  }
+  const read = await readGroup(bucket, [body, thumb]);
+  return { group: groupFromHeads(id, read.heads, read.truncated), next };
 }

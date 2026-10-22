@@ -8,10 +8,15 @@ const repoRoot = resolve(skillDir, "../../..");
 const runsDir = resolve(skillDir, "runs");
 const currentPath = resolve(runsDir, "current.json");
 const port = 8797;
-const bucket = "photogallery-media";
 const imageKey = "2024-08-02T12-00-00.png";
 const videoKey = "2023-05-01T08-30-00.mp4";
-const seededKeys = [imageKey, videoKey];
+const olderKey = "2022-01-01T00-00-00.png";
+const seededKeys = [imageKey, videoKey, olderKey];
+const extra2024Keys = Array.from(
+  { length: 64 },
+  (_, i) =>
+    `2024-01-01T00-${String(Math.floor(i / 60)).padStart(2, "0")}-${String(i % 60).padStart(2, "0")}.png`,
+);
 
 const png = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
@@ -76,47 +81,34 @@ function descendantPids(rootPid) {
     .filter((value) => Number.isInteger(value));
 }
 
-function putObject(persist, key, file, contentType) {
-  execFileSync(
-    "pnpm",
-    [
-      "exec",
-      "wrangler",
-      "r2",
-      "object",
-      "put",
-      `${bucket}/${key}`,
-      "--file",
-      file,
-      "--content-type",
-      contentType,
-      "--local",
-      "--persist-to",
-      persist,
-      "--force",
-    ],
-    { cwd: repoRoot, stdio: "inherit" },
-  );
-}
-
 async function seed(persist) {
   const { default: sharp } = await import("sharp");
-  const fixtureDir = resolve(persist, "..", "fixtures");
-  mkdirSync(fixtureDir, { recursive: true });
-  const pngPath = resolve(fixtureDir, "verify.png");
-  const videoPath = resolve(fixtureDir, "clip.mp4");
-  const thumbPath = resolve(fixtureDir, "thumb.webp");
-  writeFileSync(pngPath, png);
-  writeFileSync(videoPath, video);
+  const { getPlatformProxy } = await import("wrangler");
   const thumb = await sharp(png)
     .resize({ width: 320, height: 320, fit: "inside", withoutEnlargement: false })
     .webp()
     .toBuffer();
-  writeFileSync(thumbPath, thumb);
-  putObject(persist, imageKey, pngPath, "image/png");
-  putObject(persist, "t/2024-08-02T12-00-00.webp", thumbPath, "image/webp");
-  putObject(persist, videoKey, videoPath, "video/mp4");
-  putObject(persist, "t/2023-05-01T08-30-00.webp", thumbPath, "image/webp");
+  const bodies = [
+    { key: videoKey, bytes: video, contentType: "video/mp4" },
+    ...[imageKey, olderKey, ...extra2024Keys].map((key) => ({
+      key,
+      bytes: png,
+      contentType: "image/png",
+    })),
+  ];
+  const { env, dispose } = await getPlatformProxy({
+    configPath: resolve(repoRoot, "wrangler.jsonc"),
+    persist: { path: resolve(persist, "v3") },
+  });
+  try {
+    for (const { key, bytes, contentType } of bodies) {
+      const stem = key.slice(0, key.lastIndexOf("."));
+      await env.MEDIA.put(`t/${stem}.webp`, thumb, { httpMetadata: { contentType: "image/webp" } });
+      await env.MEDIA.put(key, bytes, { httpMetadata: { contentType } });
+    }
+  } finally {
+    await dispose();
+  }
 }
 
 async function waitUntilReady(url, child) {
@@ -194,15 +186,23 @@ async function launch() {
   });
 }
 
-function keysFromGroups(body) {
-  if (!body || typeof body !== "object" || !Array.isArray(body.groups)) return null;
+async function listedKeys(url) {
   const keys = [];
-  for (const group of body.groups) {
-    if (!group || typeof group !== "object" || !Array.isArray(group.items)) return null;
-    for (const item of group.items) {
-      if (!item || typeof item.bodyKey !== "string") return null;
-      keys.push(item.bodyKey);
+  let href = "/api/media";
+  while (href !== null) {
+    const response = await fetch(`${url}${href}`);
+    if (response.status !== 200) return null;
+    const body = await response.json();
+    if (!body || typeof body !== "object" || !("group" in body)) return null;
+    if (body.next !== null && typeof body.next !== "string") return null;
+    if (body.group !== null) {
+      if (!Array.isArray(body.group?.items)) return null;
+      for (const item of body.group.items) {
+        if (!item || typeof item.bodyKey !== "string") return null;
+        keys.push(item.bodyKey);
+      }
     }
+    href = body.next;
   }
   return keys;
 }
@@ -229,10 +229,8 @@ async function doctor() {
   ) {
     fail(`GET / did not return the local gallery (status ${page.status})`);
   }
-  const list = await fetch(`${state.url}/api/media`);
-  const body = await list.json();
-  const keys = keysFromGroups(body);
-  if (list.status !== 200 || !keys) fail("GET /api/media did not return groups");
+  const keys = await listedKeys(state.url);
+  if (!keys) fail("walking GET /api/media and its next links did not return group and next");
   if (state.seeded) {
     for (const key of seededKeys) {
       if (!keys.includes(key)) fail(`seeded bodyKey ${key} is missing from /api/media`);

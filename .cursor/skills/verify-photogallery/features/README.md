@@ -4,7 +4,7 @@ This directory is the maintained source for verifying the user-facing behavior o
 
 ## Baseline preconditions
 
-- Launch with `node .cursor/skills/verify-photogallery/scripts/verify.mjs launch` so the app is at `http://127.0.0.1:8797` and local R2 contains the pairs `2024-08-02T12-00-00.png` and `2023-05-01T08-30-00.mp4`.
+- Launch with `node .cursor/skills/verify-photogallery/scripts/verify.mjs launch` so the app is at `http://127.0.0.1:8797` and local R2 contains 65 pairs in 2024 (including `2024-08-02T12-00-00.png`), `2023-05-01T08-30-00.mp4`, and `2022-01-01T00-00-00.png`.
 - Run `node .cursor/skills/verify-photogallery/scripts/verify.mjs doctor` and require that URL, the seeded keys, and a persist path under `.cursor/skills/verify-photogallery/runs/`.
 - Never drive port `8787` or `.wrangler/state`. That is the user's dev session.
 - Only one verification instance may run. A second `launch` must fail while the recorded pid is alive.
@@ -12,7 +12,7 @@ This directory is the maintained source for verifying the user-facing behavior o
 ## Driving conventions
 
 - Start every recipe from the seeded baseline unless its preconditions say `--empty`.
-- Prefer the heading `フォトギャラリー`, `#status`, `#grid`, button name `2024-08-02T12-00-00.png`, `dialog#viewer`, button name `閉じる`, and `#caption`.
+- Prefer the heading `フォトギャラリー`, `#status`, `#grid`, the year headings `#grid h2`, button name `2024-08-02T12-00-00.png`, `#more`, `dialog#viewer`, button name `閉じる`, and `#caption`.
 - Treat every command as literal. Keep quoted names and flags unchanged.
 - Run browser actions through the Cursor browser against the recorded URL.
 - Run HTTP actions through `curl.exe`.
@@ -38,7 +38,7 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 
 ## Features
 
-- [Gallery](./gallery.md) covers the seeded grid, the empty gallery, and the object list the page renders.
+- [Gallery](./gallery.md) covers the year headings, 60-tile steps, continuation failure, the empty gallery, and the per-year list the page renders.
 - [Viewer](./viewer.md) covers opening a photo, reading its caption, and closing the dialog.
 - [Identity](./identity.md) covers the local-preview label and the Access email heading.
 - [Media delivery](./media-delivery.md) covers image bytes, a video tile, and byte ranges.

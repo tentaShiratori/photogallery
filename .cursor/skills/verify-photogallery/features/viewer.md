@@ -17,7 +17,7 @@ The viewer opens the body the user chose, shows the body key, and closes back to
 Preconditions:
 
 - Doctor reports the seeded instance at `http://127.0.0.1:8797`.
-- `#status` is `2 件` and a button named `2024-08-02T12-00-00.png` is present.
+- The heading `2024 65 件` and a button named `2024-08-02T12-00-00.png` are present.
 
 - **Open the photo.** Choose the `2024-08-02T12-00-00.png` tile. Click the button named `2024-08-02T12-00-00.png`. `dialog#viewer` is open, `#stage img` has alt `2024-08-02T12-00-00.png`, `#stage img` `src` ends with `/media/2024-08-02T12-00-00.png`, and `#caption` reads `2024-08-02T12-00-00.png`.
 - **Confirm the bytes behind the image.** Run `curl.exe -sS -D - -o .cursor/skills/verify-photogallery/artifacts/viewer/body.png "http://127.0.0.1:8797/media/2024-08-02T12-00-00.png"`. Status 200 and `content-type` is `image/png`. The saved file starts with the PNG signature.

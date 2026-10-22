@@ -1,39 +1,27 @@
-import { galleryFromHeads, type BucketHead } from "../../lib/pair";
+import { parseYear, readPage, type Year, type YearGroup } from "../../lib/pair";
 import { AppHanlder } from "../../lib/types";
 
-const LIST_PAGE_SIZE = 1000;
-const MAX_LIST_PAGES = 20;
+export type MediaPage = {
+  readonly group: YearGroup | null;
+  readonly next: string | null;
+};
 
-async function listHeads(bucket: R2Bucket): Promise<{ heads: BucketHead[]; truncated: boolean }> {
-  const heads: BucketHead[] = [];
-  let cursor: string | undefined;
-  let pages = 0;
-  let truncated = false;
+const NO_STORE = { "cache-control": "private, no-store" };
 
-  while (pages < MAX_LIST_PAGES) {
-    const listed = await bucket.list({ cursor, limit: LIST_PAGE_SIZE });
-    pages += 1;
-    for (const object of listed.objects) {
-      heads.push({
-        key: object.key,
-        size: object.size,
-        uploaded: object.uploaded.toISOString(),
-      });
-    }
-    if (!listed.truncated || !listed.cursor) {
-      truncated = false;
-      break;
-    }
-    cursor = listed.cursor;
-    truncated = pages >= MAX_LIST_PAGES;
-  }
-
-  return { heads, truncated };
+function hrefAfter(year: Year): string {
+  return `/api/media?after=${year}`;
 }
 
 export const get: AppHanlder = async (c) => {
-  const listed = await listHeads(c.env.MEDIA);
-  return c.json(galleryFromHeads(listed.heads, listed.truncated), {
-    headers: { "cache-control": "private, no-store" },
-  });
+  const raw = c.req.query("after");
+  const after = raw === undefined ? null : parseYear(raw);
+  if (raw !== undefined && after === null) {
+    return c.text("after が年ではありません。", 400, NO_STORE);
+  }
+  const page = await readPage(c.env.MEDIA, after);
+  const body: MediaPage = {
+    group: page.group,
+    next: page.next === null ? null : hrefAfter(page.next),
+  };
+  return c.json(body, { headers: NO_STORE });
 };

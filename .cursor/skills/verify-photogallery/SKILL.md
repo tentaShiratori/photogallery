@@ -11,7 +11,7 @@ Run every command from the repository root. The helper is `node .cursor/skills/v
 
 ## Launch
 
-Start one isolated instance. It creates an empty persist directory, seeds two pairs into local R2 bucket `photogallery-media`, then starts `pnpm dev` on port `8797` with `PHOTOGALLERY_PERSIST` pointed at that directory. The pairs are `2024-08-02T12-00-00.png` with `t/2024-08-02T12-00-00.webp`, and `2023-05-01T08-30-00.mp4` with `t/2023-05-01T08-30-00.webp`.
+Start one isolated instance. It creates an empty persist directory, seeds pairs for three years into local R2 bucket `photogallery-media`, then starts `pnpm dev` on port `8797` with `PHOTOGALLERY_PERSIST` pointed at that directory. 2024 has 65 pairs, more than one step of 60 tiles. The newest is `2024-08-02T12-00-00.png` with `t/2024-08-02T12-00-00.webp`; the other 64 are `2024-01-01T00-MM-SS.png`. 2023 has `2023-05-01T08-30-00.mp4` with `t/2023-05-01T08-30-00.webp`. 2022 has `2022-01-01T00-00-00.png` with `t/2022-01-01T00-00-00.webp`.
 
 ```powershell
 node .cursor/skills/verify-photogallery/scripts/verify.mjs launch
@@ -37,13 +37,13 @@ Run this first whenever the page, API, or process looks wrong.
 node .cursor/skills/verify-photogallery/scripts/verify.mjs doctor
 ```
 
-It is read-only. It passes only when the recorded pid is alive, that pid's tree owns port `8797`, the persist path is not `.wrangler/state`, `GET /` contains `フォトギャラリー` and `ローカルプレビュー`, and `GET /api/media` returns JSON. A seeded run must list body keys `2024-08-02T12-00-00.png` and `2023-05-01T08-30-00.mp4`.
+It is read-only. It passes only when the recorded pid is alive, that pid's tree owns port `8797`, the persist path is not `.wrangler/state`, `GET /` contains `フォトギャラリー` and `ローカルプレビュー`, and `GET /api/media` followed through every `next` returns `{ group, next }` JSON. A seeded run must list body keys `2024-08-02T12-00-00.png`, `2023-05-01T08-30-00.mp4`, and `2022-01-01T00-00-00.png`.
 
 ## Drive
 
-Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#grid`, `button` whose accessible name is the image alt (`2024-08-02T12-00-00.png`), `dialog#viewer`, the button named `閉じる`, and `#caption`. Every tile is an `img`. The video tile's alt and figcaption are `2023-05-01T08-30-00.mp4`. The dialog image or video uses the body URL.
+Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#grid`, the year headings `#grid h2`, `button` whose accessible name is the image alt (`2024-08-02T12-00-00.png`), `#more`, `dialog#viewer`, the button named `閉じる`, and `#caption`. Every tile is an `img`. The video tile's alt and figcaption are `2023-05-01T08-30-00.mp4`. The dialog image or video uses the body URL.
 
-Wait until `#status` is no longer `読み込み中です。` The seeded status is `2 件`. The empty status is `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。`
+`#status` exists only before the first tile: `読み込み中です。`, `一覧を取得できませんでした。`, or the empty sentence `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。` On the seeded instance, wait until `#status` is gone and the heading reads `2024 65 件` with 60 tiles. Scroll to the bottom to reveal the other 5, then again to load 2023 and 2022.
 
 Save proof under `.cursor/skills/verify-photogallery/artifacts/<feature-id>/`. Record the feature id and the entry point with the artifact.
 
@@ -67,7 +67,7 @@ Write artifacts under `.cursor/skills/verify-photogallery/artifacts/<feature-id>
 
 - UI proof is an accessibility snapshot plus a screenshot that shows `フォトギャラリー` and the state after the action.
 - HTTP proof is the status line, response headers, and body (or the first bytes for media).
-- A gallery change is proven only when `/api/media` and the rendered `#status` agree.
+- A gallery change is proven only when walking `/api/media` through `next` and the rendered year headings agree.
 - The local server does not perform Cloudflare Access. Sending `Cf-Access-Authenticated-User-Email` proves the heading only. It does not prove the Google login wall.
 
 ## Cleanup

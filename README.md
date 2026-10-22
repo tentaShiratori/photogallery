@@ -26,6 +26,7 @@ pnpm test run src/lib/pair.test.ts
 pnpm test run src/lib/gallery.test.ts
 pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
+pnpm test run src/routes/lib/feed.test.ts
 pnpm test run test/worker.test.ts
 ```
 
