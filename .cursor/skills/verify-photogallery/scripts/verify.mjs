@@ -69,10 +69,17 @@ function listenerPids(targetPort) {
     }
     return [...pids];
   }
-  const output = execFileSync("ss", ["-lptn", `sport = :${targetPort}`], { encoding: "utf8" });
+  let output = "";
+  try {
+    output = execFileSync("lsof", ["-nP", `-iTCP:${targetPort}`, "-sTCP:LISTEN", "-t"], {
+      encoding: "utf8",
+    });
+  } catch {
+    return [];
+  }
   const pids = new Set();
-  for (const match of output.matchAll(/pid=(\d+)/g)) {
-    const pid = Number(match[1]);
+  for (const line of output.split(/\n/)) {
+    const pid = Number(line.trim());
     if (Number.isInteger(pid)) pids.add(pid);
   }
   return [...pids];
