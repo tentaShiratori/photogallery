@@ -57,6 +57,18 @@ describe("Worker 統合テスト", () => {
     await env.MEDIA.put("t/2024-08-02T12-00-00.webp", SAMPLE_THUMB, {
       httpMetadata: { contentType: "image/webp" },
     });
+    for (const key of [
+      "2024-01-02T08-00-00.jpg",
+      "2024-03-01T00-00-00.jpg",
+      "2024-09-01T00-00-00.jpg",
+      "2024-12-02T08-00-00.jpg",
+    ]) {
+      const stem = key.slice(0, key.lastIndexOf("."));
+      await env.MEDIA.put(key, SAMPLE_IMAGE, { httpMetadata: { contentType: "image/jpeg" } });
+      await env.MEDIA.put(`t/${stem}.webp`, SAMPLE_THUMB, {
+        httpMetadata: { contentType: "image/webp" },
+      });
+    }
     await env.MEDIA.put(
       "2023-05-01T08-30-00.mp4",
       mp4({
@@ -123,7 +135,10 @@ describe("Worker 統合テスト", () => {
       expect(Object.keys(list).sort()).toEqual(["years"]);
       expect(list.years.map((year) => year.label)).toEqual(["2024", "2023", "年不明"]);
       expect(list.years[0]?.previews.map((item) => item.bodyKey)).toEqual([
+        "2024-01-02T08-00-00.jpg",
+        "2024-03-01T00-00-00.jpg",
         "2024-08-02T12-00-00.jpg",
+        "2024-09-01T00-00-00.jpg",
       ]);
       expect(list.years[1]?.previews[0]?.bodyKey).toBe("2023-05-01T08-30-00.mp4");
       expect(list.years[2]?.previews[0]?.bodyKey).toBe("u-abc123def456.png");
@@ -135,14 +150,16 @@ describe("Worker 統合テスト", () => {
       );
       expect(response.status).toBe(200);
       const page = (await response.json()) as YearScreenResponse;
-      expect(page).toEqual({
-        group: {
-          label: "2024",
-          truncated: false,
-          items: [expect.objectContaining({ bodyKey: "2024-08-02T12-00-00.jpg", kind: "image" })],
-        },
-        next: null,
-      });
+      expect(page.next).toBeNull();
+      expect(page.group?.label).toBe("2024");
+      expect(page.group?.truncated).toBe(false);
+      expect(page.group?.items.map((item) => item.bodyKey)).toEqual([
+        "2024-12-02T08-00-00.jpg",
+        "2024-09-01T00-00-00.jpg",
+        "2024-08-02T12-00-00.jpg",
+        "2024-03-01T00-00-00.jpg",
+        "2024-01-02T08-00-00.jpg",
+      ]);
     });
 
     it("year=unknown で年不明を返す", async () => {
