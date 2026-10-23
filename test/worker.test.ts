@@ -1,7 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import app from "../src/index";
-import type { MediaPage } from "../src/routes/api/media";
+import type { YearListResponse, YearScreenResponse } from "../src/routes/api/media";
 import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
 
 function withList(bucket: R2Bucket, list: R2Bucket["list"]): R2Bucket {
@@ -113,76 +113,55 @@ describe("Worker 統合テスト", () => {
   });
 
   describe("GET /api/media", () => {
-    it("最初の応答は一番新しい年の本体とサムネイルだけを読む", async () => {
-      const calls: R2ListOptions[] = [];
-      const response = await fetchWith(
-        withList(env.MEDIA, (options) => {
-          calls.push(options ?? {});
-          return env.MEDIA.list(options);
-        }),
-        "/api/media",
-      );
+    it("一覧は新しい年からカードを返し、プレビューは名前の昇順で最大 4 件", async () => {
+      const response = await exports.default.fetch(new Request("http://localhost/api/media"));
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
       expect(response.headers.get("cache-control")).toBe("private, no-store");
 
-      const page = (await response.json()) as MediaPage;
-      expect(Object.keys(page).sort()).toEqual(["group", "next"]);
-      expect(page.group?.label).toBe("2024");
-      expect(page.group?.truncated).toBe(false);
-      expect(page.next).toBe("/api/media?after=2024");
-      const listed = calls.filter((call) => call.delimiter === undefined);
-      expect(new Set(listed.map((call) => call.prefix))).toEqual(new Set(["2024-", "t/2024-"]));
-      expect(calls.filter((call) => call.delimiter !== undefined).length).toBeGreaterThan(0);
-    });
-
-    it("next をたどると年ごとに今と同じ順で全部出る", async () => {
-      const steps: [string | null, string | null][] = [];
-      const items: NonNullable<MediaPage["group"]>["items"][number][] = [];
-      let href: string | null = "/api/media";
-      while (href !== null) {
-        const response = await exports.default.fetch(new Request(`http://localhost${href}`));
-        expect(response.status).toBe(200);
-        expect(response.headers.get("cache-control")).toBe("private, no-store");
-        const page = (await response.json()) as MediaPage;
-        steps.push([page.group?.label ?? null, page.next]);
-        items.push(...(page.group?.items ?? []));
-        href = page.next;
-      }
-      expect(steps).toEqual([
-        ["2024", "/api/media?after=2024"],
-        ["2023", "/api/media?after=2023"],
-        [null, "/api/media?after=2022"],
-        ["年不明", null],
-      ]);
-      expect(items.map((item) => item.bodyKey)).toEqual([
+      const list = (await response.json()) as YearListResponse;
+      expect(Object.keys(list).sort()).toEqual(["years"]);
+      expect(list.years.map((year) => year.label)).toEqual(["2024", "2023", "年不明"]);
+      expect(list.years[0]?.previews.map((item) => item.bodyKey)).toEqual([
         "2024-08-02T12-00-00.jpg",
-        "2023-05-01T08-30-00.mp4",
-        "u-abc123def456.png",
       ]);
-      expect(items.map((item) => item.kind)).toEqual(["image", "video", "image"]);
-      for (const item of items) {
-        expect(item.bodyUrl).toBe(`/media/${item.bodyKey}`);
-        expect(item.thumbUrl).toBe(
-          `/media/t/${item.bodyKey.slice(0, item.bodyKey.lastIndexOf("."))}.webp`,
-        );
-        expect(item.caption).toBe(item.bodyKey);
-        expect(Object.keys(item).sort()).toEqual([
-          "bodyKey",
-          "bodyUrl",
-          "caption",
-          "kind",
-          "thumbUrl",
-        ]);
-      }
+      expect(list.years[1]?.previews[0]?.bodyKey).toBe("2023-05-01T08-30-00.mp4");
+      expect(list.years[2]?.previews[0]?.bodyKey).toBe("u-abc123def456.png");
     });
 
-    it("after が年でないと 400 を返す", async () => {
-      for (const after of ["abc", "0", "2024x", ""]) {
+    it("year で 1 年分を今と同じ順で返し next は null", async () => {
+      const response = await exports.default.fetch(
+        new Request("http://localhost/api/media?year=2024"),
+      );
+      expect(response.status).toBe(200);
+      const page = (await response.json()) as YearScreenResponse;
+      expect(page).toEqual({
+        group: {
+          label: "2024",
+          truncated: false,
+          items: [expect.objectContaining({ bodyKey: "2024-08-02T12-00-00.jpg", kind: "image" })],
+        },
+        next: null,
+      });
+    });
+
+    it("year=unknown で年不明を返す", async () => {
+      const response = await exports.default.fetch(
+        new Request("http://localhost/api/media?year=unknown"),
+      );
+      expect(response.status).toBe(200);
+      const page = (await response.json()) as YearScreenResponse;
+      expect(page.group?.label).toBe("年不明");
+      expect(page.next).toBeNull();
+    });
+
+    it("year が不正だと 400 と日本語の本文", async () => {
+      for (const year of ["abc", "0", "2024x", ""]) {
         const response = await exports.default.fetch(
-          new Request(`http://localhost/api/media?after=${after}`),
+          new Request(`http://localhost/api/media?year=${year}`),
         );
         expect(response.status).toBe(400);
+        expect(await response.text()).toBe("year が不正です。");
       }
     });
 

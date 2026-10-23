@@ -1,27 +1,36 @@
-import { parseYear, readPage, type Year, type YearGroup } from "../../lib/pair";
+import {
+  parseYearQuery,
+  readYearContents,
+  readYearList,
+  type Media,
+  type YearGroup,
+} from "../../lib/pair";
 import { AppHanlder } from "../../lib/types";
 
-export type MediaPage = {
+export type YearListResponse = {
+  readonly years: readonly {
+    readonly label: string;
+    readonly previews: readonly Media[];
+  }[];
+};
+
+export type YearScreenResponse = {
   readonly group: YearGroup | null;
-  readonly next: string | null;
+  readonly next: null;
 };
 
 const NO_STORE = { "cache-control": "private, no-store" };
 
-function hrefAfter(year: Year): string {
-  return `/api/media?after=${year}`;
-}
-
 export const get: AppHanlder = async (c) => {
-  const raw = c.req.query("after");
-  const after = raw === undefined ? null : parseYear(raw);
-  if (raw !== undefined && after === null) {
-    return c.text("after が年ではありません。", 400, NO_STORE);
+  const yearRaw = c.req.query("year");
+  if (yearRaw !== undefined) {
+    const query = parseYearQuery(yearRaw);
+    if (query === null) return c.text("year が不正です。", 400, NO_STORE);
+    const group = await readYearContents(c.env.MEDIA, query);
+    const body: YearScreenResponse = { group, next: null };
+    return c.json(body, { headers: NO_STORE });
   }
-  const page = await readPage(c.env.MEDIA, after);
-  const body: MediaPage = {
-    group: page.group,
-    next: page.next === null ? null : hrefAfter(page.next),
-  };
+  const list = await readYearList(c.env.MEDIA);
+  const body: YearListResponse = { years: list.years };
   return c.json(body, { headers: NO_STORE });
 };

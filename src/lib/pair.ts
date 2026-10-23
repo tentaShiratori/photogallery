@@ -373,6 +373,69 @@ export function parseYear(raw: string): Year | null {
   return /^[1-9]\d{0,3}$/.test(raw) ? toYear(Number(raw)) : null;
 }
 
+export type YearQuery = Year | "unknown";
+
+/** `unknown`, or a year in 1..9999 with no leading zeros. */
+export function parseYearQuery(raw: string): YearQuery | null {
+  if (raw === "unknown") return "unknown";
+  return parseYear(raw);
+}
+
+export type YearListYear = {
+  readonly label: string;
+  readonly previews: readonly Media[];
+};
+
+function groupIdOf(query: YearQuery): GroupId {
+  return query === "unknown" ? { kind: "unknown" } : { kind: "year", year: query };
+}
+
+async function previewMedias(bucket: Lister, id: GroupId): Promise<readonly Media[] | null> {
+  const { body, thumb } = prefixesOf(id);
+  if (id.kind === "unknown") {
+    const probe = await bucket.list({ prefix: body, limit: 1 });
+    if (probe.objects.length === 0) return null;
+  }
+  const read = await readGroup(bucket, [body, thumb]);
+  const group = groupFromHeads(id, read.heads, read.truncated);
+  if (group === null) return null;
+  return [...group.items]
+    .sort((left, right) => left.bodyKey.localeCompare(right.bodyKey))
+    .slice(0, 4);
+}
+
+export async function readYearList(
+  bucket: Lister,
+): Promise<{ readonly years: readonly YearListYear[] }> {
+  const discovered = [...(await discoverYears(bucket))].sort((left, right) => right - left);
+  const years: YearListYear[] = [];
+  for (const year of discovered) {
+    const previews = await previewMedias(bucket, { kind: "year", year });
+    if (previews !== null && previews.length > 0) {
+      years.push({ label: String(year), previews });
+    }
+  }
+  const unknown = await previewMedias(bucket, { kind: "unknown" });
+  if (unknown !== null && unknown.length > 0) {
+    years.push({ label: UNKNOWN_LABEL, previews: unknown });
+  }
+  return { years };
+}
+
+export async function readYearContents(
+  bucket: Lister,
+  query: YearQuery,
+): Promise<YearGroup | null> {
+  const id = groupIdOf(query);
+  const { body, thumb } = prefixesOf(id);
+  if (id.kind === "unknown") {
+    const probe = await bucket.list({ prefix: body, limit: 1 });
+    if (probe.objects.length === 0) return null;
+  }
+  const read = await readGroup(bucket, [body, thumb]);
+  return groupFromHeads(id, read.heads, read.truncated);
+}
+
 function yearFromDelimitedPrefix(prefix: string): Year | null {
   const match = /^(\d{4})-$/.exec(prefix);
   return match ? toYear(Number(match[1])) : null;
