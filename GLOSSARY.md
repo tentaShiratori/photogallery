@@ -5,15 +5,23 @@ A collection of images and videos that only a limited set of people can view.
 ## Screen
 
 **Gallery (ギャラリー)**:
-The screen that lists media grouped by the year they were captured.
+The year list and the year screen together.
 _Avoid_: album, library, feed
+
+**Year list (年の一覧)**:
+The gallery screen that lists each year that has media, with up to four preview thumbnails per year.
+_Avoid_: year index, archive home
+
+**Year screen (年の画面)**:
+The gallery screen that shows tiles for one chosen year only.
+_Avoid_: year feed, year page
 
 **Tab mark (タブの印)**:
 The wordless colored ring flower shown on the gallery tab.
 _Avoid_: favicon, icon
 
 **Tile (タイル)**:
-One slot in the gallery for a single media item.
+One slot on the year screen for a single media item.
 _Avoid_: card
 
 **Enlarged view (拡大表示)**:
@@ -29,7 +37,7 @@ The text next to the heading when there is no login email. Used only in the loca
 _Avoid_: dev mode, logged out, guest
 
 **Unknown year (年不明)**:
-The heading for media whose capture date-time year cannot be determined.
+The label for media whose capture date-time year cannot be determined. Last on the year list when present.
 _Avoid_: uncategorized, other
 
 ## Time

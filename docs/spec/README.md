@@ -21,7 +21,7 @@ This is the source of truth for **production** behavior. Local-only behavior is 
 
 ### App rules
 
-| File                             | Contents                                                                                         |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [app/gallery.md](app/gallery.md) | Sort order, list limit, list API shape, delivery, keep out of search results (`R-GAL-01` onward) |
-| [app/access.md](app/access.md)   | Production access (`R-ACCESS-01`)                                                                |
+| File                             | Contents                                                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [app/gallery.md](app/gallery.md) | Sort order, list limit, list API shape, year-list previews, delivery, keep out of search results (`R-GAL-01` onward) |
+| [app/access.md](app/access.md)   | Production access (`R-ACCESS-01`)                                                                                    |

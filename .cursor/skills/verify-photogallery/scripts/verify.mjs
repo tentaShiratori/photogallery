@@ -11,7 +11,8 @@ const port = 8797;
 const imageKey = "2024-08-02T12-00-00.png";
 const videoKey = "2023-05-01T08-30-00.mp4";
 const olderKey = "2022-01-01T00-00-00.png";
-const seededKeys = [imageKey, videoKey, olderKey];
+const unknownKey = "u-abc123def456.png";
+const seededKeys = [imageKey, videoKey, olderKey, unknownKey];
 const extra2024Keys = Array.from(
   { length: 64 },
   (_, i) =>
@@ -53,32 +54,72 @@ function pidAlive(pid) {
   }
 }
 
+function isWindows() {
+  return process.platform === "win32";
+}
+
 function listenerPids(targetPort) {
-  const output = execFileSync("netstat", ["-ano"], { encoding: "utf8" });
+  if (isWindows()) {
+    const output = execFileSync("netstat", ["-ano"], { encoding: "utf8" });
+    const pids = new Set();
+    for (const line of output.split(/\r?\n/)) {
+      if (!line.includes("LISTENING") || !line.includes(`:${targetPort}`)) continue;
+      const pid = Number(line.trim().split(/\s+/).at(-1));
+      if (Number.isInteger(pid)) pids.add(pid);
+    }
+    return [...pids];
+  }
+  let output = "";
+  try {
+    output = execFileSync("lsof", ["-nP", `-iTCP:${targetPort}`, "-sTCP:LISTEN", "-t"], {
+      encoding: "utf8",
+    });
+  } catch {
+    return [];
+  }
   const pids = new Set();
-  for (const line of output.split(/\r?\n/)) {
-    if (!line.includes("LISTENING") || !line.includes(`:${targetPort}`)) continue;
-    const pid = Number(line.trim().split(/\s+/).at(-1));
+  for (const line of output.split(/\n/)) {
+    const pid = Number(line.trim());
     if (Number.isInteger(pid)) pids.add(pid);
   }
   return [...pids];
 }
 
 function descendantPids(rootPid) {
-  const output = execFileSync(
-    "powershell",
-    [
-      "-NoProfile",
-      "-Command",
-      `$queue = New-Object System.Collections.Generic.Queue[int]; $queue.Enqueue(${rootPid}); $seen = New-Object System.Collections.Generic.List[int]; while ($queue.Count -gt 0) { $id = $queue.Dequeue(); if ($seen -contains $id) { continue }; $seen.Add($id); Get-CimInstance Win32_Process -Filter "ParentProcessId=$id" | ForEach-Object { $queue.Enqueue([int]$_.ProcessId) } }; $seen -join ','`,
-    ],
-    { encoding: "utf8" },
-  );
-  return output
-    .trim()
-    .split(",")
-    .map((value) => Number(value))
-    .filter((value) => Number.isInteger(value));
+  if (isWindows()) {
+    const output = execFileSync(
+      "powershell",
+      [
+        "-NoProfile",
+        "-Command",
+        `$queue = New-Object System.Collections.Generic.Queue[int]; $queue.Enqueue(${rootPid}); $seen = New-Object System.Collections.Generic.List[int]; while ($queue.Count -gt 0) { $id = $queue.Dequeue(); if ($seen -contains $id) { continue }; $seen.Add($id); Get-CimInstance Win32_Process -Filter "ParentProcessId=$id" | ForEach-Object { $queue.Enqueue([int]$_.ProcessId) } }; $seen -join ','`,
+      ],
+      { encoding: "utf8" },
+    );
+    return output
+      .trim()
+      .split(",")
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value));
+  }
+  const seen = new Set([rootPid]);
+  const queue = [rootPid];
+  while (queue.length > 0) {
+    const id = queue.shift();
+    let children = "";
+    try {
+      children = execFileSync("pgrep", ["-P", String(id)], { encoding: "utf8" });
+    } catch {
+      children = "";
+    }
+    for (const line of children.split(/\n/)) {
+      const child = Number(line.trim());
+      if (!Number.isInteger(child) || seen.has(child)) continue;
+      seen.add(child);
+      queue.push(child);
+    }
+  }
+  return [...seen];
 }
 
 async function seed(persist) {
@@ -90,7 +131,7 @@ async function seed(persist) {
     .toBuffer();
   const bodies = [
     { key: videoKey, bytes: video, contentType: "video/mp4" },
-    ...[imageKey, olderKey, ...extra2024Keys].map((key) => ({
+    ...[imageKey, olderKey, unknownKey, ...extra2024Keys].map((key) => ({
       key,
       bytes: png,
       contentType: "image/png",
@@ -187,14 +228,19 @@ async function launch() {
 }
 
 async function listedKeys(url) {
+  const listResponse = await fetch(`${url}/api/media`);
+  if (listResponse.status !== 200) return null;
+  const list = await listResponse.json();
+  if (!list || typeof list !== "object" || !Array.isArray(list.years)) return null;
   const keys = [];
-  let href = "/api/media";
-  while (href !== null) {
-    const response = await fetch(`${url}${href}`);
+  for (const year of list.years) {
+    if (!year || typeof year.label !== "string" || !Array.isArray(year.previews)) return null;
+    if (year.previews.length > 4) return null;
+    const token = year.label === "年不明" ? "unknown" : year.label;
+    const response = await fetch(`${url}/api/media?year=${encodeURIComponent(token)}`);
     if (response.status !== 200) return null;
     const body = await response.json();
-    if (!body || typeof body !== "object" || !("group" in body)) return null;
-    if (body.next !== null && typeof body.next !== "string") return null;
+    if (!body || typeof body !== "object" || !("group" in body) || body.next !== null) return null;
     if (body.group !== null) {
       if (!Array.isArray(body.group?.items)) return null;
       for (const item of body.group.items) {
@@ -202,7 +248,6 @@ async function listedKeys(url) {
         keys.push(item.bodyKey);
       }
     }
-    href = body.next;
   }
   return keys;
 }
@@ -230,7 +275,7 @@ async function doctor() {
     fail(`GET / did not return the local gallery (status ${page.status})`);
   }
   const keys = await listedKeys(state.url);
-  if (!keys) fail("walking GET /api/media and its next links did not return group and next");
+  if (!keys) fail("GET /api/media years and per-year contents did not return the expected shape");
   if (state.seeded) {
     for (const key of seededKeys) {
       if (!keys.includes(key)) fail(`seeded bodyKey ${key} is missing from /api/media`);
@@ -259,7 +304,17 @@ function cleanup() {
     return;
   }
   if (pidAlive(state.pid)) {
-    execFileSync("taskkill", ["/PID", String(state.pid), "/T", "/F"], { stdio: "inherit" });
+    if (isWindows()) {
+      execFileSync("taskkill", ["/PID", String(state.pid), "/T", "/F"], { stdio: "inherit" });
+    } else {
+      for (const pid of descendantPids(state.pid).reverse()) {
+        try {
+          process.kill(pid, "SIGTERM");
+        } catch {
+          /* already gone */
+        }
+      }
+    }
   }
   const runDir = resolve(runsDir, state.runId);
   if (existsSync(runDir)) {

@@ -5,7 +5,7 @@ Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 - ID: UC-02
 - Name: Enlarge gallery media
 - Primary actor: User
-- Preconditions: At least one thumbnail is shown in the gallery.
+- Preconditions: At least one thumbnail is shown on the year screen.
 - Related: R-GAL-04 is serve content. R-GAL-06 is serve HEIC and HEIF.
 - Postconditions (success):
   - The enlarged view shows the body. The body name is shown. 「閉じる」 is shown.
