@@ -1,43 +1,43 @@
-# メディア
+# Media
 
-用語は [GLOSSARY.md](../../../GLOSSARY.md)。
+Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 
-## R-MEDIA-01 名前の形
+## R-MEDIA-01 Name shape
 
-- 撮影日時が決まった手元の画像または動画の名前は `YYYY-MM-DDTHH-mm-ss.拡張子` である。時・分・秒の区切りは `-` である。拡張子は小文字である。例として、手元の `IMG_0001.JPG` は `2024-08-02T12-00-00.jpg` になる。
-- 撮影日時が決まらない手元の画像または動画の名前は、`u-` のあとに中身から決まる 12 文字の小文字の 16 進と、小文字の拡張子である。中身が同じなら、この 12 文字は同じである。
-- 同じ実行の中で撮影日時が同じものは、拡張子が違っても別の番号になる。先のものは接尾なしである。次は拡張子の直前へ `-2` から空いている最初の番号を付ける。例は `2024-08-02T12-00-00-2.jpg` である。`u-` の名前も同じで、例は `u-abc123def456-2.png` である。同じ実行の中で同じ名前が既にあるときも、拡張子の直前へ `-2` から空いている最初の番号を付ける。次の例は `2024-08-02T12-00-00-3.jpg` である。
-- サムネイルの名前は `t/` に、本体の名前から拡張子を除いたものと `.webp` である。長辺は 320 である。
-- 別の実行では、置き場に既にある名前を見て番号を付けない。既にある同じ名前へ上げると、中身を置き換える。
-- 名前は、フォルダを読んだ順に決める。
+- When capture date-time is known, the name of the image or video on disk is `YYYY-MM-DDTHH-mm-ss.extension`. Hours, minutes, and seconds are separated by `-`. The extension is lowercase. For example, on-disk `IMG_0001.JPG` becomes `2024-08-02T12-00-00.jpg`.
+- When capture date-time cannot be determined, the name of the image or video on disk is `u-`, then a 12-character lowercase hex derived from the bytes, then a lowercase extension. The same bytes always yield the same 12 characters.
+- Within one run, items that share a capture date-time get distinct numbers even when their extensions differ. The first has no suffix. The next takes the first free number from `-2` and inserts it just before the extension. Example: `2024-08-02T12-00-00-2.jpg`. The same rule applies to `u-` names. Example: `u-abc123def456-2.png`. When that name already exists in the run, insert the first free number from `-2` just before the extension. Next example: `2024-08-02T12-00-00-3.jpg`.
+- The thumbnail name is `t/`, then the body name without its extension, then `.webp`. The long edge is 320.
+- In another run, numbering ignores names already in storage. Uploading under an existing name replaces the stored bytes.
+- Names are decided in the order the folder is read.
 
-## R-MEDIA-02 年の決め方
+## R-MEDIA-02 How the year is decided
 
-- 本体の名前が `年4桁-月2桁-日2桁T時2桁-分2桁-秒2桁` で始まり、その日時が実在し、末尾が画像か動画の拡張子である件は、その年に属する。拡張子の直前の `-数字` は同じ日時のままである。例は `2024-08-02T12-00-00.jpg` と `2024-08-02T12-00-00-2.jpg` で、どちらも 2024 年である。
-- 年の見出しに使う数字は、先頭に 0 を付けない。例として、`0007-01-01T00-00-00.jpg` の年の見出しは「7」である。
-- 本体の名前が `u-` と 16 進 12 桁で始まる件は「年不明」に属し、撮影日時は空である。例は `u-abc123def456.png` である。
-- どちらの形にも合わない件は一覧に出ない。例は `u-abc.png` と、実在しない日時の `2023-02-29T00-00-00.jpg` である。
-- 各メディアの本体の名前から年を読む。
-- 年どうしの並びと、メディアの無い年の見出しは [R-GAL-01](../app/gallery.md#r-gal-01-並び順) を見る。
+- An item belongs to a year when its body name starts with `YYYY-MM-DDTHH-mm-ss`, that datetime is valid, and the name ends with an image or video extension. A `-digits` just before the extension still counts as the same datetime. Examples: `2024-08-02T12-00-00.jpg` and `2024-08-02T12-00-00-2.jpg` are both year 2024.
+- The year heading uses the year number without a leading zero. Example: for `0007-01-01T00-00-00.jpg`, the year heading is 「7」.
+- An item whose body name starts with `u-` and twelve hex digits belongs to 「年不明」. Capture date-time is empty. Example: `u-abc123def456.png`.
+- Items that match neither shape do not appear in the list. Examples: `u-abc.png` and the invalid date `2023-02-29T00-00-00.jpg`.
+- The year is read from each media item's body name.
+- Order among years, and headings for years with no media, are in [R-GAL-01](../app/gallery.md#r-gal-01-sort-order).
 
-## R-MEDIA-03 撮影日時の決め方
+## R-MEDIA-03 How capture date-time is decided
 
-- 撮影日時が決まった件は、その暦の日時を名前に使う（[R-MEDIA-01](#r-media-01-名前の形)）。
-- JPEG、PNG、WebP で、撮影日時の項目が暦として取れたときは、先頭から 64 個までのかたまりを見る。撮影日時のかたまりは 256 KiB まで読む。書かれた数値を撮影日時にする。形は `年:月:日 時:分:秒` である。
-- AVIF、HEIC、HEIF で、中身の先頭からの位置で撮影日時が暦として取れたときは、先頭から 64 個までのかたまりを見る。場所を示すかたまりは 1 MiB まで、撮影日時は 256 KiB まで読む。かたまりの中をさらに辿るときも 64 個までである。書かれた数値を撮影日時にする。形は JPEG と同じである。
-- MP4、MOV、M4V で、撮影日時の項目か作成日時が取れたときは、先頭から 64 個までのかたまりを見る。撮影日時の項目と作成日時のあるかたまりの中は 32 個まで、さらに辿るときは 64 個まで見る。その中のかたまりは 1 MiB まで読む。
-- 動画で、撮影日時の項目が `年-月-日T時:分:秒±時分` の形で暦として取れたときは、時差を捨て、書かれた年から秒までを撮影日時にする。
-- 動画で、撮影日時の項目が無いか読めず、Android の印があり、作成日時が取れたときは、作成日時を協定世界時の暦のまま撮影日時にする。
-- 動画で、撮影日時の項目が無いか読めず、Android の印も無く、作成日時が取れたときは、作成日時を日本の暦（協定世界時より 9 時間進んだ暦）にして撮影日時にする。
-- 中から日時が取れないときは、GIF、WebM、読み失敗、上限超過、撮影日時の項目が無い JPEG、先頭からの位置でない AVIF 系、撮影日時の項目が無く作成日時も未設定の動画、暦として成り立たない値を含む。
-- 上のどれにも当てはまらず、更新日時が実行した時点より 7 日より古いときは、その更新日時を実行した機械の現地の暦にする。秒未満は捨てる。
-- 更新日時が 7 日より古くない、または暦として成り立たないときは、撮影日時を決めない。名前は [R-MEDIA-01](#r-media-01-名前の形) の `u-` から始まる形になる。
+- When capture date-time is known, that calendar datetime is used in the name ([R-MEDIA-01](#r-media-01-name-shape)).
+- For JPEG, PNG, and WebP, when a capture date-time field parses as a calendar datetime, the first 64 chunks are scanned. The capture date-time chunk is read up to 256 KiB. The written values become capture date-time. The format is `year:month:day hour:minute:second`.
+- For AVIF, HEIC, and HEIF, when capture date-time at an offset from the start parses as a calendar datetime, the first 64 chunks are scanned. Location chunks are read up to 1 MiB and capture date-time up to 256 KiB. Nested chunks are limited to 64. The written values become capture date-time. The format matches JPEG.
+- For MP4, MOV, and M4V, when a capture date-time field or creation date-time is found, the first 64 chunks are scanned. Chunks that hold capture date-time or creation date-time are limited to 32 nested chunks, and to 64 when walking further. Each chunk is read up to 1 MiB.
+- For video, when the capture date-time field has the form `year-month-dayThour:minute:second±offset` and parses, the offset is dropped and year through second become capture date-time.
+- For video, when the capture date-time field is missing or unreadable, the Android mark is present, and creation date-time is found, creation date-time in UTC calendar form becomes capture date-time.
+- For video, when the capture date-time field is missing or unreadable, the Android mark is absent, and creation date-time is found, creation date-time is shifted to Japan Standard Time (UTC+9) and becomes capture date-time.
+- Cases with no datetime from the bytes include GIF, WebM, read failure, a limit exceeded, JPEG without a capture date-time field, AVIF-family files without offset-based capture date-time, video with neither capture date-time nor creation date-time, and values that are not a valid calendar datetime.
+- When none of the above apply and modification date-time is more than 7 days before run time, modification date-time becomes capture date-time in the machine's local calendar. Fractions of a second are dropped.
+- When modification date-time is not older than 7 days, or is not a valid calendar datetime, capture date-time is not set. The name uses the `u-` form from [R-MEDIA-01](#r-media-01-name-shape).
 
-## R-MEDIA-04 画像と動画の拡張子
+## R-MEDIA-04 Image and video extensions
 
-- アップロードの対象は、フォルダの直下だけである。
-- 最後の拡張子が jpg、jpeg、png、gif、webp、avif、heic、heif、mp4、mov、webm、m4v のものが対象である。大文字でも小文字でも対象である。
-- 例として `archive.tar.gz` は、最後の拡張子が gz なので対象外である。
-- `.` で始まる名前は対象外である。
-- シンボリックリンクは対象外である。リンク先が画像や動画でも上げない。
-- 画面での HEIC と HEIF の配信は [R-GAL-06](../app/gallery.md#r-gal-06-heic-と-heif-を渡す) を見る。
+- Upload targets are only files directly under the folder.
+- The last extension must be jpg, jpeg, png, gif, webp, avif, heic, heif, mp4, mov, webm, or m4v. Uppercase and lowercase both count.
+- Example: `archive.tar.gz` is excluded because the last extension is gz.
+- Names that start with `.` are excluded.
+- Symbolic links are excluded even when the link target is an image or video.
+- HEIC and HEIF delivery in the UI is in [R-GAL-06](../app/gallery.md#r-gal-06-serve-heic-and-heif).
