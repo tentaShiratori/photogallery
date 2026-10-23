@@ -6,12 +6,12 @@ This is the source of truth for **production** behavior. Local-only behavior is 
 
 ### Use cases
 
-| ID    | Name                     | File                                                                   |
-| ----- | ------------------------ | ---------------------------------------------------------------------- |
-| UC-01 | View gallery             | [UC-01-view-gallery.md](UC-01-view-gallery.md)                         |
-| UC-02 | Enlarge gallery media    | [UC-02-enlarge-gallery-media.md](UC-02-enlarge-gallery-media.md)       |
-| UC-03 | Enter production gallery | [UC-03-enter-production-gallery.md](UC-03-enter-production-gallery.md) |
-| UC-04 | Upload a folder          | [UC-04-upload-folder.md](UC-04-upload-folder.md)                       |
+| ID    | Name                  | File                                                             |
+| ----- | --------------------- | ---------------------------------------------------------------- |
+| UC-01 | View gallery          | [UC-01-view-gallery.md](UC-01-view-gallery.md)                   |
+| UC-02 | Enlarge gallery media | [UC-02-enlarge-gallery-media.md](UC-02-enlarge-gallery-media.md) |
+| UC-03 | Enter gallery         | [UC-03-enter-gallery.md](UC-03-enter-gallery.md)                 |
+| UC-04 | Upload a folder       | [UC-04-upload-folder.md](UC-04-upload-folder.md)                 |
 
 ### Domain rules
 

@@ -66,7 +66,7 @@ terraform init
 terraform apply
 ```
 
-作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。誰がギャラリーに届くかは [UC-03 本番のギャラリーに入る](docs/spec/UC-03-enter-production-gallery.md)。
+作るものは R2 バケット、空の Worker、Google の Identity Provider、その Worker を守る Access アプリケーション。公開先は `workers.dev` だけ。誰がギャラリーに届くかは [UC-03 ギャラリーに入る](docs/spec/UC-03-enter-gallery.md)。
 
 ### 4. Worker のコードを出す
 
@@ -112,7 +112,7 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 
 - [UC-01 ギャラリーを見る](docs/spec/UC-01-view-gallery.md)
 - [UC-02 拡大して見る](docs/spec/UC-02-enlarge-gallery-media.md)
-- [UC-03 本番のギャラリーに入る](docs/spec/UC-03-enter-production-gallery.md)
+- [UC-03 ギャラリーに入る](docs/spec/UC-03-enter-gallery.md)
 - [UC-04 フォルダをアップロードする](docs/spec/UC-04-upload-folder.md)
 - [UC-L-01 ローカルでギャラリーを見る](docs/spec-local/UC-L-01-view-gallery-locally.md)
 - [UC-L-02 ローカルでフォルダをアップロードする](docs/spec-local/UC-L-02-upload-folder-locally.md)

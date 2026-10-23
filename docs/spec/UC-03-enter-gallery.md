@@ -1,11 +1,11 @@
-# UC-03 Enter production gallery
+# UC-03 Enter gallery
 
 Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 
 - ID: UC-03
-- Name: Enter production gallery
+- Name: Enter gallery
 - Primary actor: User
-- Preconditions: At least one allowed Google account email address is configured for the production gallery.
+- Preconditions: At least one allowed Google account email address is configured for the gallery.
 - Related: R-ACCESS-01 is production access. The login label after arrival is UC-01.
 - Postconditions (success):
   - An account with an allowed email address has reached the gallery.
@@ -13,7 +13,7 @@ Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 
 ### Flow
 
-1. The user opens the production gallery.
+1. The user opens the gallery.
 2. The browser goes to Google.
 3. The user signs in with an account that has an allowed email address.
    - 3e. The account is not allowed.
