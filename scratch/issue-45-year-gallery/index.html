@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Issue 45 prototypes — year list / year screen</title>
+    <title>Issue 45 prototypes — mobile A adaptations</title>
     <style>
       :root {
         color-scheme: light;
@@ -12,14 +12,13 @@
         --muted: #6f675c;
         --line: #ddd6c8;
         --card: #fffdf8;
-        --accent: #3d3429;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        background: var(--bg);
+        background: #ddd6c8;
         color: var(--ink);
         font-family: "Yu Gothic UI", "Yu Gothic", "Hiragino Sans", sans-serif;
       }
@@ -35,7 +34,7 @@
         padding: 10px 16px;
         background: #2b2620;
         color: #f7f2e8;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
       }
       .proto-bar strong {
         letter-spacing: 0.04em;
@@ -51,7 +50,7 @@
         background: transparent;
         color: inherit;
         border-radius: 999px;
-        padding: 6px 12px;
+        padding: 6px 11px;
         cursor: pointer;
         font: inherit;
       }
@@ -60,26 +59,80 @@
         color: #2b2620;
         border-color: #f7f2e8;
       }
+      .proto-bar button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .stage-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 20px 12px 48px;
+      }
+      .stage {
+        width: 100%;
+        background: var(--bg);
+        box-shadow: 0 10px 40px rgba(40, 32, 20, 0.12);
+        overflow: hidden;
+      }
+      .stage[data-width="desktop"] {
+        max-width: 1100px;
+      }
+      .stage[data-width="phone"] {
+        max-width: 390px;
+        border-radius: 18px;
+        outline: 1px solid #c9c0ae;
+      }
       .shell-header {
         display: flex;
         justify-content: space-between;
-        gap: 16px;
+        gap: 12px;
         align-items: baseline;
+        padding: 22px 20px 10px;
+      }
+      .stage[data-width="desktop"] .shell-header {
         padding: 28px 32px 12px;
       }
       .shell-title {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: 1.35rem;
         font-weight: 600;
         letter-spacing: 0.04em;
+      }
+      .stage[data-width="desktop"] .shell-title {
+        font-size: 1.6rem;
       }
       .shell-who {
         margin: 0;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
       main {
-        padding: 8px 32px 64px;
+        padding: 4px 16px 40px;
+      }
+      .stage[data-width="desktop"] main {
+        padding: 8px 32px 48px;
+      }
+      .hint {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+      .locked {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: #ebe4d6;
+        color: var(--muted);
+        font-size: 0.72rem;
+        vertical-align: middle;
+      }
+      .panel {
+        display: none;
+      }
+      .panel.is-active {
+        display: block;
       }
       .screen {
         display: none;
@@ -87,25 +140,17 @@
       .screen.is-active {
         display: block;
       }
-      .variant {
-        display: none;
-      }
-      .variant.is-active {
-        display: block;
-      }
 
-      /* Shared year-screen bits */
       .year-head {
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px 18px;
-        align-items: baseline;
-        margin: 8px 0 18px;
+        flex-direction: column;
+        gap: 8px;
+        margin: 4px 0 16px;
       }
       .back-link {
         color: var(--muted);
         text-decoration: none;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
       }
       .back-link:hover {
         color: var(--ink);
@@ -113,16 +158,20 @@
       }
       .year-title {
         margin: 0;
-        font-size: 1.35rem;
+        font-size: 1.25rem;
         font-weight: 600;
       }
       .cap-note {
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         font-weight: 400;
       }
       .grid {
         display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+      }
+      .stage[data-width="desktop"] .grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 14px;
       }
@@ -141,24 +190,26 @@
         background: #ece7dc;
         cursor: pointer;
       }
-      .tile img,
-      .thumb {
+      .tile img {
         display: block;
         width: 100%;
-        height: 180px;
+        height: 120px;
         object-fit: cover;
         background: #ece7dc;
       }
+      .stage[data-width="desktop"] .tile img {
+        height: 180px;
+      }
       .tile figcaption {
-        padding: 8px 10px 10px;
-        font-size: 0.78rem;
+        padding: 7px 9px 9px;
+        font-size: 0.74rem;
         color: var(--muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      /* A: filmstrip rows */
+      /* Desktop A (locked) */
       .a-row {
         display: grid;
         grid-template-columns: 104px 1fr;
@@ -193,122 +244,169 @@
         gap: 8px;
       }
       .a-thumbs .thumb {
+        display: block;
+        width: 100%;
         height: 92px;
+        object-fit: cover;
         border-radius: 6px;
         border: 1px solid var(--line);
+        background: #ece7dc;
       }
       .a-thumbs .empty {
         background: transparent;
         border: 1px dashed #e2dccf;
       }
 
-      /* B: section blocks */
-      .b-year {
-        margin: 22px 0 10px;
-        font-size: 1.2rem;
-        font-weight: 600;
-      }
-      .b-year.unknown {
-        font-size: 1.05rem;
-      }
-      .b-block {
-        display: block;
-        width: 100%;
-        margin: 0 0 8px;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        cursor: pointer;
-        text-align: left;
-        font: inherit;
-        color: inherit;
-      }
-      .b-thumbs {
+      /* Mobile M1: compressed side-by-side (same structure as A) */
+      .m1-row {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-      }
-      .b-thumbs .thumb {
-        height: 140px;
-        border-radius: 8px;
-        border: 1px solid var(--line);
-      }
-      .b-thumbs .empty {
-        visibility: hidden;
-      }
-
-      /* C: dense index */
-      .c-row {
-        display: flex;
-        gap: 16px;
+        grid-template-columns: 68px 1fr;
+        gap: 10px;
         align-items: center;
         width: 100%;
-        margin: 0;
-        padding: 10px 0;
-        border: 0;
-        border-bottom: 1px solid var(--line);
-        background: transparent;
+        margin: 0 0 10px;
+        padding: 10px 10px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--card);
         cursor: pointer;
         text-align: left;
         font: inherit;
         color: inherit;
       }
-      .c-row:hover .c-year {
-        text-decoration: underline;
+      .m1-year {
+        font-size: 1.15rem;
+        font-weight: 650;
       }
-      .c-year {
-        width: 88px;
-        flex: 0 0 auto;
-        font-size: 1.05rem;
-        font-weight: 600;
+      .m1-year.unknown {
+        font-size: 0.92rem;
+        letter-spacing: -0.02em;
       }
-      .c-year.unknown {
-        width: 96px;
-        font-size: 0.95rem;
+      .m1-thumbs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
       }
-      .c-thumbs {
-        display: flex;
-        gap: 6px;
-        min-width: 0;
-      }
-      .c-thumbs .thumb {
-        width: 56px;
-        height: 56px;
-        border-radius: 4px;
+      .m1-thumbs .thumb {
+        display: block;
+        width: 100%;
+        height: 52px;
+        object-fit: cover;
+        border-radius: 5px;
         border: 1px solid var(--line);
-        flex: 0 0 auto;
+        background: #ece7dc;
+      }
+      .m1-thumbs .empty {
+        background: transparent;
+        border: 1px dashed #e2dccf;
       }
 
-      .c-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 10px;
+      /* Mobile M2: year above, horizontal strip below */
+      .m2-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        margin: 0 0 12px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--card);
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: inherit;
       }
-      .c-grid .tile img {
-        height: 140px;
+      .m2-year {
+        font-size: 1.2rem;
+        font-weight: 650;
+      }
+      .m2-year.unknown {
+        font-size: 1rem;
+      }
+      .m2-thumbs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .m2-thumbs .thumb {
+        display: block;
+        width: 100%;
+        height: 68px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: #ece7dc;
+      }
+      .m2-thumbs .empty {
+        background: transparent;
+        border: 1px dashed #e2dccf;
       }
 
-      .hint {
-        margin: 0 0 18px;
-        color: var(--muted);
-        font-size: 0.88rem;
+      /* Mobile M3: year above, 2x2 grid */
+      .m3-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        margin: 0 0 12px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--card);
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: inherit;
       }
+      .m3-year {
+        font-size: 1.2rem;
+        font-weight: 650;
+      }
+      .m3-year.unknown {
+        font-size: 1rem;
+      }
+      .m3-thumbs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .m3-thumbs .thumb {
+        display: block;
+        width: 100%;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: #ece7dc;
+      }
+      .m3-thumbs .empty {
+        display: none;
+      }
+
       .note {
-        margin-top: 28px;
-        padding-top: 12px;
+        margin-top: 22px;
+        padding-top: 10px;
         border-top: 1px solid var(--line);
         color: var(--muted);
-        font-size: 0.8rem;
+        font-size: 0.78rem;
+        line-height: 1.4;
       }
     </style>
   </head>
   <body>
     <div class="proto-bar">
-      <strong>Issue 45 visual prototypes (throwaway)</strong>
-      <div class="group" role="group" aria-label="Variant">
-        <span>案</span>
-        <button type="button" data-variant="a" aria-pressed="true">A フィルム帯</button>
-        <button type="button" data-variant="b" aria-pressed="false">B 年ブロック</button>
-        <button type="button" data-variant="c" aria-pressed="false">C 密な索引</button>
+      <strong>Issue 45 · A locked on desktop · mobile adaptations</strong>
+      <div class="group" role="group" aria-label="Surface">
+        <span>面</span>
+        <button type="button" data-surface="desktop" aria-pressed="false">Desktop A（確定）</button>
+        <button type="button" data-surface="mobile" aria-pressed="true">Mobile</button>
+      </div>
+      <div class="group" role="group" aria-label="Mobile variant">
+        <span>Mobile 案</span>
+        <button type="button" data-mobile="m1" aria-pressed="true">M1 横並び圧縮</button>
+        <button type="button" data-mobile="m2" aria-pressed="false">M2 年の下に帯</button>
+        <button type="button" data-mobile="m3" aria-pressed="false">M3 年の下に 2×2</button>
       </div>
       <div class="group" role="group" aria-label="Screen">
         <span>画面</span>
@@ -317,174 +415,232 @@
       </div>
     </div>
 
-    <header class="shell-header">
-      <h1 class="shell-title">フォトギャラリー</h1>
-      <p class="shell-who">プロトタイプ@example.com</p>
-    </header>
+    <div class="stage-wrap">
+      <div class="stage" data-width="phone" id="stage">
+        <header class="shell-header">
+          <h1 class="shell-title">フォトギャラリー</h1>
+          <p class="shell-who">プロトタイプ</p>
+        </header>
+        <main>
+          <!-- Desktop A locked -->
+          <div class="panel" data-panel="desktop">
+            <section class="screen is-active" data-screen="list">
+              <p class="hint">
+                Desktop A（確定）<span class="locked">locked</span> 年左・右に最大 4
+                枚。行全体で年の画面へ。
+              </p>
+              <button class="a-row" type="button" data-open-year>
+                <span class="a-year">2025</span>
+                <span class="a-thumbs">
+                  <img class="thumb" src="thumbs/2025-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="a-row" type="button" data-open-year>
+                <span class="a-year">2024</span>
+                <span class="a-thumbs">
+                  <img class="thumb" src="thumbs/2024-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="a-row" type="button" data-open-year>
+                <span class="a-year">2022</span>
+                <span class="a-thumbs">
+                  <img class="thumb" src="thumbs/2022-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2022-b.svg" alt="" />
+                  <span class="thumb empty"></span>
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+              <button class="a-row" type="button" data-open-year>
+                <span class="a-year unknown">年不明</span>
+                <span class="a-thumbs">
+                  <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+            </section>
+            <section class="screen" data-screen="year">
+              <div class="year-head">
+                <a class="back-link" href="#" data-back>← 年の一覧へ</a>
+                <h2 class="year-title">
+                  2024 <span class="cap-note">（上限で打ち切っています）</span>
+                </h2>
+              </div>
+              <div class="grid" data-year-grid></div>
+            </section>
+          </div>
 
-    <main>
-      <!-- Variant A -->
-      <div class="variant is-active" data-variant="a">
-        <section class="screen is-active" data-screen="list">
-          <p class="hint">
-            A. 年を左に置き、右に同じ大きさのサムネを最大 4 枚並べる。行全体が年の画面へ。
+          <!-- Mobile M1 -->
+          <div class="panel is-active" data-panel="m1">
+            <section class="screen is-active" data-screen="list">
+              <p class="hint">
+                M1. Desktop A と同じ横並びを、年幅とサムネ高さを縮めて 390px に収める。
+              </p>
+              <button class="m1-row" type="button" data-open-year>
+                <span class="m1-year">2025</span>
+                <span class="m1-thumbs">
+                  <img class="thumb" src="thumbs/2025-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m1-row" type="button" data-open-year>
+                <span class="m1-year">2024</span>
+                <span class="m1-thumbs">
+                  <img class="thumb" src="thumbs/2024-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m1-row" type="button" data-open-year>
+                <span class="m1-year">2022</span>
+                <span class="m1-thumbs">
+                  <img class="thumb" src="thumbs/2022-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2022-b.svg" alt="" />
+                  <span class="thumb empty"></span>
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+              <button class="m1-row" type="button" data-open-year>
+                <span class="m1-year unknown">年不明</span>
+                <span class="m1-thumbs">
+                  <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+            </section>
+            <section class="screen" data-screen="year">
+              <div class="year-head">
+                <a class="back-link" href="#" data-back>← 年の一覧へ</a>
+                <h2 class="year-title">
+                  2024 <span class="cap-note">（上限で打ち切っています）</span>
+                </h2>
+              </div>
+              <div class="grid" data-year-grid></div>
+            </section>
+          </div>
+
+          <!-- Mobile M2 -->
+          <div class="panel" data-panel="m2">
+            <section class="screen is-active" data-screen="list">
+              <p class="hint">
+                M2. 年を上に置き、その下に最大 4 枚のフィルム帯。カード感は A のまま、縦に積む。
+              </p>
+              <button class="m2-row" type="button" data-open-year>
+                <span class="m2-year">2025</span>
+                <span class="m2-thumbs">
+                  <img class="thumb" src="thumbs/2025-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m2-row" type="button" data-open-year>
+                <span class="m2-year">2024</span>
+                <span class="m2-thumbs">
+                  <img class="thumb" src="thumbs/2024-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m2-row" type="button" data-open-year>
+                <span class="m2-year">2022</span>
+                <span class="m2-thumbs">
+                  <img class="thumb" src="thumbs/2022-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2022-b.svg" alt="" />
+                  <span class="thumb empty"></span>
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+              <button class="m2-row" type="button" data-open-year>
+                <span class="m2-year unknown">年不明</span>
+                <span class="m2-thumbs">
+                  <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
+                  <span class="thumb empty"></span>
+                </span>
+              </button>
+            </section>
+            <section class="screen" data-screen="year">
+              <div class="year-head">
+                <a class="back-link" href="#" data-back>← 年の一覧へ</a>
+                <h2 class="year-title">
+                  2024 <span class="cap-note">（上限で打ち切っています）</span>
+                </h2>
+              </div>
+              <div class="grid" data-year-grid></div>
+            </section>
+          </div>
+
+          <!-- Mobile M3 -->
+          <div class="panel" data-panel="m3">
+            <section class="screen is-active" data-screen="list">
+              <p class="hint">M3. 年の下に 2×2。1 枚あたりは大きいが、一覧に入る年は減る。</p>
+              <button class="m3-row" type="button" data-open-year>
+                <span class="m3-year">2025</span>
+                <span class="m3-thumbs">
+                  <img class="thumb" src="thumbs/2025-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2025-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m3-row" type="button" data-open-year>
+                <span class="m3-year">2024</span>
+                <span class="m3-thumbs">
+                  <img class="thumb" src="thumbs/2024-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-c.svg" alt="" />
+                  <img class="thumb" src="thumbs/2024-d.svg" alt="" />
+                </span>
+              </button>
+              <button class="m3-row" type="button" data-open-year>
+                <span class="m3-year">2022</span>
+                <span class="m3-thumbs">
+                  <img class="thumb" src="thumbs/2022-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/2022-b.svg" alt="" />
+                </span>
+              </button>
+              <button class="m3-row" type="button" data-open-year>
+                <span class="m3-year unknown">年不明</span>
+                <span class="m3-thumbs">
+                  <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
+                  <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
+                </span>
+              </button>
+            </section>
+            <section class="screen" data-screen="year">
+              <div class="year-head">
+                <a class="back-link" href="#" data-back>← 年の一覧へ</a>
+                <h2 class="year-title">
+                  2024 <span class="cap-note">（上限で打ち切っています）</span>
+                </h2>
+              </div>
+              <div class="grid" data-year-grid></div>
+            </section>
+          </div>
+
+          <p class="note">
+            Throwaway. Desktop A is locked. Mobile M1–M3 adapt A at ~390px. Same rules: up to 4
+            thumbs, 年不明 last, no N 件, cap note on year screen.
           </p>
-          <button class="a-row" type="button" data-open-year>
-            <span class="a-year">2025</span>
-            <span class="a-thumbs">
-              <img class="thumb" src="thumbs/2025-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="a-row" type="button" data-open-year>
-            <span class="a-year">2024</span>
-            <span class="a-thumbs">
-              <img class="thumb" src="thumbs/2024-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="a-row" type="button" data-open-year>
-            <span class="a-year">2022</span>
-            <span class="a-thumbs">
-              <img class="thumb" src="thumbs/2022-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2022-b.svg" alt="" />
-              <span class="thumb empty"></span>
-              <span class="thumb empty"></span>
-            </span>
-          </button>
-          <button class="a-row" type="button" data-open-year>
-            <span class="a-year unknown">年不明</span>
-            <span class="a-thumbs">
-              <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
-              <span class="thumb empty"></span>
-            </span>
-          </button>
-        </section>
-        <section class="screen" data-screen="year">
-          <div class="year-head">
-            <a class="back-link" href="#" data-back>← 年の一覧へ</a>
-            <h2 class="year-title">
-              2024 <span class="cap-note">（上限で打ち切っています）</span>
-            </h2>
-          </div>
-          <div class="grid" id="a-year-grid"></div>
-        </section>
+        </main>
       </div>
-
-      <!-- Variant B -->
-      <div class="variant" data-variant="b">
-        <section class="screen is-active" data-screen="list">
-          <p class="hint">
-            B. 今のタイルに近い大きさで、年ごとに 4 枚のプレビューを出す。余白多め。
-          </p>
-          <button class="b-block" type="button" data-open-year>
-            <h2 class="b-year">2025</h2>
-            <span class="b-thumbs">
-              <img class="thumb" src="thumbs/2025-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="b-block" type="button" data-open-year>
-            <h2 class="b-year">2024</h2>
-            <span class="b-thumbs">
-              <img class="thumb" src="thumbs/2024-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="b-block" type="button" data-open-year>
-            <h2 class="b-year">2022</h2>
-            <span class="b-thumbs">
-              <img class="thumb" src="thumbs/2022-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2022-b.svg" alt="" />
-              <span class="thumb empty"></span>
-              <span class="thumb empty"></span>
-            </span>
-          </button>
-          <button class="b-block" type="button" data-open-year>
-            <h2 class="b-year unknown">年不明</h2>
-            <span class="b-thumbs">
-              <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
-              <span class="thumb empty"></span>
-            </span>
-          </button>
-        </section>
-        <section class="screen" data-screen="year">
-          <div class="year-head">
-            <a class="back-link" href="#" data-back>← 年の一覧へ</a>
-            <h2 class="year-title">
-              2024 <span class="cap-note">（上限で打ち切っています）</span>
-            </h2>
-          </div>
-          <div class="grid" id="b-year-grid"></div>
-        </section>
-      </div>
-
-      <!-- Variant C -->
-      <div class="variant" data-variant="c">
-        <section class="screen is-active" data-screen="list">
-          <p class="hint">C. 年をできるだけ多く見せる密な索引。サムネは小さく、識別用。</p>
-          <button class="c-row" type="button" data-open-year>
-            <span class="c-year">2025</span>
-            <span class="c-thumbs">
-              <img class="thumb" src="thumbs/2025-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2025-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="c-row" type="button" data-open-year>
-            <span class="c-year">2024</span>
-            <span class="c-thumbs">
-              <img class="thumb" src="thumbs/2024-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-b.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-c.svg" alt="" />
-              <img class="thumb" src="thumbs/2024-d.svg" alt="" />
-            </span>
-          </button>
-          <button class="c-row" type="button" data-open-year>
-            <span class="c-year">2022</span>
-            <span class="c-thumbs">
-              <img class="thumb" src="thumbs/2022-a.svg" alt="" />
-              <img class="thumb" src="thumbs/2022-b.svg" alt="" />
-            </span>
-          </button>
-          <button class="c-row" type="button" data-open-year>
-            <span class="c-year unknown">年不明</span>
-            <span class="c-thumbs">
-              <img class="thumb" src="thumbs/unknown-a.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-b.svg" alt="" />
-              <img class="thumb" src="thumbs/unknown-c.svg" alt="" />
-            </span>
-          </button>
-        </section>
-        <section class="screen" data-screen="year">
-          <div class="year-head">
-            <a class="back-link" href="#" data-back>← 年の一覧へ</a>
-            <h2 class="year-title">
-              2024 <span class="cap-note">（上限で打ち切っています）</span>
-            </h2>
-          </div>
-          <div class="grid c-grid" id="c-year-grid"></div>
-        </section>
-      </div>
-
-      <p class="note">
-        Throwaway mock with fixture SVGs. Not wired to the Worker. Specs and production code stay
-        untouched in this phase.
-      </p>
-    </main>
+    </div>
 
     <script>
       const YEAR_TILES = [
@@ -498,8 +654,7 @@
         ["2024-h.svg", "IMG_0108.JPG"],
       ];
 
-      function fillGrid(id, denser) {
-        const root = document.getElementById(id);
+      document.querySelectorAll("[data-year-grid]").forEach((root) => {
         root.innerHTML = YEAR_TILES.map(
           ([file, caption]) => `
           <figure class="tile">
@@ -509,34 +664,53 @@
             <figcaption>${caption}</figcaption>
           </figure>`,
         ).join("");
-        if (denser) root.classList.add("c-grid");
-      }
+      });
 
-      fillGrid("a-year-grid");
-      fillGrid("b-year-grid");
-      fillGrid("c-year-grid", true);
-
-      let variant = "a";
+      let surface = "mobile";
+      let mobile = "m1";
       let screen = "list";
 
+      const stage = document.getElementById("stage");
+
+      function activePanel() {
+        return surface === "desktop" ? "desktop" : mobile;
+      }
+
       function paint() {
-        document.querySelectorAll("[data-variant].variant").forEach((el) => {
-          el.classList.toggle("is-active", el.dataset.variant === variant);
+        stage.dataset.width = surface === "desktop" ? "desktop" : "phone";
+
+        document.querySelectorAll("[data-panel]").forEach((el) => {
+          el.classList.toggle("is-active", el.dataset.panel === activePanel());
         });
-        document.querySelectorAll(".proto-bar [data-variant]").forEach((el) => {
-          el.setAttribute("aria-pressed", String(el.dataset.variant === variant));
-        });
-        document.querySelectorAll(".variant.is-active .screen").forEach((el) => {
+        document.querySelectorAll(".panel.is-active .screen").forEach((el) => {
           el.classList.toggle("is-active", el.dataset.screen === screen);
+        });
+
+        document.querySelectorAll(".proto-bar [data-surface]").forEach((el) => {
+          el.setAttribute("aria-pressed", String(el.dataset.surface === surface));
+        });
+        document.querySelectorAll(".proto-bar [data-mobile]").forEach((el) => {
+          el.disabled = surface !== "mobile";
+          el.setAttribute(
+            "aria-pressed",
+            String(surface === "mobile" && el.dataset.mobile === mobile),
+          );
         });
         document.querySelectorAll(".proto-bar [data-screen]").forEach((el) => {
           el.setAttribute("aria-pressed", String(el.dataset.screen === screen));
         });
       }
 
-      document.querySelectorAll(".proto-bar [data-variant]").forEach((btn) => {
+      document.querySelectorAll(".proto-bar [data-surface]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          variant = btn.dataset.variant;
+          surface = btn.dataset.surface;
+          paint();
+        });
+      });
+      document.querySelectorAll(".proto-bar [data-mobile]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          surface = "mobile";
+          mobile = btn.dataset.mobile;
           paint();
         });
       });
