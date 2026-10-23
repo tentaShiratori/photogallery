@@ -42,18 +42,19 @@ Do not restate writing.md in `docs/spec/README.md`, `docs/spec-local/README.md`,
 
 ## Common mistakes
 
-| Excuse or draft                                                   | Do this                                                                           |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| "README needs the writing guide; contractors cannot see skills"   | The skill lives in the repo. GitHub can open writing.md. README stays an index.   |
-| "do-not-restate is for agents, not humans"                        | Humans and agents read the same README. writing.md stays the one copy.            |
-| "QA only reads the UC; paste the rule into postconditions"        | `Related` names the rule ID. Do not copy the rule's bullets.                      |
-| Empty `Open` / `Trigger` on every UC                              | Add those fields only when they have text.                                        |
-| Draft with a source path and onClick                              | Match a neighboring English UC. Subject is the actor, the browser, or the script. |
-| Japanese outside 「」 in a new docs line                          | Rewrite in English. Keep only product strings inside 「」.                        |
-| "Product owner reads Japanese; keep the UC in Japanese"           | `docs/` is English. Product strings stay Japanese inside 「」 only.               |
-| Local `upload:local` or 「ローカルプレビュー」 inside `docs/spec` | Move it to `docs/spec-local`. Keep production in `docs/spec`.                     |
-| New UC whose actor and goal match an existing file                | Edit that file.                                                                   |
-| New goal, but the control appears on an existing screen           | Edit that screen's UC so the control is in its success state.                     |
+| Excuse or draft                                                     | Do this                                                                              |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| "README needs the writing guide; contractors cannot see skills"     | The skill lives in the repo. GitHub can open writing.md. README stays an index.      |
+| "do-not-restate is for agents, not humans"                          | Humans and agents read the same README. writing.md stays the one copy.               |
+| "QA only reads the UC; paste the rule into postconditions"          | `Related` names the rule ID. Do not copy the rule's bullets.                         |
+| Empty `Open` / `Trigger` on every UC                                | Add those fields only when they have text.                                           |
+| Draft with a source path and onClick                                | Match a neighboring English UC. Subject is the actor, the browser, or the script.    |
+| Japanese outside 「」 in a new docs line                            | Rewrite in English. Keep only product strings inside 「」.                           |
+| "Product owner reads Japanese; keep the UC in Japanese"             | `docs/` is English. Product strings stay Japanese inside 「」 only.                  |
+| Local `upload:local` or 「ローカルプレビュー」 inside `docs/spec`   | Move it to `docs/spec-local`. Keep production in `docs/spec`.                        |
+| "Keep one file; nest local as an alternate under the production UC" | Local-only goals get a `UC-L-NN` under `docs/spec-local`. Cross-link with `Related`. |
+| New UC whose actor and goal match an existing file                  | Edit that file.                                                                      |
+| New goal, but the control appears on an existing screen             | Edit that screen's UC so the control is in its success state.                        |
 
 ## Red flags
 
