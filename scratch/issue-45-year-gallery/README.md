@@ -4,15 +4,16 @@ Visual-only mocks for the year list and year screen. Not wired to the Worker.
 
 ## Locked
 
-- **Desktop:** variant A (film strip). Year on the left, up to four equal thumbs in a row.
+- **Mobile:** M3. Year above a 2×2 of up to four thumbs.
+- **Desktop year list previews:** 2×2 (not the old 1×4 film strip). Desktop year screen stays the A-style tile grid.
 
-## Mobile adaptations of A
+## Desktop 2×2 variants (open)
 
-Phone stage is ~390px wide. Same rules as desktop A (up to 4 thumbs, 年不明 last, no N 件, cap note on year screen).
+- **D1 縦1列・年上.** One column of year cards. Year above 2×2. Same structure as Mobile M3, larger.
+- **D2 年左・2×2右.** One column. Year on the left, 2×2 on the right (old A reading order).
+- **D3 年カード2列.** Two year cards per row. Each card is year above 2×2.
 
-- **M1 横並び圧縮.** Same side-by-side structure as A, with a narrower year column and shorter thumbs.
-- **M2 年の下に帯.** Year on top, film strip of up to four thumbs below.
-- **M3 年の下に 2×2.** Year on top, 2×2 grid so each thumb is larger.
+Fixture data includes full years, 2022 with two thumbs (partial 2×2), and 年不明 last with three thumbs.
 
 ## Run
 
@@ -20,7 +21,7 @@ Phone stage is ~390px wide. Same rules as desktop A (up to 4 thumbs, 年不明 l
 npx --yes serve -l 4173 scratch/issue-45-year-gallery
 ```
 
-Open `http://127.0.0.1:4173/`. Use the top bar to switch surface, mobile variant, and screen.
+Open `http://127.0.0.1:4173/`.
 
 ## Screenshots
 
