@@ -6,11 +6,10 @@ Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 - Name: View gallery
 - Primary actor: User
 - Preconditions: None
-- Related: R-MEDIA-02 is how the year is decided. R-GAL-01 is sort order. R-GAL-02 is list limit. R-GAL-03 is list API shape. R-GAL-09 is keep out of search results.
+- Related: R-MEDIA-02 is how the year is decided. R-GAL-01 is sort order. R-GAL-02 is list limit. R-GAL-03 is list API shape. R-GAL-09 is keep out of search results. Local preview without a login email is [UC-L-01](../spec-local/UC-L-01-view-gallery-locally.md).
 - Postconditions (success):
   - The tab shows the tab mark.
-  - When there is no login email, the text next to the heading is 「ローカルプレビュー」.
-  - When there is an email, the text next to the heading is that email address. `<`, `>`, `&`, `'`, and `"` appear as literal characters.
+  - The text next to the heading is the login email address. `<`, `>`, `&`, `'`, and `"` appear as literal characters.
   - When there is at least one media item, tiles for the first year that has media are shown. 「N 件」 appears next to that year's heading. Thumbnails are shown. The accessible name is the body name. Thumbnails are selectable.
   - When the tiles do not reach the bottom of the viewport, more tiles appear without the user scrolling.
   - After more tiles appear, if more remain, the number of tiles has increased.
@@ -27,11 +26,7 @@ Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 1. The user opens the gallery.
 2. The browser sets the tab title to 「フォトギャラリー」.
 3. The browser sets the heading to 「フォトギャラリー」.
-4. The browser shows the login label next to the heading.
-   - 4a. There is no login email.
-     1. The browser shows 「ローカルプレビュー」.
-   - 4b. There is an email.
-     1. The browser shows that email address.
+4. The browser shows the login email address as the login label next to the heading.
 5. The browser puts the tab mark on the tab.
 6. The browser shows 「読み込み中です。」.
 7. The browser fetches lists in R-GAL-03 shape, one year at a time in R-GAL-01 order, through the first year that has media.

@@ -25,7 +25,7 @@ The label next to the gallery heading that shows who is viewing.
 _Avoid_: username, profile
 
 **Local preview (ローカルプレビュー)**:
-The text next to the heading when there is no login email.
+The text next to the heading when there is no login email. Used only in the local gallery (see `docs/spec-local`).
 _Avoid_: dev mode, logged out, guest
 
 **Unknown year (年不明)**:

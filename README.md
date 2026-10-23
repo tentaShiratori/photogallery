@@ -1,6 +1,6 @@
 # フォトギャラリー
 
-挙動の正は [仕様](docs/spec/README.md)。
+挙動の正は [本番の仕様](docs/spec/README.md)。ローカルだけの挙動は [ローカルの仕様](docs/spec-local/README.md)。
 
 今すぐ見る。所要は約 5 分。
 
@@ -14,7 +14,7 @@
 pnpm upload:local D:\photos\sample
 ```
 
-ここまでで画面に「ローカルプレビュー」と、撮影年ごとのサムネイルが出る。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。`.env` は不要。画面は [UC-01 ギャラリーを見る](docs/spec/UC-01-view-gallery.md)。上げ方の詳細は [UC-04 フォルダをアップロードする](docs/spec/UC-04-upload-folder.md)。
+ここまでで画面に「ローカルプレビュー」と、撮影年ごとのサムネイルが出る。このとき R2 はローカルの模擬バケットで、Google のログインは通らない。`.env` は不要。画面は [UC-L-01 ローカルでギャラリーを見る](docs/spec-local/UC-L-01-view-gallery-locally.md)。上げ方の詳細は [UC-L-02 ローカルでフォルダをアップロードする](docs/spec-local/UC-L-02-upload-folder-locally.md)。
 
 ## テスト
 
@@ -92,13 +92,13 @@ pnpm upload:prd D:\photos\2024-trip
 
 バケット名と Worker 名は `infra/prd/main.tf` の `locals` に固定してある。`wrangler.jsonc` の `name` と `bucket_name` も同じ値にする。`.env` の `R2_BUCKET_NAME` も同じバケット名にする。
 
-| もの                      | 役割                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------ |
-| R2 `photogallery-media`   | 非公開の画像・動画。場所の希望は `apac`                                                    |
-| Worker `photogallery`     | 一覧と配信。R2 はバインディング経由で読む                                                  |
-| Access                    | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く                |
-| `scripts/upload-prd.ts`   | 指定フォルダを本番 R2 の S3 API へ上げる。対象は [UC-04](docs/spec/UC-04-upload-folder.md) |
-| `scripts/upload-local.ts` | 指定フォルダをローカルの模擬バケットへ上げる。対象は同じ                                   |
+| もの                      | 役割                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| R2 `photogallery-media`   | 非公開の画像・動画。場所の希望は `apac`                                                                          |
+| Worker `photogallery`     | 一覧と配信。R2 はバインディング経由で読む                                                                        |
+| Access                    | Worker 全体（`workers.dev` とプレビューを含む）を Google ログインの奥に置く                                      |
+| `scripts/upload-prd.ts`   | 指定フォルダを本番 R2 の S3 API へ上げる。対象は [UC-04](docs/spec/UC-04-upload-folder.md)                       |
+| `scripts/upload-local.ts` | 指定フォルダをローカルの模擬バケットへ上げる。対象は [UC-L-02](docs/spec-local/UC-L-02-upload-folder-locally.md) |
 
 バケットは公開しない。ブラウザから中身を見るときの挙動は [ギャラリーのルール](docs/spec/app/gallery.md)。
 
@@ -113,5 +113,8 @@ Cloudflare には AWS CloudFormation に当たるスタックサービスはな�
 - [UC-01 ギャラリーを見る](docs/spec/UC-01-view-gallery.md)
 - [UC-02 拡大して見る](docs/spec/UC-02-enlarge-gallery-media.md)
 - [UC-03 本番のギャラリーに入る](docs/spec/UC-03-enter-production-gallery.md)
+- [UC-04 フォルダをアップロードする](docs/spec/UC-04-upload-folder.md)
+- [UC-L-01 ローカルでギャラリーを見る](docs/spec-local/UC-L-01-view-gallery-locally.md)
+- [UC-L-02 ローカルでフォルダをアップロードする](docs/spec-local/UC-L-02-upload-folder-locally.md)
 - [メディアのルール](docs/spec/domain/media.md)
 - [ギャラリーのルール](docs/spec/app/gallery.md)

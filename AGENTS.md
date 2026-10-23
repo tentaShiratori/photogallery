@@ -8,7 +8,7 @@
 4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。
 5. 撮影日時はアップロード時に `src/lib/gallery.ts` がバイト列から決める。
 
-挙動を変える PR は同じ PR で [docs/spec](docs/spec/README.md) を直し、触った UC ID を本文に書く。ユースケースの形は `.agents/skills/write-spec`（正本は [references/writing.md](.agents/skills/write-spec/references/writing.md)）に合わせる。`docs/` 以下は英語で書く。画面とコンソールの文言だけ、製品どおりの文字列を「」の中に残してよい。
+挙動を変える PR は同じ PR で仕様を直し、触った UC ID を本文に書く。本番の挙動は [docs/spec](docs/spec/README.md)。ローカルだけの挙動は [docs/spec-local](docs/spec-local/README.md)。ユースケースの形は `.agents/skills/write-spec`（正本は [references/writing.md](.agents/skills/write-spec/references/writing.md)）に合わせる。`docs/` 以下は英語で書く。画面とコンソールの文言だけ、製品どおりの文字列を「」の中に残してよい。
 
 ## 実行するコマンド
 

@@ -1,6 +1,6 @@
 # Specification
 
-This is the source of truth for behavior. Terms are in [GLOSSARY.md](../../GLOSSARY.md).
+This is the source of truth for **production** behavior. Local-only behavior is in [docs/spec-local](../spec-local/README.md). Terms are in [GLOSSARY.md](../../GLOSSARY.md).
 
 ## Index
 
