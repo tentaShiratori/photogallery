@@ -2,18 +2,18 @@
 
 The live files under `docs/spec` stay in English and keep the field labels already used there. Match a neighboring UC or rule file when you edit. Write every new or revised line in English. Keep screen and console strings inside 「」 exactly as they appear in the product (those strings may be Japanese).
 
-| Term                     | Live label                 |
-| ------------------------ | -------------------------- |
-| ID                       | ID                         |
-| Name                     | Name                       |
-| Primary actor            | Primary actor              |
-| Preconditions            | Preconditions              |
-| Related                  | Related                    |
-| Postconditions (success) | Postconditions (success)   |
-| Postconditions (failure) | Postconditions (failure)   |
-| Flow                     | Flow                       |
-| Trigger                  | Trigger                    |
-| Open                     | Open                       |
+| Term                     | Live label               |
+| ------------------------ | ------------------------ |
+| ID                       | ID                       |
+| Name                     | Name                     |
+| Primary actor            | Primary actor            |
+| Preconditions            | Preconditions            |
+| Related                  | Related                  |
+| Postconditions (success) | Postconditions (success) |
+| Postconditions (failure) | Postconditions (failure) |
+| Flow                     | Flow                     |
+| Trigger                  | Trigger                  |
+| Open                     | Open                     |
 
 ## Use cases
 
