@@ -4,30 +4,29 @@ Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 
 ## R-GAL-01 Sort order
 
-- Among years, newer years come first. 「年不明」 is last. Years with no media have no heading. Which year an item belongs to is in [R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided).
-- A year heading appears with that year's first tile. The 「年不明」 heading appears with its first tile.
-- Within a year, newer capture date-time comes first. On the same second, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first. Example: `2024-08-02T12-00-00-2.jpg` comes before `2024-08-02T12-00-00.jpg`.
-- In 「年不明」, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first.
-- Even when tiles are shown 60 at a time, they keep the full sort order for that year's media.
+- On the year list, newer years come first. 「年不明」 is last. Years with no media have no card. Which year an item belongs to is in [R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided).
+- On the year screen, within a year, newer capture date-time comes first. On the same second, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first. Example: `2024-08-02T12-00-00-2.jpg` comes before `2024-08-02T12-00-00.jpg`.
+- In 「年不明」 on the year screen, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first.
+- Even when tiles are shown 60 at a time on the year screen, they keep the full sort order for that year's media.
 
 ## R-GAL-02 List limit
 
 - When bodies and thumbnails for a year or 「年不明」 total more than 20,000, the list stops at the limit.
 - Bodies and thumbnails for that year are visited in equal alternating counts, up to 20,000 combined. When more remain after 20,000, the list for that year stops.
-- When at least one media item is visible, 「（上限で打ち切っています）」 follows the count next to that year's heading. Example: 「10000 件（上限で打ち切っています）」. Only the visible tiles are shown.
-- When no media items are visible, that year has no heading. The list for the next year is fetched instead.
+- When at least one media item is visible on the year screen, 「（上限で打ち切っています）」 follows that year's heading. Only the visible tiles are shown. 「N 件」 is not shown.
+- When no media items are visible for that year, the year screen has no tiles for it.
 
 ## R-GAL-03 List API shape
 
-- The JSON has `group` and `next`. One response covers bodies and thumbnails for one year only.
-- `/api/media` is for the newest year. `/api/media?after=year` is for the newest year older than that year. When that year has no media, both use the 「年不明」 slice.
-- `group` has `label`, `truncated`, and `items`. For a year, `label` is the year digits ([R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided)). For 「年不明」, `label` is 「年不明」. `truncated` is true when the [R-GAL-02](#r-gal-02-list-limit) limit stopped the list. `items` has one or more entries in [R-GAL-01](#r-gal-01-sort-order) order. That count is the count next to the heading.
-- When that slice has no media, `group` is null.
-- Each `items` element has `bodyKey` (body name), `kind` (`image` or `video`), `bodyUrl` (body delivery), `thumbUrl` (thumbnail delivery), and `caption` (body name).
-- `next` is the continuation URL. For a year slice it is `/api/media?after=that year`. For 「年不明」 it is null.
+- The year list response has `years`. Each element has `label` and `previews`.
+- `/api/media` with no `year` returns the year list. Years are in [R-GAL-01](#r-gal-01-sort-order) order for the year list. A year with no media is omitted. `previews` follows [R-GAL-10](#r-gal-10-year-list-previews).
+- `/api/media?year=digits` returns one year. `/api/media?year=unknown` returns 「年不明」. The JSON has `group` and `next`. `next` is always null. One response covers bodies and thumbnails for that year only.
+- For a year, `group.label` is the year digits ([R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided)). For 「年不明」, `group.label` is 「年不明」. `truncated` is true when the [R-GAL-02](#r-gal-02-list-limit) limit stopped the list. `items` has one or more entries in [R-GAL-01](#r-gal-01-sort-order) year-screen order when media exist.
+- When that year has no media, `group` is null.
+- Each `items` or `previews` element has `bodyKey` (body name), `kind` (`image` or `video`), `bodyUrl` (body delivery), `thumbUrl` (thumbnail delivery), and `caption` (body name).
 - `Cache-Control` is `private, no-store`.
-- When `after` is not a number from 1 through 9999 without leading zeros, the status is 400. The body is 「after が年ではありません。」.
-- When scanning names in batches of 1,000 up to 20 times still finds names that start with digits while searching for a year, the status is 500.
+- When `year` is present and is neither `unknown` nor a number from 1 through 9999 without leading zeros, the status is 400. The body is 「year が不正です。」.
+- When scanning names in batches of 1,000 up to 20 times still finds names that start with digits while searching for years, the status is 500.
 
 ## R-GAL-04 Serve content
 
@@ -62,3 +61,9 @@ Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
 ## R-GAL-09 Keep out of search results
 
 - The gallery page is marked so it does not appear in search results.
+
+## R-GAL-10 Year-list previews
+
+- On the year list, each year card shows up to four thumbnails for that year.
+- Those thumbnails are the first media of that year when names are sorted in ascending lexicographic order. 「年不明」 uses the same name order.
+- When fewer than four media exist, only those are shown.
