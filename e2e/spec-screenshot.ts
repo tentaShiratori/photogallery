@@ -2,11 +2,10 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Browser } from "@e2e-dev/web";
 import { expect, type Screen } from "e2e";
+import { updateSpecScreenshots } from "./update-spec.ts";
 import { BREAKPOINT_PX } from "./viewports.ts";
 
 export type SpecUc = "UC-01" | "UC-02";
-
-const UPDATE = process.argv.includes("-u") || process.argv.includes("--update-snapshots");
 
 /** Tolerance for font and antialias noise across Linux runners. */
 const SCREENSHOT_OPTIONS = {
@@ -46,16 +45,19 @@ async function waitForPaint(browser: Browser): Promise<void> {
 /**
  * Compare the viewport with a committed baseline beside the test file, then
  * keep `docs/spec/screenshots/<UC>/<name>-<pc|mobile>.png` in sync for UC docs.
+ * Pixel compare always runs. Docs copy when `PHOTOGALLERY_UPDATE_SPEC=1`
+ * (`pnpm e2e:update-screenshots`).
  */
 export async function expectUcScreenshot(
   screen: Screen,
   browser: Browser,
   opts: { uc: SpecUc; name: string; testFile: string },
 ): Promise<void> {
+  const update = updateSpecScreenshots();
+
   await waitForPaint(browser);
   const shotName = `${opts.uc}-${opts.name}.png`;
   await expect(screen).toHaveScreenshot(shotName, SCREENSHOT_OPTIONS);
-
   const width = await browser.evaluate(() => window.innerWidth);
   const target = targetFromWidth(width);
   const snapshotRel = path.join(
@@ -70,18 +72,18 @@ export async function expectUcScreenshot(
     throw new Error(`missing e2e snapshot ${snapshotRel}`);
   }
 
-  if (UPDATE || !existsSync(docsAbs)) {
+  if (update) {
     mkdirSync(path.dirname(docsAbs), { recursive: true });
     copyFileSync(snapshotAbs, docsAbs);
+  }
+
+  if (!existsSync(docsAbs)) {
+    throw new Error(`missing ${docsRel}; run pnpm e2e:update-screenshots`);
   }
 
   const snapshotBytes = readFileSync(snapshotAbs);
   const docsBytes = readFileSync(docsAbs);
   if (!snapshotBytes.equals(docsBytes)) {
-    if (UPDATE) {
-      copyFileSync(snapshotAbs, docsAbs);
-      return;
-    }
-    throw new Error(`${docsRel} differs from ${snapshotRel}; run pnpm e2e -- --update-snapshots`);
+    throw new Error(`${docsRel} differs from ${snapshotRel}; run pnpm e2e:update-screenshots`);
   }
 }

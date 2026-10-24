@@ -43,7 +43,7 @@ A precondition or postcondition that is a state a person can see on the screen (
 
 Keep as prose the state that is not a still of the screen: scroll position restored, other years not loaded, accessible name is the body name, special characters in the login email appear literally, and similar.
 
-Capture screenshots inside the e2e suite that walks the UC. Recapture every UC screenshot with `pnpm e2e --update-snapshots`. Production UC screenshots use a fixed dummy Access email such as `test@example.com`, never a real address.
+Capture screenshots inside the e2e suite that walks the UC. Recapture every UC screenshot with `pnpm e2e:update-screenshots`. Production UC screenshots use a fixed dummy Access email such as `test@example.com`, never a real address.
 
 Leave out layout and position that a person can see on the screen when you are writing prose (screenshots cover that). Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
 

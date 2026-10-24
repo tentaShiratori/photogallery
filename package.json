@@ -12,7 +12,8 @@
     "upload:local": "node --experimental-strip-types scripts/upload-local.ts",
     "upload:prd": "node --experimental-strip-types scripts/upload-prd.ts",
     "test": "vp test",
-    "e2e": "e2e run"
+    "e2e": "e2e run",
+    "e2e:update-screenshots": "node --experimental-strip-types scripts/e2e-update-screenshots.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
