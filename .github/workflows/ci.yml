@@ -78,3 +78,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec e2e-web install chromium --with-deps
       - run: pnpm e2e
+      - name: Upload e2e results on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-results
+          path: .e2e/results/
+          if-no-files-found: ignore

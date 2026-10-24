@@ -27,7 +27,7 @@ export default defineConfig(() => ({
     options: { typeAware: true, typeCheck: true },
     overrides: [
       {
-        files: ["tests/**/*.e2e.ts", "e2e/locators.ts"],
+        files: ["tests/**/*.e2e.ts", "e2e/locators.ts", "e2e/spec-screenshot.ts", "e2e/access.ts"],
         rules: {
           "no-restricted-imports": [
             "error",
