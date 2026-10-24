@@ -41,7 +41,7 @@ It is read-only. It passes only when the recorded pid is alive, that pid's tree 
 
 ## Drive
 
-Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#year-list`, `#grid`, the year-screen heading `#grid`’s sibling `h2`, `button` whose accessible name is the image alt (`2024-08-02T12-00-00.png`), `dialog#viewer`, the button named `閉じる`, and `#caption`. Year-list cards live under `#year-list`. Every year-screen tile is an `img`. The video tile's alt and figcaption are `2023-05-01T08-30-00.mp4`. The dialog image or video uses the body URL.
+Drive the UI in the browser and the HTTP routes with `curl.exe`. Stable handles are the heading text `フォトギャラリー`, `#status`, `#year-list`, `#grid`, the year-screen `h2` before `#grid`, `button` whose accessible name is the image alt (`2024-08-02T12-00-00.png`), `dialog#viewer`, the button named `閉じる`, and `#caption`. Year-list cards live under `#year-list`. Every year-screen tile is an `img`. The video tile's alt and figcaption are `2023-05-01T08-30-00.mp4` on the `2023` year screen. The dialog image or video uses the body URL.
 
 `#status` exists only before the year list or year screen is ready: `読み込み中です。`, `一覧を取得できませんでした。`, or the empty sentence `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。` On the seeded instance, wait until `#status` is gone and year cards for 2024, 2023, 2022, and 年不明 are present with no `件` text. Open 2024 to see 60 tiles, then scroll for the rest of that year only.
 
@@ -54,6 +54,7 @@ curl.exe -sS "<url>/api/media"
 curl.exe -sS -D - -o NUL "<url>/media/2024-08-02T12-00-00.png"
 curl.exe -sS -D - -o NUL -H "Range: bytes=0-15" "<url>/media/2023-05-01T08-30-00.mp4"
 curl.exe -sS -D - -o NUL -H "Cf-Access-Authenticated-User-Email: verify@example.com" "<url>/"
+curl.exe -sS -D - -o NUL "<url>/favicon.svg"
 curl.exe -sS -D - "<url>/missing"
 ```
 
@@ -67,8 +68,8 @@ Write artifacts under `.cursor/skills/verify-photogallery/artifacts/<feature-id>
 
 - UI proof is an accessibility snapshot plus a screenshot that shows `フォトギャラリー` and the state after the action.
 - HTTP proof is the status line, response headers, and body (or the first bytes for media).
-- A gallery change is proven only when walking `/api/media` through `next` and the rendered year headings agree.
-- The local server does not perform Cloudflare Access. Sending `Cf-Access-Authenticated-User-Email` proves the heading only. It does not prove the Google login wall.
+- A gallery change is proven only when `GET /api/media` `{ years }` and `GET /api/media?year=…` `{ group, next: null }` agree with the rendered year cards and year-screen heading.
+- The local server does not perform Cloudflare Access. Sending `Cf-Access-Authenticated-User-Email` proves the signed-in paragraph only. It does not prove the Google login wall.
 
 ## Cleanup
 

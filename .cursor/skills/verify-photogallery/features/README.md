@@ -12,7 +12,7 @@ This directory is the maintained source for verifying the user-facing behavior o
 ## Driving conventions
 
 - Start every recipe from the seeded baseline unless its preconditions say `--empty`.
-- Prefer the heading `フォトギャラリー`, `#status`, `#grid`, the year headings `#grid h2`, button name `2024-08-02T12-00-00.png`, `#more`, `dialog#viewer`, button name `閉じる`, and `#caption`.
+- Prefer the heading `フォトギャラリー`, `#status`, `#year-list`, `#grid`, the year-screen `h2` before `#grid`, button name `2024-08-02T12-00-00.png`, `dialog#viewer`, button name `閉じる`, and `#caption`.
 - Treat every command as literal. Keep quoted names and flags unchanged.
 - Run browser actions through the Cursor browser against the recorded URL.
 - Run HTTP actions through `curl.exe`.
@@ -38,7 +38,7 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 
 ## Features
 
-- [Gallery](./gallery.md) covers the year headings, 60-tile steps, continuation failure, the empty gallery, and the per-year list the page renders.
+- [Gallery](./gallery.md) covers the year list, year screen, 60-tile reveal, the empty gallery, the per-year list API, and the tab mark.
 - [Viewer](./viewer.md) covers opening a photo, reading its caption, and closing the dialog.
 - [Identity](./identity.md) covers the local-preview label and the Access email heading.
 - [Media delivery](./media-delivery.md) covers image bytes, a video tile, and byte ranges.
