@@ -1,6 +1,6 @@
 # How to write
 
-Production live files are under `docs/spec`. Local-only live files are under `docs/spec-local`. Both stay in English and keep the field labels already used there. Match a neighboring UC or rule file in the same tree when you edit. Write every new or revised line in English. Keep screen and console strings inside 「」 exactly as they appear in the product (those strings may be Japanese).
+Production live files are under `docs/spec`. Local-only live files are under `docs/spec-local`. Both keep the field labels already used there. Match a neighboring UC or rule file in the same tree when you edit. Keep screen and console strings inside 「」 exactly as they appear in the product.
 
 | Term                     | Live label               |
 | ------------------------ | ------------------------ |
@@ -29,7 +29,7 @@ One UC is one goal the user or the script reaches in one go. End the name with a
 
 Do not put a decision or a promise that is not that goal into a UC. Write it as a rule and refer to it by ID from the UC. If a rule ID already states the promise, the UC line is `Related` plus that ID. Do not paste the rule's bullets into the UC flow or postconditions.
 
-Required fields are ID, Name, Primary actor, Preconditions, Postconditions (success), Postconditions (failure), and Flow. The ID matches the heading. Production IDs are `UC-NN` with no gaps. Local IDs are `UC-L-NN` with no gaps in that tree. Put one UC per file. Name production files `UC-NN-<english-kebab-name>.md` under `docs/spec`. Name local files `UC-L-NN-<english-kebab-name>.md` under `docs/spec-local`. A precondition is already true when the UC starts. Use `None` when there is none. If there is no failure path, Postconditions (failure) is `None`. If a new control appears on a screen an existing UC already opens, edit that UC so the control is in its success state. The new UC may then list it as a precondition.
+Required fields are ID, Name, Primary actor, Preconditions, Postconditions (success), Postconditions (failure), and Flow. The ID matches the heading. Production IDs are `UC-NN` with no gaps. Local IDs are `UC-L-NN` with no gaps in that tree. Put one UC per file. Name production files `UC-NN-<name>.md` under `docs/spec`. Name local files `UC-L-NN-<name>.md` under `docs/spec-local`. A precondition is already true when the UC starts. Use `None` when there is none. If there is no failure path, Postconditions (failure) is `None`. If a new control appears on a screen an existing UC already opens, edit that UC so the control is in its success state. The new UC may then list it as a precondition.
 
 Number the flow from 1. One subject and one action per line. The subject is the primary actor, the browser, or the script. Do not make a screen part the subject. Write only the change in the flow. A fact that holds without a new action (for example that a kind of image often does not paint) stays in the rule, not as a flow step. Do not end a path with a line that only restates the previous step. Put the end state in Postconditions.
 
@@ -39,7 +39,7 @@ Postconditions holds only the change that remains at the end of that path. Write
 
 Leave out layout and position that a person can see on the screen. Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
 
-Keep the current UI and console string in 「」, exactly as it appears in the product. Use the English headwords from `GLOSSARY.md`.
+Keep the current UI and console string in 「」, exactly as it appears in the product. Use the headwords from `GLOSSARY.md`.
 
 Add Trigger, Related, or Open only when the field has text.
 

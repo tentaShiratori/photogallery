@@ -1,7 +1,7 @@
-# Local upload
+# ローカルのアップロード
 
-Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
+用語は [GLOSSARY.md](../../../GLOSSARY.md)。
 
-## R-LOCAL-01 Local upload storage lock
+## R-LOCAL-01 ローカルアップロードの書き込みロック
 
-- When the usual local development server is running and the mock bucket cannot be written, local upload fails. The console shows 「`pnpm dev` を止めてから実行して」. Nothing is stored.
+- いつものローカル開発サーバーが動いていて、模擬バケットに書けないとき、ローカルのアップロードは失敗する。コンソールは「`pnpm dev` を止めてから実行して」を出す。何も置かない。

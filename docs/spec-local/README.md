@@ -1,18 +1,18 @@
-# Local specification
+# ローカルの仕様
 
-Behavior that exists only in the local environment lives here. Production behavior is in [docs/spec](../spec/README.md). Terms are in [GLOSSARY.md](../../GLOSSARY.md).
+ローカル環境にだけある挙動はここにある。本番の挙動は [本番の仕様](../spec/README.md)。用語は [GLOSSARY.md](../../GLOSSARY.md)。
 
-## Index
+## 索引
 
-### Use cases
+### ユースケース
 
-| ID      | Name                    | File                                                                 |
-| ------- | ----------------------- | -------------------------------------------------------------------- |
-| UC-L-01 | View gallery locally    | [UC-L-01-view-gallery-locally.md](UC-L-01-view-gallery-locally.md)   |
-| UC-L-02 | Upload a folder locally | [UC-L-02-upload-folder-locally.md](UC-L-02-upload-folder-locally.md) |
+| ID      | 名前                                 | ファイル                                                                                           |
+| ------- | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| UC-L-01 | ローカルでギャラリーを見る           | [UC-L-01-ローカルでギャラリーを見る.md](UC-L-01-ローカルでギャラリーを見る.md)                     |
+| UC-L-02 | ローカルでフォルダをアップロードする | [UC-L-02-ローカルでフォルダをアップロードする.md](UC-L-02-ローカルでフォルダをアップロードする.md) |
 
-### App rules
+### アプリの規則
 
-| File                           | Contents                                 |
-| ------------------------------ | ---------------------------------------- |
-| [app/upload.md](app/upload.md) | Local upload storage lock (`R-LOCAL-01`) |
+| ファイル                       | 内容                                                 |
+| ------------------------------ | ---------------------------------------------------- |
+| [app/upload.md](app/upload.md) | ローカルアップロードの書き込みロック（`R-LOCAL-01`） |
