@@ -1,96 +1,96 @@
-# Photo Gallery (フォトギャラリー)
+# フォトギャラリー (Photo Gallery)
 
-A collection of images and videos that only a limited set of people can view.
+限られた人だけが見られる画像と動画の集まり。
 
-## Screen
+## 画面
 
-**Gallery (ギャラリー)**:
-The year list and the year screen together.
+**ギャラリー (Gallery)**:
+年の一覧と年の画面を合わせたもの。
 _Avoid_: album, library, feed
 
-**Year list (年の一覧)**:
-The gallery screen that lists each year that has media, with up to four preview thumbnails per year.
+**年の一覧 (Year list)**:
+メディアがある年を並べ、年ごとに最大 4 枚のプレビューサムネイルを出すギャラリーの画面。
 _Avoid_: year index, archive home
 
-**Year screen (年の画面)**:
-The gallery screen that shows tiles for one chosen year only.
+**年の画面 (Year screen)**:
+選んだ 1 年のタイルだけを出すギャラリーの画面。
 _Avoid_: year feed, year page
 
-**Tab mark (タブの印)**:
-The wordless colored ring flower shown on the gallery tab.
+**タブの印 (Tab mark)**:
+ギャラリーのタブに出す、文字のない色付きの輪の花。
 _Avoid_: favicon, icon
 
-**Tile (タイル)**:
-One slot on the year screen for a single media item.
+**タイル (Tile)**:
+年の画面で、メディア 1 件分の枠。
 _Avoid_: card
 
-**Enlarged view (拡大表示)**:
-The screen that shows one selected item's body at large size.
+**拡大表示 (Enlarged view)**:
+選んだ 1 件の本体を大きく出す画面。
 _Avoid_: viewer, lightbox, dialog, modal
 
-**Login label (ログイン表示)**:
-The label next to the gallery heading that shows who is viewing.
+**ログイン表示 (Login label)**:
+ギャラリーの見出しの横に、見ている人を出すラベル。
 _Avoid_: username, profile
 
-**Local preview (ローカルプレビュー)**:
-The text next to the heading when there is no login email. Used only in the local gallery (see `docs/spec-local`).
+**ローカルプレビュー (Local preview)**:
+ログインメールがないとき、見出しの横に出す文言。ローカルのギャラリーだけで使う（`docs/spec-local`）。
 _Avoid_: dev mode, logged out, guest
 
-**Unknown year (年不明)**:
-The label for media whose capture date-time year cannot be determined. Last on the year list when present.
+**年不明 (Unknown year)**:
+撮影日時の年が決まらないメディアのラベル。あるときは年の一覧の最後。
 _Avoid_: uncategorized, other
 
-## Time
+## 時刻
 
-**Capture date-time (撮影日時)**:
-The calendar date and time when an image or video was captured, including seconds.
+**撮影日時 (Capture date-time)**:
+画像または動画を撮った暦の日付と時刻。秒まで含む。
 _Avoid_: EXIF, timestamp, DateTimeOriginal, uploaded
 
-**Creation date-time (作成日時)**:
-The calendar date and time recorded inside a video file as when that file was created.
+**作成日時 (Creation date-time)**:
+動画ファイルの中に、そのファイルを作った時刻として書いてある暦の日付と時刻。
 _Avoid_: modification date-time
 
-**Android mark (Android の印)**:
-Fields that an Android device added inside a video.
+**Android の印 (Android mark)**:
+Android の機器が動画の中に足した欄。
 _Avoid_: com.android, manufacturer, model, capture.fps
 
-**Modification date-time (更新日時)**:
-The calendar date and time when the file on disk was last updated.
+**更新日時 (Modification date-time)**:
+ディスク上のファイルを最後に更新した暦の日付と時刻。
 _Avoid_: mtime
 
-**Upload time (アップロード時刻)**:
-The time when an image or video was placed in storage.
+**アップロード時刻 (Upload time)**:
+画像または動画をストレージに置いた時刻。
 
-## Content
+## 内容
 
-**Media (メディア)**:
-An image or video counted as one gallery item when both body and thumbnail are present. Either alone is not media.
+**メディア (Media)**:
+本体とサムネイルの両方があるとき、ギャラリーの 1 件として数える画像または動画。どちらか一方だけではメディアではない。
 _Avoid_: file, object
 
-**Image (画像)**:
-Still-image media. Extensions are jpg, jpeg, png, gif, webp, avif, heic, heif.
+**画像 (Image)**:
+静止画のメディア。拡張子は jpg、jpeg、png、gif、webp、avif、heic、heif。
 _Avoid_: photo
 
-**Video (動画)**:
-Moving-image media. Extensions are mp4, mov, webm, m4v.
+**動画 (Video)**:
+動画のメディア。拡張子は mp4、mov、webm、m4v。
 _Avoid_: clip, movie
 
-**Body (本体)**:
-The full image or video of a media item. Used in the enlarged view.
+**本体 (Body)**:
+メディアの画像または動画の全体。拡大表示で使う。
 _Avoid_: original, source
 
-**Thumbnail (サムネイル)**:
-A small still image made from media for the gallery. It is not media by itself. For video, one frame from the start.
+**サムネイル (Thumbnail)**:
+ギャラリー向けにメディアから作った小さな静止画。それ自体はメディアではない。動画では先頭の 1 フレーム。
 _Avoid_: preview, poster
 
-**Name (名前)**:
-The body name that distinguishes a media item. It does not contain slashes.
+**名前 (Name)**:
+メディアを区別する本体の名前。スラッシュを含まない。
 _Avoid_: object key, title
 
-**Upload (アップロード)**:
-Copying images and videos from a folder on disk into gallery storage. Places the thumbnail and body as a pair.
+**アップロード (Upload)**:
+ディスク上のフォルダから、画像と動画をギャラリーのストレージへコピーすること。サムネイルと本体を組にして置く。
 _Avoid_: import, sync, deploy
 
-**Delivery (配信)**:
-The path by which the browser receives the bytes of a stored body or thumbnail.
+**配信 (Delivery)**:
+ストレージにある本体またはサムネイルのバイト列をブラウザが受け取る道。
 _Avoid_: download

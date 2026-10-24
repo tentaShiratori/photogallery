@@ -1,69 +1,69 @@
-# Gallery
+# ギャラリー
 
-Terms are in [GLOSSARY.md](../../../GLOSSARY.md).
+用語は [GLOSSARY.md](../../../GLOSSARY.md)。
 
-## R-GAL-01 Sort order
+## R-GAL-01 並び順
 
-- On the year list, newer years come first. 「年不明」 is last. Years with no media have no card. Which year an item belongs to is in [R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided).
-- On the year screen, within a year, newer capture date-time comes first. On the same second, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first. Example: `2024-08-02T12-00-00-2.jpg` comes before `2024-08-02T12-00-00.jpg`.
-- In 「年不明」 on the year screen, newer upload time comes first. If still tied, the earlier name in lexicographic order comes first.
-- Even when tiles are shown 60 at a time on the year screen, they keep the full sort order for that year's media.
+- 年の一覧では新しい年が先である。「年不明」は最後である。メディアがない年にカードはない。件がどの年に属するかは [R-MEDIA-02](../domain/media.md#r-media-02-年の決め方) にある。
+- 年の画面では同じ年の中で新しい撮影日時が先である。同じ秒では新しいアップロード時刻が先である。それでも同じなら、辞書順で先の名前が先である。例: `2024-08-02T12-00-00-2.jpg` は `2024-08-02T12-00-00.jpg` より先である。
+- 年の画面の「年不明」では新しいアップロード時刻が先である。それでも同じなら、辞書順で先の名前が先である。
+- 年の画面でタイルを 60 件ずつ出しても、その年のメディア全体の並び順は保つ。
 
-## R-GAL-02 List limit
+## R-GAL-02 一覧の上限
 
-- When bodies and thumbnails for a year or 「年不明」 total more than 20,000, the list stops at the limit.
-- Bodies and thumbnails for that year are visited in equal alternating counts, up to 20,000 combined. When more remain after 20,000, the list for that year stops.
-- When at least one media item is visible on the year screen, 「（上限で打ち切っています）」 follows that year's heading. Only the visible tiles are shown. 「N 件」 is not shown.
-- When no media items are visible for that year, the year screen has no tiles for it.
+- ある年または「年不明」の本体とサムネイルの合計が 20,000 を超えるとき、一覧はその上限で止まる。
+- その年の本体とサムネイルは、同じ件数ずつ交互に見て、合わせて 20,000 までである。20,000 のあとに残りがあるとき、その年の一覧は止まる。
+- 年の画面にメディアが 1 件以上見えるとき、その年の見出しのあとに「（上限で打ち切っています）」が続く。見えるタイルだけが出る。「N 件」は出ない。
+- その年に見えるメディアがないとき、年の画面にその年のタイルはない。
 
-## R-GAL-03 List API shape
+## R-GAL-03 一覧 API の形
 
-- The year list response has `years`. Each element has `label` and `previews`.
-- `/api/media` with no `year` returns the year list. Years are in [R-GAL-01](#r-gal-01-sort-order) order for the year list. A year with no media is omitted. `previews` follows [R-GAL-10](#r-gal-10-year-list-previews).
-- `/api/media?year=digits` returns one year. `/api/media?year=unknown` returns 「年不明」. The JSON has `group` and `next`. `next` is always null. One response covers bodies and thumbnails for that year only.
-- For a year, `group.label` is the year digits ([R-MEDIA-02](../domain/media.md#r-media-02-how-the-year-is-decided)). For 「年不明」, `group.label` is 「年不明」. `truncated` is true when the [R-GAL-02](#r-gal-02-list-limit) limit stopped the list. `items` has one or more entries in [R-GAL-01](#r-gal-01-sort-order) year-screen order when media exist.
-- When that year has no media, `group` is null.
-- Each `items` or `previews` element has `bodyKey` (body name), `kind` (`image` or `video`), `bodyUrl` (body delivery), `thumbUrl` (thumbnail delivery), and `caption` (body name).
-- `Cache-Control` is `private, no-store`.
-- When `year` is present and is neither `unknown` nor a number from 1 through 9999 without leading zeros, the status is 400. The body is 「year が不正です。」.
-- When scanning names in batches of 1,000 up to 20 times still finds names that start with digits while searching for years, the status is 500.
+- 年の一覧の応答は `years` を持つ。各要素は `label` と `previews` を持つ。
+- `year` なしの `/api/media` は年の一覧を返す。年は年の一覧向けの [R-GAL-01](#r-gal-01-並び順) の順である。メディアがない年は省く。`previews` は [R-GAL-10](#r-gal-10-年の一覧のプレビュー) に従う。
+- `/api/media?year=digits` は 1 年を返す。`/api/media?year=unknown` は「年不明」を返す。JSON は `group` と `next` を持つ。`next` はいつも null である。1 回の応答は、その年の本体とサムネイルだけを含む。
+- 年では `group.label` は年の数字である（[R-MEDIA-02](../domain/media.md#r-media-02-年の決め方)）。「年不明」では `group.label` は「年不明」である。[R-GAL-02](#r-gal-02-一覧の上限) の上限で一覧が止まったとき、`truncated` は true である。メディアがあるとき、`items` は [R-GAL-01](#r-gal-01-並び順) の年の画面の順で 1 件以上ある。
+- その年にメディアがないとき、`group` は null である。
+- `items` または `previews` の各要素は、`bodyKey`（本体の名前）、`kind`（`image` または `video`）、`bodyUrl`（本体の配信）、`thumbUrl`（サムネイルの配信）、`caption`（本体の名前）を持つ。
+- `Cache-Control` は `private, no-store` である。
+- `year` があり、値が `unknown` でもなく、先頭の 0 なしの 1 から 9999 の数でもないとき、状態は 400 である。本体は「year が不正です。」である。
+- 名前を 1,000 件ずつ最大 20 回読んでも、年を探しているあいだに数字で始まる名前がまだあるとき、状態は 500 である。
 
-## R-GAL-04 Serve content
+## R-GAL-04 配信
 
-- When an image or video with that name is stored, the status is 200. The response body is those bytes.
-- The URL is `/media/` followed by the name. Names with folder separators keep the separators. Spaces and `#` are percent-encoded in the URL.
-- `Content-Type` is the value stored at upload if present. Otherwise it follows the extension. jpg and jpeg are `image/jpeg`, png is `image/png`, gif is `image/gif`, webp is `image/webp`, avif is `image/avif`, heic is `image/heic`, heif is `image/heif`, mp4 is `video/mp4`, mov is `video/quicktime`, webm is `video/webm`, and m4v is `video/x-m4v`.
-- `Accept-Ranges` is `bytes`.
-- `Cache-Control` is `private, max-age=3600`.
-- Undeliverable paths are in [R-GAL-07](#r-gal-07-reject-undeliverable-paths). Ranges are in [R-GAL-05](#r-gal-05-serve-ranges).
+- その名前の画像または動画が置いてあるとき、状態は 200 である。応答本体はそのバイト列である。
+- URL は `/media/` のあとに名前である。フォルダ区切りを含む名前は区切りを保つ。空白と `#` は URL でパーセント符号化される。
+- `Content-Type` は、アップロード時に置いた値があればその値である。なければ拡張子に従う。jpg と jpeg は `image/jpeg`、png は `image/png`、gif は `image/gif`、webp は `image/webp`、avif は `image/avif`、heic は `image/heic`、heif は `image/heif`、mp4 は `video/mp4`、mov は `video/quicktime`、webm は `video/webm`、m4v は `video/x-m4v` である。
+- `Accept-Ranges` は `bytes` である。
+- `Cache-Control` は `private, max-age=3600` である。
+- 配信できないパスは [R-GAL-07](#r-gal-07-配信できないパスの拒否) にある。Range は [R-GAL-05](#r-gal-05-range-の配信) にある。
 
-## R-GAL-05 Serve ranges
+## R-GAL-05 Range の配信
 
-- When an image or video with that name is stored, the same URL accepts a `Range` request.
-- For `Range: bytes=start-end`, the status is 206. The response body is the inclusive byte range. `Content-Range` is `bytes start-end/total length`. Example: length 1024 and `bytes=0-99` yield `bytes 0-99/1024` and 100 bytes.
-- For `Range: bytes=-length`, the status is 206. The response body is the last `length` bytes. Example: length 1024 and `bytes=-50` yield `bytes 974-1023/1024` and 50 bytes.
+- その名前の画像または動画が置いてあるとき、同じ URL は `Range` 要求を受け付ける。
+- `Range: bytes=start-end` では、状態は 206 である。応答本体は両端を含むバイト範囲である。`Content-Range` は `bytes start-end/total length` である。例: 長さ 1024 で `bytes=0-99` なら `bytes 0-99/1024` と 100 バイトである。
+- `Range: bytes=-length` では、状態は 206 である。応答本体は末尾 `length` バイトである。例: 長さ 1024 で `bytes=-50` なら `bytes 974-1023/1024` と 50 バイトである。
 
-## R-GAL-06 Serve HEIC and HEIF
+## R-GAL-06 HEIC と HEIF の配信
 
-- When a HEIC or HEIF image is stored, the bytes are served as in [R-GAL-04](#r-gal-04-serve-content). `Content-Type` follows the same rules as [R-GAL-04](#r-gal-04-serve-content).
-- When that image is viewed in a gallery tile, or when bytes are fetched via [R-GAL-04](#r-gal-04-serve-content), the browser receives the bytes.
-- On Windows browsers, the image often does not render.
+- HEIC または HEIF の画像が置いてあるとき、バイト列は [R-GAL-04](#r-gal-04-配信) と同じく配信する。`Content-Type` も [R-GAL-04](#r-gal-04-配信) と同じ規則である。
+- その画像をギャラリーのタイルで見るとき、または [R-GAL-04](#r-gal-04-配信) でバイト列を取るとき、ブラウザはそのバイト列を受け取る。
+- Windows のブラウザでは画像が出ないことが多い。
 
-## R-GAL-07 Reject undeliverable paths
+## R-GAL-07 配信できないパスの拒否
 
-- For paths under `/media/`, when the path is empty, contains `..`, contains `\`, starts with `/`, contains an empty segment, has a broken `%`, has an extension that is neither image nor video, or names something not stored, the status is 404. The body is 「見つかりません。」.
-- An extension that is neither image nor video yields 404 even when bytes are stored.
+- `/media/` 以下で、パスが空、`..` を含む、`\` を含む、`/` で始まる、空の区間を含む、壊れた `%` がある、拡張子が画像でも動画でもない、置いていないものを指す、のいずれかのとき、状態は 404 である。本体は「見つかりません。」である。
+- 拡張子が画像でも動画でもないときは、バイト列が置いてあっても 404 である。
 
-## R-GAL-08 Reject unknown locations
+## R-GAL-08 未知の場所の拒否
 
-- For locations other than `/`, `/api/media`, `/media/`, and the tab mark, the status is 404. The body is 「見つかりません。」.
+- `/`、`/api/media`、`/media/`、タブの印以外の場所では、状態は 404 である。本体は「見つかりません。」である。
 
-## R-GAL-09 Keep out of search results
+## R-GAL-09 検索結果に出さない
 
-- The gallery page is marked so it does not appear in search results.
+- ギャラリーのページは、検索結果に出ない印を付ける。
 
-## R-GAL-10 Year-list previews
+## R-GAL-10 年の一覧のプレビュー
 
-- On the year list, each year card shows up to four thumbnails for that year.
-- Those thumbnails are the first media of that year when names are sorted in ascending lexicographic order. 「年不明」 uses the same name order.
-- When fewer than four media exist, only those are shown.
+- 年の一覧では各年のカードはその年のサムネイルを最大 4 枚出す。
+- それらのサムネイルは、名前を昇順の辞書順にしたときの、その年の先頭のメディアである。「年不明」も同じ名前順である。
+- メディアが 4 件未満のときは、ある分だけ出す。
