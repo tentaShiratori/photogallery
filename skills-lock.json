@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "e2e": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/e2e/SKILL.md",
+      "computedHash": "bb8643f813790589b871cea2646f59f5614198eb5c437cf5d6f8f71d0d7d1742"
+    },
     "domain-modeling": {
       "source": "mattpocock/skills",
       "sourceType": "github",

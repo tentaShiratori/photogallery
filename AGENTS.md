@@ -28,9 +28,12 @@ pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
 pnpm test run src/routes/lib/feed.test.ts
 pnpm test run test/worker.test.ts
+pnpm e2e
 ```
 
 テストはファイルを指定して実行する。全テストファイルをまとめて実行しない。
+
+`pnpm e2e` は UC-01 / UC-02 のブラウザ E2E（Chromium、PC と mobile の 2 ビューポート）。ギャラリーの UC 挙動を変えた PR では、対応する `tests/uc-*.e2e.ts` を直す。
 
 - `src/lib/pair.test.ts` — Node 環境。`src/lib/pair.ts` のステムと、1 年ずつ読む揃った組の一覧を検証する
 - `src/lib/gallery.test.ts` — Node 環境。`src/lib/gallery.ts` の EXIF と更新日時を検証する
