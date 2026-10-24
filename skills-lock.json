@@ -5,7 +5,7 @@
       "source": "local",
       "sourceType": "local",
       "skillPath": ".agents/skills/e2e/SKILL.md",
-      "computedHash": "bb8643f813790589b871cea2646f59f5614198eb5c437cf5d6f8f71d0d7d1742"
+      "computedHash": "68522556425828b50e0463e01c9995cd32a5589bdf1ac6bf835121a7ffc790d5"
     },
     "domain-modeling": {
       "source": "mattpocock/skills",

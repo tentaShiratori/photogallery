@@ -29,13 +29,13 @@ that support tool calls and the language model specification v2 or later
 reads `AI_GATEWAY_API_KEY` or, without it, a Vercel OIDC token:
 
 ```ts
-import type { E2EConfig } from 'e2e';
-import { web } from '@e2e-dev/web';
-import { gateway } from 'ai';
+import type { E2EConfig } from "e2e";
+import { web } from "@e2e-dev/web";
+import { gateway } from "ai";
 
 export default {
-  targets: [{ engine: web(), app: { url: 'http://127.0.0.1:3000' } }],
-  agents: { default: { model: gateway('openai/gpt-6-luna-fast') } },
+  targets: [{ engine: web(), app: { url: "http://127.0.0.1:3000" } }],
+  agents: { default: { model: gateway("openai/gpt-6-luna-fast") } },
 } satisfies E2EConfig;
 ```
 
@@ -89,16 +89,16 @@ context, so each persona records and replays its own steps.
 ## act: one goal
 
 ```ts
-import { credentials, expect } from 'e2e';
+import { credentials, expect } from "e2e";
 
 await agent.act('add a todo named "Buy milk"');
-await expect(screen.getByRole('listitem', 'Buy milk')).toBeVisible();
+await expect(screen.getByRole("listitem", "Buy milk")).toBeVisible();
 await agent.act('mark the "Buy milk" todo as done');
-await expect(screen.getByRole('checkbox', 'Buy milk')).toBeChecked();
-await agent.act('invite {email} as an editor', { params: { email: 'ada@example.test' } });
+await expect(screen.getByRole("checkbox", "Buy milk")).toBeChecked();
+await agent.act("invite {email} as an editor", { params: { email: "ada@example.test" } });
 
-const member = credentials.user('member');
-await agent.act('sign in with the given credentials', {
+const member = credentials.user("member");
+await agent.act("sign in with the given credentials", {
   params: {
     username: member.username,
     password: member.password, // a Secret: the model sees its name, the runner fills the field
@@ -171,19 +171,21 @@ closing it, so act again.
 ## assert, waitFor, extract: one question
 
 ```ts
-import { z } from 'zod';
+import { z } from "zod";
 
-await agent.assert('the dashboard shows a trial badge'); // one look, one judgment
+await agent.assert("the dashboard shows a trial badge"); // one look, one judgment
 
-await agent.waitFor('the export finished and a download link appeared', { // polls
+await agent.waitFor("the export finished and a download link appeared", {
+  // polls
   interval: 500,
   timeout: 120_000,
 });
 
-const data = await agent.extract('every todo title and how many remain', { // structured output
+const data = await agent.extract("every todo title and how many remain", {
+  // structured output
   schema: z.object({ titles: z.array(z.string()), remaining: z.number().int() }),
 });
-expect(data.titles).toContain('Buy milk');
+expect(data.titles).toContain("Buy milk");
 ```
 
 - `assert` does not poll. False is `ASSERTION_FAILED` with the model's
@@ -209,7 +211,7 @@ expect(data.titles).toContain('Buy milk');
 await new Promise((resolve) => setTimeout(resolve, 10_000));
 
 // GOOD: waits for the state, up to the timeout.
-await agent.waitFor('the export finished and a download link appeared', { timeout: 60_000 });
+await agent.waitFor("the export finished and a download link appeared", { timeout: 60_000 });
 ```
 
 - `waitFor` needs a model even under a custom executor and is never cached,
@@ -245,15 +247,17 @@ masked pixels fail with `POLICY_DENIED`.
 
 ```ts
 // BAD: three goals in one instruction, one recording, no check between them.
-await agent.act('open the Pro plan, set the seats to {seats}, and check out', { params: { seats: 3 } });
+await agent.act("open the Pro plan, set the seats to {seats}, and check out", {
+  params: { seats: 3 },
+});
 
 // GOOD: three atomic goals, each pinned before the next.
-await agent.act('open the Pro plan');
-await expect(screen.getByRole('heading', 'Pro plan')).toBeVisible();
-await agent.act('set the seats to {seats}', { params: { seats: 3 } });
-await expect(screen.getByRole('status', 'Seats')).toHaveText('3 seats');
-await agent.act('check out');
-await expect(screen.getByText('Order confirmed')).toBeVisible();
+await agent.act("open the Pro plan");
+await expect(screen.getByRole("heading", "Pro plan")).toBeVisible();
+await agent.act("set the seats to {seats}", { params: { seats: 3 } });
+await expect(screen.getByRole("status", "Seats")).toHaveText("3 seats");
+await agent.act("check out");
+await expect(screen.getByText("Order confirmed")).toBeVisible();
 ```
 
 - Use the words on screen: `'open the Billing tab'`, not `'upgrade'`.
@@ -263,7 +267,7 @@ await expect(screen.getByText('Order confirmed')).toBeVisible();
 
 ```ts
 await agent.act('create a workspace named "Atlas" on the Pro plan');
-await expect(screen.getByRole('status')).toHaveText('Created "Atlas" on the Pro plan');
+await expect(screen.getByRole("status")).toHaveText('Created "Atlas" on the Pro plan');
 ```
 
 The model gets the instruction verbatim plus the params as a separate
@@ -291,12 +295,12 @@ selectors: the runner validates and authorizes every tool call first.
 
 ## Budgets and cost
 
-| Call | Model calls | Default timeout |
-| --- | ---: | --- |
-| `act` | up to `agents.<name>.maxModelCalls` (25) | the config `timeout`, 120 s |
-| `assert` | 2 | 30 s |
-| `extract` | 2 | 30 s |
-| `waitFor` | up to `agents.<name>.maxModelCalls` (25) | 30 s |
+| Call      |                              Model calls | Default timeout             |
+| --------- | ---------------------------------------: | --------------------------- |
+| `act`     | up to `agents.<name>.maxModelCalls` (25) | the config `timeout`, 120 s |
+| `assert`  |                                        2 | 30 s                        |
+| `extract` |                                        2 | 30 s                        |
+| `waitFor` | up to `agents.<name>.maxModelCalls` (25) | 30 s                        |
 
 - Slow model calls: raise the step or test `timeout` for `act`, the agent's
   `judgmentTimeout` for judgments, `actionTimeout` for slow UI.
