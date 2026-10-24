@@ -11,7 +11,7 @@ Choosing a video opens the body in the viewer. The tile shows the thumbnail. The
 
 ## How to get to it (user POV)
 
-- On the gallery, choose the tile captioned `2023-05-01T08-30-00.mp4`.
+- Open the `2023` year screen, then choose the tile captioned `2023-05-01T08-30-00.mp4`.
 - The viewer loads `/media/2023-05-01T08-30-00.mp4`.
 - Seeking sends a `Range` request to that URL.
 - A bad address shows `見つかりません。`
@@ -21,7 +21,7 @@ Choosing a video opens the body in the viewer. The tile shows the thumbnail. The
 Preconditions:
 
 - Doctor reports the seeded instance at `http://127.0.0.1:8797` with body keys `2024-08-02T12-00-00.png` and `2023-05-01T08-30-00.mp4`.
-- The headings `2024 65 件` and, after scrolling to the bottom twice, `2023 1 件` are shown.
+- The year list includes a `2023` card. Open `/?year=2023` so heading `2023` and the figcaption `2023-05-01T08-30-00.mp4` are shown.
 
 - **Image bytes.** Run `curl.exe -sS -D - -o .cursor/skills/verify-photogallery/artifacts/media-delivery/body.png "http://127.0.0.1:8797/media/2024-08-02T12-00-00.png"`. Status 200, `content-type` is `image/png`, and `accept-ranges` is `bytes`.
 - **Video tile.** In the browser, find the figcaption `2023-05-01T08-30-00.mp4`. Its tile contains an `img`, not a `video`. Click the button named `2023-05-01T08-30-00.mp4`. `dialog#viewer` contains a `video` whose `src` ends with `/media/2023-05-01T08-30-00.mp4`, and `#caption` reads `2023-05-01T08-30-00.mp4`.
@@ -33,6 +33,7 @@ Preconditions:
 
 ## Gotchas
 
+- The video tile is on the `2023` year screen. Scrolling the `2024` year screen does not reveal it. The heading is `2023`, not `2023 1 件`.
 - `2023-05-01T08-30-00.mp4` is 1024 non-decodable bytes stored as `video/mp4`. The thumbnail is a WebP still made from the seeded PNG, not a decoded frame of that file. The video element and the 206 response are the proof. A moving picture is not available from this fixture.
 - The video button is named `2023-05-01T08-30-00.mp4` because the tile is an `img` with that alt text.
 - `GET /media/2024-08-02T12-00-00.png` without `Range` returns 200. A missing `content-range` on that response is expected.

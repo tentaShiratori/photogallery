@@ -10,11 +10,13 @@ The gallery has two screens. The year list shows each year that has a complete p
 - `gallery-back` returns from the year screen to the year list at the prior scroll position.
 - `gallery-empty` shows the empty-state sentence when the bucket has no media.
 - `gallery-list` returns the year list JSON from `GET /api/media` and one year from `GET /api/media?year=…`.
+- `gallery-tab-icon` returns `GET /favicon.svg` as `image/svg+xml`.
 
 ## How to get to it (user POV)
 
 - Open `http://127.0.0.1:8797/`.
 - The page requests `GET /api/media` for the year list. Opening a year requests `GET /api/media?year=2024` (or `year=unknown`).
+- The tab mark is `GET /favicon.svg`.
 
 ## Driving it with browser and curl
 
@@ -30,6 +32,7 @@ Preconditions:
 - **Deep link.** Open `/?year=unknown`. The year screen for 年不明 appears after load.
 - **Confirm the list API.** `curl.exe -sS "http://127.0.0.1:8797/api/media"` returns `{ years: [...] }` with labels `2024`, `2023`, `2022`, and `年不明` last. Each entry has `previews` of length at most 4. `curl.exe -sS "http://127.0.0.1:8797/api/media?year=2024"` returns `{ group, next: null }` with `group.label` `2024` and 65 items. `curl.exe -sS "http://127.0.0.1:8797/api/media?year=unknown"` returns the unknown-year group.
 - **Empty gallery.** On the `--empty` instance, wait until `#status` is `まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。` `GET /api/media` returns `{ "years": [] }`.
+- **Tab mark.** Run `curl.exe -sS -D - -o NUL "http://127.0.0.1:8797/favicon.svg"`. Status 200 and `content-type` is `image/svg+xml`.
 - **Proof.** Save year-list and year-screen screenshots under `.cursor/skills/verify-photogallery/artifacts/gallery/`. Save API bodies as `api-media-years.json` and `api-media-year-2024.json`.
 
 ## Gotchas
@@ -40,3 +43,5 @@ Preconditions:
 - Clicking a preview on the year list opens the year screen, not the enlarged view.
 - `gallery-empty` is a different instance. Do not delete objects from the seeded persist to imitate it.
 - Every year-screen tile is an `img`. The image `src` is `thumbUrl`. The button name is the body key.
+- The year-screen `h2` sits in a wrapper before `#grid`, not inside `#grid`. There is no `#more`. Continuation after the first 60 tiles is a client reveal of the same year's `items`; it does not fetch and it has no failure UI.
+- A truncated year shows 「（上限で打ち切っています）」. This seed has 65 pairs in 2024, under the object cap, so that banner is not reachable here.

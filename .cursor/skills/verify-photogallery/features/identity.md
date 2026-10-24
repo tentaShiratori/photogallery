@@ -1,11 +1,11 @@
 # Identity
 
-The gallery heading shows who is signed in. Without an Access email it shows the local-preview label.
+The paragraph beside the gallery heading shows who is signed in. Without an Access email it shows the local-preview label.
 
 ## Sub-features
 
 - `identity-local` shows `ローカルプレビュー` when no Access email is present.
-- `identity-email` shows the email from `Cf-Access-Authenticated-User-Email` in the heading.
+- `identity-email` shows the email from `Cf-Access-Authenticated-User-Email` in the paragraph beside `フォトギャラリー`.
 
 ## How to get to it (user POV)
 
