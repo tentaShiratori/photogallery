@@ -1,5 +1,6 @@
 import { test } from "@e2e-dev/web";
 import { expect } from "e2e";
+import { ACCESS_EMAIL } from "../e2e/access.ts";
 import { catalog, FIRST_PAGE } from "../e2e/catalog.ts";
 import { BREAKPOINT_PX } from "../e2e/viewports.ts";
 import {
@@ -12,11 +13,11 @@ import {
   yearList,
 } from "../e2e/locators.ts";
 
-test("UC-01 年一覧はローカルプレビュー付きで四つの年が並ぶ", async ({ app, browser }) => {
+test("UC-01 年一覧はログインメール付きで四つの年が並ぶ", async ({ app, browser }) => {
   await app.open("/");
   await expect(browser).toHaveTitle("フォトギャラリー");
   await expect(browser.locator("h1")).toHaveText("フォトギャラリー");
-  await expect(browser.locator("header p")).toHaveText("ローカルプレビュー");
+  await expect(browser.locator("header p")).toHaveText(ACCESS_EMAIL);
   await expect(yearList(browser)).toBeVisible();
   await expect(yearCards(browser)).toHaveCount(catalog.labels.length);
   for (let i = 0; i < catalog.labels.length; i++) {

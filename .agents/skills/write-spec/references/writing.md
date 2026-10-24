@@ -37,7 +37,15 @@ Put an alternate directly under its step as `- 3a.`, then `- 3b.`. Put an except
 
 Postconditions holds only the change that remains at the end of that path. Write something that disappears mid-flow in the flow, not in Postconditions. Do not add a failure postcondition that is only the success of a recovery already written inside that exception.
 
-Leave out layout and position that a person can see on the screen. Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
+## Screenshots for visible state
+
+A precondition or postcondition that is a state a person can see on the screen (year cards, empty copy, the viewer open) is a PNG plus a one-line caption that says what to look for. Put the files under `docs/spec/screenshots/UC-NN/` (PNG). Show PC and mobile side by side. Delete the prose line the screenshot replaces.
+
+Keep as prose the state that is not a still of the screen: scroll position restored, other years not loaded, accessible name is the body name, special characters in the login email appear literally, and similar.
+
+Capture screenshots inside the e2e suite that walks the UC. Recapture every UC screenshot with `pnpm e2e --update-snapshots`. Production UC screenshots use a fixed dummy Access email such as `test@example.com`, never a real address.
+
+Leave out layout and position that a person can see on the screen when you are writing prose (screenshots cover that). Leave out a statement that the opposite of another condition already gives. Leave out the browser's or the video element's initial behavior. Leave out implementation, file names, and reasons.
 
 Keep the current UI and console string in 「」, exactly as it appears in the product. Use the headwords from `GLOSSARY.md`.
 
