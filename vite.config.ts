@@ -25,6 +25,24 @@ export default defineConfig(() => ({
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },
+    overrides: [
+      {
+        files: ["tests/**/*.e2e.ts", "e2e/locators.ts"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  group: ["**/e2e/seed.ts", "**/e2e/seed"],
+                  message: "Tests must not import the e2e seed; use catalog and locators.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
   },
   test: {
     projects: [

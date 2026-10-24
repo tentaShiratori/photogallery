@@ -45,3 +45,36 @@ jobs:
       - run: pnpm exec vp lint
       - run: pnpm typecheck
       - run: pnpm test run
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v4
+        with:
+          version: 2026.9.2
+          cache: true
+          install_args: node npm:pnpm
+
+      - name: pnpm store path
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v6
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/e2e-web
+          key: ${{ runner.os }}-e2e-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-e2e-chromium-
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec e2e-web install chromium --with-deps
+      - run: pnpm e2e
