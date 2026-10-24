@@ -1,10 +1,5 @@
-/** The gallery's column change. Names in tests stay "pc" and "mobile". */
 export const BREAKPOINT_PX = 640;
 
-/**
- * Short enough that 60 tiles at minmax(220px) on a 1280px row sit below
- * innerHeight plus the 600px sentinel root margin in client.tsx.
- */
 export const VIEWPORT_HEIGHT = 720;
 
 export type Viewport = { readonly width: number; readonly height: typeof VIEWPORT_HEIGHT };

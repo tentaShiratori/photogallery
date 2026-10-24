@@ -1,7 +1,6 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** Parent of the wrangler `v3` directory. Never `.wrangler/state` and never a verify run directory. */
 export const E2E_PORT = 8798;
 
 export type E2EPort = typeof E2E_PORT;
@@ -14,7 +13,6 @@ export type GalleryPaths = {
   readonly lockFile: string;
 };
 
-/** Resolves directories from the config file URL, so a worker and the runner name the same paths. */
 export function galleryPaths(configUrl: string): GalleryPaths {
   const root = dirname(fileURLToPath(configUrl));
   const persistDir = resolve(root, "e2e/state");

@@ -75,10 +75,6 @@ async function writeCatalog(paths: GalleryPaths): Promise<void> {
   }
 }
 
-/**
- * Writes the catalog into `paths.persistDir` when nothing is answering `paths.url`.
- * When the URL already answers with the gallery page, returns without touching the directory.
- */
 export async function prepareGallery(paths: GalleryPaths): Promise<void> {
   if (await galleryAlreadyPrepared(paths.url)) {
     return;
