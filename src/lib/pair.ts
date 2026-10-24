@@ -167,7 +167,7 @@ function formatCivil(capture: CivilCapture): string {
   return `${pad(capture.year, 4)}-${pad(capture.month, 2)}-${pad(capture.day, 2)}T${pad(capture.hour, 2)}-${pad(capture.minute, 2)}-${pad(capture.second, 2)}`;
 }
 
-function thumbKeyFor(bodyKey: BodyKey): ThumbKey {
+export function thumbKeyFor(bodyKey: BodyKey): ThumbKey {
   const stem = bodyKey.slice(0, bodyKey.lastIndexOf("."));
   const key = `t/${stem}.webp`;
   if (isThumbKey(key)) return key;
