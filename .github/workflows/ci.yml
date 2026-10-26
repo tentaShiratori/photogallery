@@ -81,7 +81,7 @@ jobs:
       - run: pnpm e2e
       - name: Upload e2e results on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-results
           path: .e2e/results/
