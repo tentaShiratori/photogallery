@@ -17,15 +17,15 @@
     "deadcode": "fallow dead-code --fail-on-issues"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/client-s3": "^3.1156.0",
     "ffmpeg-static": "^5.3.0",
     "hono": "^4.13.13",
     "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.64.0",
-    "@cloudflare/vitest-plugin": "^1.4.4",
-    "@cloudflare/workers-types": "^5.20261016.1",
+    "@cloudflare/vite-plugin": "^1.65.0",
+    "@cloudflare/vitest-plugin": "^1.4.7",
+    "@cloudflare/workers-types": "^5.20261023.1",
     "@e2e-dev/web": "^0.15.3",
     "@types/node": "^26.6.5",
     "e2e": "^0.21.3",
@@ -33,9 +33,9 @@
     "typescript": "^7.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "vite-ssr-components": "^0.8.0",
+    "vite-ssr-components": "^0.9.0",
     "vitest": "catalog:",
-    "wrangler": "^4.151.1"
+    "wrangler": "^4.152.0"
   },
   "packageManager": "pnpm@12.14.0"
 }
