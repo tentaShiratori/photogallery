@@ -1,0 +1,33 @@
+{
+  "entry": [
+    "src/index.tsx",
+    "src/routes/lib/client.tsx",
+    "scripts/upload-local.ts",
+    "scripts/upload-prd.ts",
+    "scripts/e2e-update-screenshots.ts",
+    "e2e.config.ts",
+    "tests/**/*.e2e.ts",
+    "e2e/doctor.mjs",
+  ],
+  "ignoreDependencies": [
+    "@types/node",
+    "typescript",
+    "@types/webpack-env",
+    "e2e",
+    "vite-ssr-components",
+  ],
+  "ignoreExports": [
+    {
+      "file": "src/lib/media.ts",
+      "exports": ["IMAGE_EXTENSIONS", "VIDEO_EXTENSIONS", "contentRangeHeader"],
+    },
+    { "file": "src/routes/lib/feed.ts", "exports": ["MORE_FAILED", "RETRY"] },
+    { "file": "e2e/paths.ts", "exports": ["E2E_PORT"] },
+    { "file": "e2e/seed.ts", "exports": ["GalleryPrepareBusy"] },
+    { "file": "e2e/viewports.ts", "exports": ["VIEWPORT_HEIGHT"] },
+    { "file": "scripts/lib/object-sink.ts", "exports": ["BUCKET_DISPLAY_NAME"] },
+    { "file": "src/routes/media.ts", "exports": ["serveObject"] },
+    { "file": "src/lib/pair.ts", "exports": ["Stem"] },
+  ],
+  "ignorePatterns": [".agents/**", ".cursor/**"],
+}

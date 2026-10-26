@@ -51,7 +51,7 @@ function accessEmail(request: Request): string | null {
   return email;
 }
 
-export const get: AppHanlder = async (c) => {
+export const getIndex: AppHanlder = async (c) => {
   const email = accessEmail(c.req.raw);
   return c.render(<GalleryContent email={email} />, { title: "フォトギャラリー" });
 };

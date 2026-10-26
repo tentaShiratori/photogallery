@@ -43,6 +43,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vp fmt --check
       - run: pnpm exec vp lint
+      - run: pnpm deadcode
       - run: pnpm typecheck
       - run: pnpm test run
 
