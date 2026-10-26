@@ -23,3 +23,8 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
+permissions:
+  e2e:
+    skills: true
+  fallow:
+    skills: true

@@ -38,6 +38,15 @@ pnpm e2e:update-screenshots
 
 `pnpm e2e:update-screenshots` で UC のスクショを全部撮り直す。比較用の `tests/*-screenshots.e2e.ts-snapshots/` と、仕様書の `docs/spec/screenshots/UC-NN/` の両方を書く。`pnpm e2e --update-snapshots` は e2e の baseline だけを直す。画面を変えたら撮り直し、差分が出るかを CI の e2e が見る。
 
+## 実行するコマンド
+
+- `pnpm deadcode` — 使っていないコードと依存を検出。0 件で終了し、終了コード 0 が返ること。
+  - 指摘は消すか、`.fallowrc.jsonc` に理由つきで足すかのどちらかで直す。
+  - baseline ファイルは作らない。
+  - `pnpm install` のあと `pnpm deadcode` で確認。
+
+- `pnpm e2e --update-snapshots` は e2e の baseline だけを直す。画面を変えたら撮り直し、差分が出るかを CI の e2e が見る。
+
 - `src/lib/pair.test.ts` — Node 環境。`src/lib/pair.ts` のステムと、1 年ずつ読む揃った組の一覧を検証する
 - `src/lib/gallery.test.ts` — Node 環境。`src/lib/gallery.ts` の EXIF と更新日時を検証する
 - `src/lib/media.test.ts` — Node 環境。`src/lib/media.ts` の純粋関数を検証する

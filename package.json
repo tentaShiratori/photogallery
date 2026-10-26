@@ -13,7 +13,8 @@
     "upload:prd": "node --experimental-strip-types scripts/upload-prd.ts",
     "test": "vp test",
     "e2e": "e2e run",
-    "e2e:update-screenshots": "node --experimental-strip-types scripts/e2e-update-screenshots.ts"
+    "e2e:update-screenshots": "node --experimental-strip-types scripts/e2e-update-screenshots.ts",
+    "deadcode": "fallow dead-code --fail-on-issues"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -28,8 +29,9 @@
     "@e2e-dev/web": "^0.15.3",
     "@types/node": "^26.6.5",
     "e2e": "^0.21.3",
+    "fallow": "^3.0.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4",
+    "vite": "catalog:",
     "vite-plus": "catalog:",
     "vite-ssr-components": "^0.8.0",
     "vitest": "catalog:",

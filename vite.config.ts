@@ -25,6 +25,7 @@ export default defineConfig(() => ({
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },
+    ignorePatterns: ["**/node_modules/**", ".agents/**"],
     overrides: [
       {
         files: ["tests/**/*.e2e.ts", "e2e/locators.ts", "e2e/spec-screenshot.ts", "e2e/access.ts"],

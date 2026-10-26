@@ -32,7 +32,7 @@ export async function serveObject(
   return new Response(object.body, { headers });
 }
 
-export const get: AppHanlder = async (c) => {
+export const getMedia: AppHanlder = async (c) => {
   const key = keyFromMediaPath(c.req.path);
   if (!key || !kindForName(key)) {
     return c.text("見つかりません。", 404);
