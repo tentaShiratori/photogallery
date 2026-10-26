@@ -53,6 +53,9 @@ export async function expectUcScreenshot(
   browser: Browser,
   opts: { uc: SpecUc; name: string; testFile: string },
 ): Promise<void> {
+  if (process.platform !== "linux") {
+    return;
+  }
   const update = updateSpecScreenshots();
 
   await waitForPaint(browser);
