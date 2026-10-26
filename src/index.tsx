@@ -8,9 +8,9 @@ import { Env } from "./lib/types.ts";
 
 const app = new Hono<{ Bindings: Env }>();
 app.use(renderer);
-app.get("/", root.get);
+app.get("/", root.getIndex);
 app.get("/api/media", apiMedia.get);
-app.get("/media/*", media.get);
+app.get("/media/*", media.getMedia);
 app.get(TAB_ICON_PATH, () => tabIconResponse());
 app.notFound((c) => c.text("見つかりません。", 404));
 
