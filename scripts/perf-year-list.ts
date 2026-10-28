@@ -55,6 +55,7 @@ function usage(): never {
 function parseArgs(argv: readonly string[]): { readonly local: boolean; readonly url: string } {
   let local = false;
   for (const arg of argv) {
+    if (arg === "--") continue;
     if (arg === "--local") {
       local = true;
       continue;
