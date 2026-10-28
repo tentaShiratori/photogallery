@@ -15,6 +15,7 @@
     "typescript",
     "@types/webpack-env",
     "e2e",
+    "playwright-core",
     "vite-ssr-components",
   ],
   "ignoreExports": [
