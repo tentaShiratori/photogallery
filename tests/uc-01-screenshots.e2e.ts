@@ -32,6 +32,19 @@ test("UC-01 スクショ 2024 の年の画面", async ({ app, browser, screen })
   });
 });
 
+test("UC-01 スクショ 2018 の年の画面", async ({ app, browser, screen }) => {
+  await app.open("/");
+  await yearCard(browser, "2018").tap();
+  await expect(browser).toHaveURL(/[?&]year=2018/);
+  await expect(browser.locator("h2")).toContainText("大学４年");
+  await expect(browser.locator("#grid button").first()).toBeVisible();
+  await expectUcScreenshot(screen, browser, {
+    uc: "UC-01",
+    name: "year-2018",
+    testFile: TEST_FILE,
+  });
+});
+
 test("UC-01 スクショ 空の画面", async ({ app, browser, screen }) => {
   await browser.route(/\/api\/media(?:\?|$)/, async (route) => {
     const url = new URL(route.request.url);
