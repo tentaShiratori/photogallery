@@ -2,6 +2,8 @@ import {
   parseYearQuery,
   readYearContents,
   readYearList,
+  serverTimingHeader,
+  timedLister,
   type Media,
   type YearGroup,
 } from "../../lib/pair";
@@ -30,7 +32,15 @@ export const get: AppHanlder = async (c) => {
     const body: YearScreenResponse = { group, next: null };
     return c.json(body, { headers: NO_STORE });
   }
-  const list = await readYearList(c.env.MEDIA);
+  const started = performance.now();
+  const timed = timedLister(c.env.MEDIA);
+  const list = await readYearList(timed.bucket);
   const body: YearListResponse = { years: list.years };
-  return c.json(body, { headers: NO_STORE });
+  const totalDurationMs = performance.now() - started;
+  return c.json(body, {
+    headers: {
+      ...NO_STORE,
+      "server-timing": serverTimingHeader(timed.stats(), totalDurationMs),
+    },
+  });
 };

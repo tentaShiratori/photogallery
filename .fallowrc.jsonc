@@ -4,6 +4,7 @@
     "src/routes/lib/client.tsx",
     "scripts/upload-local.ts",
     "scripts/upload-prd.ts",
+    "scripts/perf-year-list.ts",
     "scripts/e2e-update-screenshots.ts",
     "e2e.config.ts",
     "tests/**/*.e2e.ts",

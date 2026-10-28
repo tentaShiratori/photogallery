@@ -29,6 +29,21 @@ pnpm test run src/routes/lib/feed.test.ts
 pnpm test run test/worker.test.ts
 ```
 
+## 年の一覧の計測
+
+どこに時間がかかっているかを見るだけ。速くする修正は別。
+
+```powershell
+pnpm perf:year-list
+pnpm perf:year-list -- --local
+```
+
+本番が既定。URL は `PHOTOGALLERY_URL` で上書きする。ローカルは `pnpm dev` を
+`http://localhost:8787` で動かしてから `--local` を付ける。ブラウザは
+`~/.photogallery-perf`（リポジトリの外）。本番の初回だけ画面ありで Access に
+ログインし、2 回目から画面なし。結果はターミナルだけ。進め方の観点は
+`.cursor/skills/verify-photogallery`。
+
 ## Cloudflare へ出す
 
 初回は約 45 分。トークンと Google の OAuth クライアントが既にあるなら約 10 分。

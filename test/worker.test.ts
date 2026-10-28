@@ -130,6 +130,10 @@ describe("Worker 統合テスト", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
       expect(response.headers.get("cache-control")).toBe("private, no-store");
+      const serverTiming = response.headers.get("server-timing");
+      expect(serverTiming).toMatch(/^r2;desc="\d+";dur=\d+(\.\d+)?, total;dur=\d+(\.\d+)?$/);
+      const r2Desc = /r2;desc="(\d+)"/.exec(serverTiming ?? "");
+      expect(Number(r2Desc?.[1])).toBeGreaterThan(0);
 
       const list = (await response.json()) as YearListResponse;
       expect(Object.keys(list).sort()).toEqual(["years"]);
@@ -149,6 +153,7 @@ describe("Worker 統合テスト", () => {
         new Request("http://localhost/api/media?year=2024"),
       );
       expect(response.status).toBe(200);
+      expect(response.headers.get("server-timing")).toBeNull();
       const page = (await response.json()) as YearScreenResponse;
       expect(page.next).toBeNull();
       expect(page.group?.label).toBe("2024");

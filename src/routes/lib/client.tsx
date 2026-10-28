@@ -1,7 +1,43 @@
 import { css } from "hono/css";
 import { render } from "hono/jsx/dom";
-import { useCallback, useEffect, useReducer, useRef, useState } from "hono/jsx";
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "hono/jsx";
 import type { FC } from "hono/jsx";
+
+const YEAR_LIST_MARK_LOADING = "year-list-loading";
+const YEAR_LIST_MARK_API = "year-list-api";
+const YEAR_LIST_MARK_READY = "year-list-ready";
+
+function markYearList(name: string): void {
+  performance.mark(name);
+}
+
+function waitForYearListThumbs(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const root = document.getElementById("year-list");
+        const images = root ? [...root.querySelectorAll("img")] : [];
+        if (images.length === 0) {
+          resolve();
+          return;
+        }
+        let left = images.length;
+        const done = () => {
+          left -= 1;
+          if (left <= 0) resolve();
+        };
+        for (const img of images) {
+          if (img.complete) {
+            done();
+            continue;
+          }
+          img.addEventListener("load", done, { once: true });
+          img.addEventListener("error", done, { once: true });
+        }
+      });
+    });
+  });
+}
 import {
   initialYearList,
   initialYearScreen,
@@ -220,12 +256,18 @@ const Gallery: FC = () => {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  useLayoutEffect(() => {
+    if (yearToken !== null) return;
+    if (yearList.status === "loading") markYearList(YEAR_LIST_MARK_LOADING);
+  }, [yearToken, yearList.status]);
+
   useEffect(() => {
     if (listLoaded.current) return;
     listLoaded.current = true;
     void (async () => {
       try {
         const response = await fetch("/api/media");
+        markYearList(YEAR_LIST_MARK_API);
         if (!response.ok) throw new Error(String(response.status));
         const parsed = parseYearList(await response.json());
         dispatchList({ type: "loaded", years: parsed.years });
@@ -234,6 +276,18 @@ const Gallery: FC = () => {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (yearToken !== null) return;
+    if (yearList.status !== "ready") return;
+    let cancelled = false;
+    void waitForYearListThumbs().then(() => {
+      if (!cancelled) markYearList(YEAR_LIST_MARK_READY);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [yearToken, yearList]);
 
   useEffect(() => {
     if (yearToken === null) {
