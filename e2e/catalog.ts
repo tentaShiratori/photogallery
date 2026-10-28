@@ -3,7 +3,6 @@ export const FIRST_PAGE = 60;
 export type YearLabel =
   | "2024"
   | "2023"
-  | "2022"
   | "2019"
   | "2018"
   | "2015"
@@ -29,7 +28,6 @@ export type GalleryCatalog = {
 const LABELS: readonly YearLabel[] = [
   "2024",
   "2023",
-  "2022",
   "2019",
   "2018",
   "2015",
@@ -42,7 +40,6 @@ const LABELS: readonly YearLabel[] = [
 
 const IMAGE_KEY = "2024-08-02T12-00-00.png";
 const VIDEO_KEY = "2023-05-01T08-30-00.mp4";
-const OLDER_KEY = "2022-01-01T00-00-00.png";
 const UNKNOWN_KEY = "u-abc123def456.png";
 
 const GRADE_BOUNDARY_KEYS: ReadonlyArray<{ key: string; label: YearLabel }> = [
@@ -66,7 +63,6 @@ function buildBodies(): CatalogBody[] {
     { key: IMAGE_KEY, kind: "image", label: "2024" },
     ...EXTRA_2024_KEYS.map((key) => ({ key, kind: "image" as const, label: "2024" as const })),
     { key: VIDEO_KEY, kind: "video", label: "2023" },
-    { key: OLDER_KEY, kind: "image", label: "2022" },
     ...GRADE_BOUNDARY_KEYS.map(({ key, label }) => ({
       key,
       kind: "image" as const,

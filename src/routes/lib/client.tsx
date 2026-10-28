@@ -60,7 +60,7 @@ const previewThumbClass = css`
   border: 1px solid var(--line);
   background: #ece7dc;
   @media (max-width: 640px) {
-    height: 96px;
+    height: 72px;
   }
 `;
 
