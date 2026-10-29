@@ -3,7 +3,6 @@ export type {
   BodyUrl,
   Lister,
   ListingPage,
-  Media,
   PlannedFile,
   Stem,
   ThumbKey,
@@ -16,7 +15,7 @@ export type {
 
 export { captureFromKey, StemClaim, thumbKeyFor } from "./stem.ts";
 
-export { parseYear, parseYearQuery, type YearQuery } from "./year.ts";
+export { parseYear, yearQuerySchema, type YearQuery } from "./year.ts";
 
 export { serverTimingHeader, timedLister, type ListTimingStats } from "./timing.ts";
 
