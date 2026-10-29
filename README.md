@@ -21,8 +21,14 @@ pnpm upload:local D:\photos\sample
 1 ファイルだけ指定する。所要は約 1 分。
 
 ```powershell
-pnpm test run src/lib/pair.test.ts
-pnpm test run src/lib/gallery.test.ts
+pnpm test run src/lib/pair-stem.test.ts
+pnpm test run src/lib/pair-year.test.ts
+pnpm test run src/lib/pair-timing.test.ts
+pnpm test run src/lib/pair-year-list.test.ts
+pnpm test run src/lib/pair-page.test.ts
+pnpm test run src/lib/gallery-video.test.ts
+pnpm test run src/lib/gallery-image.test.ts
+pnpm test run src/lib/gallery-mtime.test.ts
 pnpm test run src/lib/media.test.ts
 pnpm test run src/routes/index.test.tsx
 pnpm test run src/routes/lib/feed.test.ts

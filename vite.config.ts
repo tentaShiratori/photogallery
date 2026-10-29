@@ -23,7 +23,10 @@ export default defineConfig(() => ({
   },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    rules: { "vite-plus/prefer-vite-plus-imports": "error" },
+    rules: {
+      "vite-plus/prefer-vite-plus-imports": "error",
+      "max-lines": ["error", { max: 300, skipBlankLines: false, skipComments: false }],
+    },
     options: { typeAware: true, typeCheck: true },
     ignorePatterns: ["**/node_modules/**", ".agents/**"],
     overrides: [
