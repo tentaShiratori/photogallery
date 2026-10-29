@@ -78,9 +78,7 @@ describe("year list", () => {
   });
 
   it("プレビューは 4 件まで受け取る", () => {
-    expect(
-      parseYearList(wireList([{ label: "2024", previews: 4 }])).years[0]?.previews,
-    ).toHaveLength(4);
+    expect(parseYearList(wireList([{ label: "2024", previews: 4 }])).years[0]?.previews).toHaveLength(4);
     expect(() => parseYearList(wireList([{ label: "2024", previews: 5 }]))).toThrow();
   });
 });

@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { memoryBucket, pairOf, stored, year } from "./fixtures.ts";
-import {
-  readYearContents,
-  readYearList,
-  timedLister,
-  type Lister,
-  type YearListYear,
-} from "./index.ts";
+import { readYearContents, readYearList, timedLister, type Lister, type YearListYear } from "./index.ts";
 
 describe("readYearList", () => {
   it("新しい年からカードを返し、プレビューは bodyKey の昇順で最大 4 件、年不明は最後", async () => {
@@ -44,9 +38,7 @@ describe("readYearList", () => {
     for (let i = 0; i < 80; i++) {
       const minute = String(Math.floor(i / 60)).padStart(2, "0");
       const second = String(i % 60).padStart(2, "0");
-      objects.push(
-        ...pairOf(`2024-01-01T00-${minute}-${second}-${i + 2}.jpg`, "2026-01-01T00:00:00.000Z"),
-      );
+      objects.push(...pairOf(`2024-01-01T00-${minute}-${second}-${i + 2}.jpg`, "2026-01-01T00:00:00.000Z"));
     }
     const bucket = memoryBucket(objects);
     const timed = timedLister(bucket.bucket);
@@ -100,10 +92,7 @@ describe("readYearContents", () => {
     const group = await readYearContents(stalled, year(2024));
     expect(group?.truncated).toBe(true);
     expect(group?.label).toBe("2024");
-    expect(group?.items.map((item) => item.bodyKey)).toEqual([
-      "2024-08-02T12-00-00.jpg",
-      "2024-01-02T08-00-00.jpg",
-    ]);
+    expect(group?.items.map((item) => item.bodyKey)).toEqual(["2024-08-02T12-00-00.jpg", "2024-01-02T08-00-00.jpg"]);
   });
 
   it("組が無い年は null", async () => {

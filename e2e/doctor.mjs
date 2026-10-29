@@ -40,9 +40,7 @@ async function main() {
   const body = await media.json();
   const years = body.years;
   if (!Array.isArray(years) || years.length !== 4) {
-    console.error(
-      `expected 4 year groups, got ${Array.isArray(years) ? years.length : "non-array"}`,
-    );
+    console.error(`expected 4 year groups, got ${Array.isArray(years) ? years.length : "non-array"}`);
     process.exit(1);
   }
   console.log("gallery list: ok (4 years)");

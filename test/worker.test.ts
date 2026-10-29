@@ -11,22 +11,19 @@ function withList(bucket: R2Bucket, list: R2Bucket["list"]): R2Bucket {
 }
 
 function fetchWith(bucket: R2Bucket, path: string): Promise<Response> {
-  return Promise.resolve(
-    app.fetch(new Request(`http://localhost${path}`), { ...env, MEDIA: bucket }),
-  );
+  return Promise.resolve(app.fetch(new Request(`http://localhost${path}`), { ...env, MEDIA: bucket }));
 }
 
 const SAMPLE_THUMB = new Uint8Array([
-  0x52, 0x49, 0x46, 0x46, 0x1a, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x4c,
-  0x0d, 0x00, 0x00, 0x00, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x07, 0x10, 0x11, 0x11, 0x88, 0x88, 0xfe,
+  0x52, 0x49, 0x46, 0x46, 0x1a, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x4c, 0x0d, 0x00, 0x00,
+  0x00, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x07, 0x10, 0x11, 0x11, 0x88, 0x88, 0xfe,
 ]);
 
 const SAMPLE_IMAGE = new Uint8Array([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-  0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xff, 0xff, 0x3f,
-  0x00, 0x05, 0xfe, 0x02, 0xfe, 0xdc, 0xcc, 0x59, 0xe7, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
-  0x44, 0xae, 0x42, 0x60, 0x82,
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
+  0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49,
+  0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xff, 0xff, 0x3f, 0x00, 0x05, 0xfe, 0x02, 0xfe, 0xdc, 0xcc, 0x59, 0xe7,
+  0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 ]);
 
 const SAMPLE_VIDEO = new Uint8Array(1024);
@@ -110,9 +107,7 @@ describe("Worker 統合テスト", () => {
     it("タブの印を返す", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/favicon.svg"));
       expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")?.toLowerCase()).toBe(
-        "image/svg+xml; charset=utf-8",
-      );
+      expect(response.headers.get("content-type")?.toLowerCase()).toBe("image/svg+xml; charset=utf-8");
       expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
 
       const body = await response.text();
@@ -149,9 +144,7 @@ describe("Worker 統合テスト", () => {
     });
 
     it("year で 1 年分を今と同じ順で返し next は null", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/api/media?year=2024"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/api/media?year=2024"));
       expect(response.status).toBe(200);
       expect(response.headers.get("server-timing")).toBeNull();
       const page = (await response.json()) as YearScreenResponse;
@@ -168,9 +161,7 @@ describe("Worker 統合テスト", () => {
     });
 
     it("year=unknown で年不明を返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/api/media?year=unknown"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/api/media?year=unknown"));
       expect(response.status).toBe(200);
       const page = (await response.json()) as YearScreenResponse;
       expect(page.group?.label).toBe("年不明");
@@ -179,9 +170,7 @@ describe("Worker 統合テスト", () => {
 
     it("year が不正だと 400 と日本語の本文", async () => {
       for (const year of ["abc", "0", "2024x", ""]) {
-        const response = await exports.default.fetch(
-          new Request(`http://localhost/api/media?year=${year}`),
-        );
+        const response = await exports.default.fetch(new Request(`http://localhost/api/media?year=${year}`));
         expect(response.status).toBe(400);
         expect(await response.text()).toBe("year が不正です。");
       }
@@ -202,9 +191,7 @@ describe("Worker 統合テスト", () => {
 
   describe("GET /media/*", () => {
     it("画像を返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/test-image.png"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/test-image.png"));
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("image/png");
       expect(response.headers.get("accept-ranges")).toBe("bytes");
@@ -214,9 +201,7 @@ describe("Worker 統合テスト", () => {
     });
 
     it("動画を返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/test-video.mp4"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/test-video.mp4"));
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("video/mp4");
       expect(response.headers.get("accept-ranges")).toBe("bytes");
@@ -250,9 +235,7 @@ describe("Worker 統合テスト", () => {
     });
 
     it("サムネイルキーのバイトを返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/t/2024-08-02T12-00-00.webp"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/t/2024-08-02T12-00-00.webp"));
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("image/webp");
       const body = new Uint8Array(await response.arrayBuffer());
@@ -260,24 +243,18 @@ describe("Worker 統合テスト", () => {
     });
 
     it("ネストされたパスのメディアを返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/folder/nested.jpg"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/folder/nested.jpg"));
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("image/jpeg");
     });
 
     it("存在しないファイルで 404 を返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/not-found.png"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/not-found.png"));
       expect(response.status).toBe(404);
     });
 
     it("非対応の拡張子で 404 を返す", async () => {
-      const response = await exports.default.fetch(
-        new Request("http://localhost/media/document.txt"),
-      );
+      const response = await exports.default.fetch(new Request("http://localhost/media/document.txt"));
       expect(response.status).toBe(404);
     });
   });

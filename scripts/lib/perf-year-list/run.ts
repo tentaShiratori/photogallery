@@ -25,11 +25,7 @@ function chromeLaunchOptions(): { readonly channel?: "chrome"; readonly executab
   return { channel: "chrome" };
 }
 
-export async function ensureAccess(
-  context: BrowserContext,
-  url: string,
-  headed: boolean,
-): Promise<void> {
+export async function ensureAccess(context: BrowserContext, url: string, headed: boolean): Promise<void> {
   const page = await context.newPage();
   const gallery = new YearListPage(page);
   try {

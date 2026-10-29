@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { noon } from "./fixtures.ts";
-import {
-  captureFromKey,
-  StemClaim,
-  type ThumbnailFile,
-  type ThumbKey,
-  type UploadPlan,
-} from "./index.ts";
+import { captureFromKey, StemClaim, type ThumbnailFile, type ThumbKey, type UploadPlan } from "./index.ts";
 
 describe("StemClaim.plan", () => {
   it("同じ秒は拡張子が違っても別のステムになり、サムネイルは WebP", () => {
@@ -56,9 +50,7 @@ describe("StemClaim.plan", () => {
 
   it("暦として読めない撮影日時や短い識別子ではキーを作らない", () => {
     const stems = new StemClaim();
-    expect(() =>
-      stems.plan({ year: 2024, month: 13, day: 1, hour: 0, minute: 0, second: 0 }, "jpg", ""),
-    ).toThrow();
+    expect(() => stems.plan({ year: 2024, month: 13, day: 1, hour: 0, minute: 0, second: 0 }, "jpg", "")).toThrow();
     expect(() => stems.plan(null, "png", "abc")).toThrow();
   });
 });

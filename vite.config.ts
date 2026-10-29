@@ -20,6 +20,7 @@ export default defineConfig(() => ({
     : [cloudflare(persistPath ? { persistState: { path: persistPath } } : {}), ssrPlugin()],
   fmt: {
     endOfLine: "lf",
+    printWidth: 120,
   },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
@@ -54,12 +55,7 @@ export default defineConfig(() => ({
         test: {
           name: "unit",
           environment: "node",
-          include: [
-            "src/**/*.test.ts",
-            "src/**/*.test.tsx",
-            "test/**/*.test.ts",
-            "test/**/*.test.tsx",
-          ],
+          include: ["src/**/*.test.ts", "src/**/*.test.tsx", "test/**/*.test.ts", "test/**/*.test.tsx"],
           exclude: ["test/worker.test.ts", "**/node_modules/**"],
         },
       },

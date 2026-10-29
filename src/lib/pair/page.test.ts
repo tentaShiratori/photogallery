@@ -24,11 +24,7 @@ describe("readPage", () => {
     ]);
     const groups = pages.flatMap((page) => (page.group ? [page.group] : []));
     expect(groups.every((group) => !group.truncated)).toBe(true);
-    expect(bodyKeys(groups)).toEqual([
-      "2024-08-02T12-00-00.jpg",
-      "2020-01-01T00-00-01.jpg",
-      "u-abc123def456.png",
-    ]);
+    expect(bodyKeys(groups)).toEqual(["2024-08-02T12-00-00.jpg", "2020-01-01T00-00-01.jpg", "u-abc123def456.png"]);
   });
 
   it("最初の呼び出しは一番新しい年の本体とサムネイルだけを読む", async () => {
@@ -74,13 +70,7 @@ describe("readPage", () => {
     expect(item?.bodyUrl).toBe("/media/2024-08-02T12-00-00.jpg");
     expect(item?.thumbUrl).toBe("/media/t/2024-08-02T12-00-00.webp");
     expect(item?.caption).toBe("2024-08-02T12-00-00.jpg");
-    expect(Object.keys(item ?? {}).sort()).toEqual([
-      "bodyKey",
-      "bodyUrl",
-      "caption",
-      "kind",
-      "thumbUrl",
-    ]);
+    expect(Object.keys(item ?? {}).sort()).toEqual(["bodyKey", "bodyUrl", "caption", "kind", "thumbUrl"]);
   });
 
   it("年内は暦の降順、同じ秒は uploaded の次に bodyKey", async () => {
@@ -160,10 +150,7 @@ describe("readPage", () => {
       Array.from({ length: count }, (_, i) =>
         pairOf(`2023-01-01T00-00-00-${i + 2}.jpg`, "2026-01-01T00:00:00.000Z"),
       ).flat();
-    const over = memoryBucket([
-      ...pairOf("2024-08-02T12-00-00.jpg", "2026-01-02T00:00:00.000Z"),
-      ...many(12_000),
-    ]);
+    const over = memoryBucket([...pairOf("2024-08-02T12-00-00.jpg", "2026-01-02T00:00:00.000Z"), ...many(12_000)]);
     const capped = await readPage(over.bucket, year(2024));
     expect(capped.group?.label).toBe("2023");
     expect(capped.group?.truncated).toBe(true);

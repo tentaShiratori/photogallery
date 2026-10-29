@@ -31,11 +31,7 @@ function methodFor(name: string): CaptureMethod {
   return "none";
 }
 
-async function captureOf(
-  key: string,
-  size: number,
-  read: RangeRead,
-): Promise<CaptureInstant | null> {
+async function captureOf(key: string, size: number, read: RangeRead): Promise<CaptureInstant | null> {
   try {
     switch (methodFor(key)) {
       case "none":
@@ -71,11 +67,7 @@ export function captureFromMtime(mtime: Date, now: Date): CivilCapture | null {
   );
 }
 
-export async function embeddedCapture(
-  name: string,
-  size: number,
-  read: RangeRead,
-): Promise<CivilCapture | null> {
+export async function embeddedCapture(name: string, size: number, read: RangeRead): Promise<CivilCapture | null> {
   const instant = await captureOf(name, size, read);
   return instant ? instant.toCivil() : null;
 }

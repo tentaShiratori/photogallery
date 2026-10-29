@@ -43,10 +43,7 @@ function civilFromMacEpoch(seconds: bigint, kind: MvhdCivilKind): CaptureInstant
   );
 }
 
-function captureFromMvhdCreationSeconds(
-  seconds: bigint,
-  kind: MvhdCivilKind,
-): CaptureInstant | null {
+function captureFromMvhdCreationSeconds(seconds: bigint, kind: MvhdCivilKind): CaptureInstant | null {
   if (seconds === 0n) return null;
   return civilFromMacEpoch(seconds, kind);
 }
@@ -69,12 +66,7 @@ function metaChildren(meta: Uint8Array) {
 }
 
 function indexFourcc(index: number): string {
-  return String.fromCharCode(
-    (index >>> 24) & 0xff,
-    (index >>> 16) & 0xff,
-    (index >>> 8) & 0xff,
-    index & 0xff,
-  );
+  return String.fromCharCode((index >>> 24) & 0xff, (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff);
 }
 
 function eachMdtaKey(keys: Uint8Array, visit: (name: string, index: number) => boolean): void {
@@ -153,12 +145,7 @@ function childPayload(bytes: Uint8Array, type: string): Uint8Array | null {
   return found ? bytes.subarray(found.start, found.end) : null;
 }
 
-async function moovChildren(
-  key: string,
-  moov: Box,
-  fileSize: number,
-  read: RangeRead,
-): Promise<Box[]> {
+async function moovChildren(key: string, moov: Box, fileSize: number, read: RangeRead): Promise<Box[]> {
   const children: Box[] = [];
   let offset = moov.payloadOffset;
   const end = moov.payloadOffset + moov.size - moov.headerSize;
@@ -213,12 +200,7 @@ async function captureFromMoov(
   }
   const mvhdBox = children.find((child) => child.type === "mvhd");
   if (!mvhdBox) return null;
-  const mvhd = await takeUpTo(
-    read,
-    key,
-    mvhdBox.payloadOffset,
-    Math.min(mvhdBox.size - mvhdBox.headerSize, META_CAP),
-  );
+  const mvhd = await takeUpTo(read, key, mvhdBox.payloadOffset, Math.min(mvhdBox.size - mvhdBox.headerSize, META_CAP));
   try {
     return civilFromMvhd(mvhd, android ? "utc" : "tokyo");
   } catch {

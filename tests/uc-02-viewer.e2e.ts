@@ -1,20 +1,9 @@
 import { test } from "@e2e-dev/web";
 import { expect } from "e2e";
 import { catalog, FIRST_PAGE } from "../e2e/catalog.ts";
-import {
-  caption,
-  closeViewer,
-  gridTile,
-  gridTiles,
-  stageImage,
-  stageVideo,
-  viewer,
-} from "../e2e/locators.ts";
+import { caption, closeViewer, gridTile, gridTiles, stageImage, stageVideo, viewer } from "../e2e/locators.ts";
 
-test("UC-02 サムネイルを開くと本体と「閉じる」が出て、閉じるとタイルが残る", async ({
-  app,
-  browser,
-}) => {
+test("UC-02 サムネイルを開くと本体と「閉じる」が出て、閉じるとタイルが残る", async ({ app, browser }) => {
   const newest = catalog.newest("2024");
   await app.open("/?year=2024");
   await gridTile(browser, newest.key).tap();

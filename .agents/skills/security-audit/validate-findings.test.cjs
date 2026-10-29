@@ -5,12 +5,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
 const schema = require("./report-schema.json");
-const {
-  LIMITS,
-  collect,
-  collectSchemaErrors,
-  validateDocument,
-} = require("./validate-findings.cjs");
+const { LIMITS, collect, collectSchemaErrors, validateDocument } = require("./validate-findings.cjs");
 
 const validatorPath = path.join(__dirname, "validate-findings.cjs");
 const CLI_TIMEOUT_MS = 5000;
@@ -50,11 +45,7 @@ function confirmed() {
     description: "An attacker can reach an operation without the intended ownership check.",
     root_cause: "handle omits the ownership check before changing the object.",
     intended_behavior: "Only the object's owner can change it.",
-    trace: [
-      source("entrypoint"),
-      source("propagation", "src/model.c", 20),
-      source("sink", "src/store.c", 30),
-    ],
+    trace: [source("entrypoint"), source("propagation", "src/model.c", 20), source("sink", "src/store.c", 30)],
     evidence: [evidence()],
     conditions: [],
     execution: {
@@ -182,10 +173,7 @@ test("schema is an actual top-level array with exactly three branches", () => {
   assert.equal(confirmedSchema.title.visibleContent, true);
   assert.equal(confirmedSchema.execution.properties.payloads.items.minLength, undefined);
   assert.equal(confirmedSchema.execution.properties.payloads.items.visibleContent, undefined);
-  assert.equal(
-    confirmedSchema.remediation.properties.code_changes.items.properties.fixed_code.minLength,
-    undefined,
-  );
+  assert.equal(confirmedSchema.remediation.properties.code_changes.items.properties.fixed_code.minLength, undefined);
 });
 
 test("accepts a producer-shaped findings document through the CLI", () => {
@@ -296,14 +284,7 @@ test("preserves exact payload and replacement-code strings", () => {
 });
 
 test("rejects invalid scalars and whitespace, control, format, or default-ignorable prose", () => {
-  for (const invisible of [
-    "\u0000\t\r\n\u001f\u007f\u200b",
-    "\u034f",
-    "\ufe0f",
-    "\ud800",
-    "\udc00",
-    "visible\ud800",
-  ]) {
+  for (const invisible of ["\u0000\t\r\n\u001f\u007f\u200b", "\u034f", "\ufe0f", "\ud800", "\udc00", "visible\ud800"]) {
     const cases = [
       [
         confirmed,
@@ -377,9 +358,7 @@ test("quotes input-derived controls in direct validation values and paths", () =
 
   const cyclic = {};
   cyclic[`path-${TERMINAL_CONTROL_PAYLOAD}`] = cyclic;
-  const output = [...errorsFor([finding]), ...collect(cyclic, { type: "object" }, "$input")].join(
-    "\n",
-  );
+  const output = [...errorsFor([finding]), ...collect(cyclic, { type: "object" }, "$input")].join("\n");
 
   for (const escaped of ["\\u001b", "\\u0007", "\\u0085", "\\u202e", "\\u034f", "\\ufe0f"]) {
     assert(output.includes(escaped), `missing escaped diagnostic ${escaped}`);
@@ -419,9 +398,7 @@ test("oneOf requires exactly one passing branch", () => {
     ),
   );
   assert(
-    collect(7, { oneOf: [{ type: "string" }, { minimum: 10 }] }, "$test").some((error) =>
-      error.includes("matched 0"),
-    ),
+    collect(7, { oneOf: [{ type: "string" }, { minimum: 10 }] }, "$test").some((error) => error.includes("matched 0")),
   );
 });
 
@@ -457,10 +434,7 @@ test("bounds canonical uniqueness keys and Set storage", () => {
   );
 
   const itemLength = Math.floor(LIMITS.uniqueSetBytes / 6);
-  const largeUniqueItems = Array.from(
-    { length: 6 },
-    (_, index) => `${index}${"x".repeat(itemLength)}`,
-  );
+  const largeUniqueItems = Array.from({ length: 6 }, (_, index) => `${index}${"x".repeat(itemLength)}`);
   assert(
     collect(largeUniqueItems, { type: "array", uniqueItems: true }).some((error) =>
       error.includes("canonical uniqueness set exceeds"),
@@ -526,9 +500,7 @@ test("rejects unsafe source paths", () => {
     finding.evidence[0].file = "NUL.txt";
   });
   rejectMutation(confirmed, (finding) => {
-    finding.remediation.code_changes = [
-      { file_name: "src/file:name.c", fixed_code: "replacement" },
-    ];
+    finding.remediation.code_changes = [{ file_name: "src/file:name.c", fixed_code: "replacement" }];
   });
 });
 
@@ -574,39 +546,27 @@ test("CLI rejects invalid UTF-8 without replacement or an exception trace", () =
   assert.doesNotMatch(output, /TypeError|stack|at validate-findings/i);
 });
 
-test(
-  "quotes input-derived controls in CLI validation errors",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const finding = confirmed();
-    finding.trace[0].kind = `invalid-${TERMINAL_CONTROL_PAYLOAD}`;
-    finding.execution[`extra-${TERMINAL_CONTROL_PAYLOAD}`] = "value";
-    const result = runCli(JSON.stringify([finding]));
+test("quotes input-derived controls in CLI validation errors", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const finding = confirmed();
+  finding.trace[0].kind = `invalid-${TERMINAL_CONTROL_PAYLOAD}`;
+  finding.execution[`extra-${TERMINAL_CONTROL_PAYLOAD}`] = "value";
+  const result = runCli(JSON.stringify([finding]));
 
-    assert.equal(result.status, 1, cliOutput(result));
-    assert.match(result.stderr, /\$\[0\]\.trace\[0\]\.kind/);
-    assert.match(result.stderr, /\\u001b/);
-    assert.match(result.stderr, /\\u202e/);
-    assertNoInjectedControlBytes(result.stderr);
-  },
-);
+  assert.equal(result.status, 1, cliOutput(result));
+  assert.match(result.stderr, /\$\[0\]\.trace\[0\]\.kind/);
+  assert.match(result.stderr, /\\u001b/);
+  assert.match(result.stderr, /\\u202e/);
+  assertNoInjectedControlBytes(result.stderr);
+});
 
-test(
-  "returns a generic syntax error without parser-supplied controls",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const malformed = Buffer.concat([
-      Buffer.from("["),
-      Buffer.from(TERMINAL_CONTROL_PAYLOAD),
-      Buffer.from("]"),
-    ]);
-    const result = runCli(malformed);
+test("returns a generic syntax error without parser-supplied controls", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const malformed = Buffer.concat([Buffer.from("["), Buffer.from(TERMINAL_CONTROL_PAYLOAD), Buffer.from("]")]);
+  const result = runCli(malformed);
 
-    assert.equal(result.status, 1, cliOutput(result));
-    assert.equal(result.stderr, "Failed to parse findings JSON: invalid JSON syntax\n");
-    assertNoInjectedControlBytes(result.stderr);
-  },
-);
+  assert.equal(result.status, 1, cliOutput(result));
+  assert.equal(result.stderr, "Failed to parse findings JSON: invalid JSON syntax\n");
+  assertNoInjectedControlBytes(result.stderr);
+});
 
 test("does not reflect controls from a failed CLI input path", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-findings-path-"));
@@ -644,33 +604,29 @@ test("CLI rejects Unicode format controls in source paths", () => {
   assert.doesNotMatch(output, /stack|at validate-findings/i);
 });
 
-test(
-  "CLI rejects a FIFO without blocking",
-  { skip: process.platform === "win32" || !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-findings-fifo-"));
-    const fifoPath = path.join(directory, "findings.json");
-    try {
-      const created = spawnSync("mkfifo", [fifoPath], {
-        encoding: "utf8",
-        timeout: CLI_TIMEOUT_MS,
-      });
-      assert.equal(created.status, 0, cliOutput(created));
+test("CLI rejects a FIFO without blocking", { skip: process.platform === "win32" || !HAS_SAFE_INPUT_OPEN }, () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-findings-fifo-"));
+  const fifoPath = path.join(directory, "findings.json");
+  try {
+    const created = spawnSync("mkfifo", [fifoPath], {
+      encoding: "utf8",
+      timeout: CLI_TIMEOUT_MS,
+    });
+    assert.equal(created.status, 0, cliOutput(created));
 
-      const result = spawnSync(process.execPath, [validatorPath, fifoPath], {
-        encoding: "utf8",
-        timeout: CLI_TIMEOUT_MS,
-      });
-      const output = cliOutput(result);
-      assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
-      assert.equal(result.status, 1, output);
-      assert.match(output, /input must be a regular file/);
-      assert.doesNotMatch(output, /stack|at validate-findings/i);
-    } finally {
-      fs.rmSync(directory, { recursive: true, force: true });
-    }
-  },
-);
+    const result = spawnSync(process.execPath, [validatorPath, fifoPath], {
+      encoding: "utf8",
+      timeout: CLI_TIMEOUT_MS,
+    });
+    const output = cliOutput(result);
+    assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
+    assert.equal(result.status, 1, output);
+    assert.match(output, /input must be a regular file/);
+    assert.doesNotMatch(output, /stack|at validate-findings/i);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test(
   "CLI rejects a symlink without following it",
@@ -724,34 +680,17 @@ test("checks pattern and branch invariants", () => {
 });
 
 test("rejects unsupported and malformed schema keywords", () => {
+  assert(collectSchemaErrors({ type: "string", format: "uuid" }).some((error) => error.includes("format")));
+  assert(collectSchemaErrors({ type: "string", pattern: "[" }).some((error) => error.includes("regular expression")));
   assert(
-    collectSchemaErrors({ type: "string", format: "uuid" }).some((error) =>
-      error.includes("format"),
-    ),
+    collectSchemaErrors({ type: "string", visibleContent: "yes" }).some((error) => error.includes("expected boolean")),
   );
-  assert(
-    collectSchemaErrors({ type: "string", pattern: "[" }).some((error) =>
-      error.includes("regular expression"),
-    ),
-  );
-  assert(
-    collectSchemaErrors({ type: "string", visibleContent: "yes" }).some((error) =>
-      error.includes("expected boolean"),
-    ),
-  );
-  assert(
-    collectSchemaErrors({ type: "array", visibleContent: true }).some((error) =>
-      error.includes("requires type"),
-    ),
-  );
+  assert(collectSchemaErrors({ type: "array", visibleContent: true }).some((error) => error.includes("requires type")));
   assert.notEqual(validateDocument([], { type: "array", maxItems: 1 }).length, 0);
 });
 
 test("caps malformed 1000-finding validation output", () => {
-  assert.equal(
-    errorsFor(Array.from({ length: LIMITS.arrayItems }, () => null)).length,
-    LIMITS.validationErrors,
-  );
+  assert.equal(errorsFor(Array.from({ length: LIMITS.arrayItems }, () => null)).length, LIMITS.validationErrors);
   if (!HAS_SAFE_INPUT_OPEN) return;
 
   const result = runCli(JSON.stringify(Array.from({ length: LIMITS.arrayItems }, () => null)));
@@ -763,34 +702,27 @@ test("caps malformed 1000-finding validation output", () => {
   assert.doesNotMatch(output, /RangeError|Maximum call stack|stack|at validate-findings/i);
 });
 
-test(
-  "caps amplified in-limit findings output under a constrained Node heap",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const findings = Array.from({ length: 750 }, () => ({
-      verdict: "confirmed",
-      trace: Array.from({ length: LIMITS.arrayItems }, () => 0),
-      evidence: Array.from({ length: LIMITS.arrayItems }, () => 0),
-    }));
-    const contents = JSON.stringify(findings);
-    assert(contents.length > 3 * 1000 * 1000, `hostile input too small: ${contents.length}`);
-    assert(contents.length <= LIMITS.inputBytes, `hostile input over limit: ${contents.length}`);
+test("caps amplified in-limit findings output under a constrained Node heap", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const findings = Array.from({ length: 750 }, () => ({
+    verdict: "confirmed",
+    trace: Array.from({ length: LIMITS.arrayItems }, () => 0),
+    evidence: Array.from({ length: LIMITS.arrayItems }, () => 0),
+  }));
+  const contents = JSON.stringify(findings);
+  assert(contents.length > 3 * 1000 * 1000, `hostile input too small: ${contents.length}`);
+  assert(contents.length <= LIMITS.inputBytes, `hostile input over limit: ${contents.length}`);
 
-    const result = runCli(contents, {
-      nodeArgs: ["--max-old-space-size=64"],
-      timeout: HOSTILE_CLI_TIMEOUT_MS,
-    });
-    const output = cliOutput(result);
-    assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
-    assert.equal(result.status, 1, output);
-    assert.match(output, /output capped at 100/);
-    assert(output.length < 20000, `unexpected output length ${output.length}`);
-    assert.doesNotMatch(
-      output,
-      /heap out of memory|allocation failed|RangeError|Maximum call stack/i,
-    );
-  },
-);
+  const result = runCli(contents, {
+    nodeArgs: ["--max-old-space-size=64"],
+    timeout: HOSTILE_CLI_TIMEOUT_MS,
+  });
+  const output = cliOutput(result);
+  assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
+  assert.equal(result.status, 1, output);
+  assert.match(output, /output capped at 100/);
+  assert(output.length < 20000, `unexpected output length ${output.length}`);
+  assert.doesNotMatch(output, /heap out of memory|allocation failed|RangeError|Maximum call stack/i);
+});
 
 test("keeps shared helpers aligned with the coverage-ledger validator", () => {
   const findingsModule = require("./validate-findings.cjs");

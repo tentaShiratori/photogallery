@@ -86,9 +86,7 @@ export default {
   ...shared,
   // The project's tests, so a repro can use its setup tests' sessions, plus the repro tests from step 6.
   tests: [
-    ...[shared.tests ?? "tests/**/*.e2e.ts"]
-      .flat()
-      .filter((glob) => !glob.startsWith("!tests/bugbash/")),
+    ...[shared.tests ?? "tests/**/*.e2e.ts"].flat().filter((glob) => !glob.startsWith("!tests/bugbash/")),
     "tests/bugbash/**/*.e2e.ts",
   ],
   // The app already runs: no command.

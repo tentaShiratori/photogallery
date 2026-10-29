@@ -2,11 +2,7 @@ import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { open, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import {
-  captureFromMtime,
-  embeddedCapture,
-  type CivilCapture,
-} from "../../src/lib/gallery/index.ts";
+import { captureFromMtime, embeddedCapture, type CivilCapture } from "../../src/lib/gallery/index.ts";
 import { extensionOf, selectUploadNames } from "../../src/lib/media.ts";
 import { StemClaim, type PlannedFile } from "../../src/lib/pair/index.ts";
 
@@ -49,10 +45,7 @@ export async function listUploadTargets(folder: string): Promise<string[]> {
   return selectUploadNames(await fileNamesIn(folder));
 }
 
-export async function planUploads(
-  folder: string,
-  names: readonly string[],
-): Promise<PlannedFile[]> {
+export async function planUploads(folder: string, names: readonly string[]): Promise<PlannedFile[]> {
   const stems = new StemClaim();
   const planned: PlannedFile[] = [];
   for (const name of names) {

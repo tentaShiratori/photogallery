@@ -64,7 +64,6 @@ export function jstStamp(date = new Date()): string {
     second: "2-digit",
     hour12: false,
   }).formatToParts(date);
-  const pick = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "";
+  const pick = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
   return `${pick("year")}-${pick("month")}-${pick("day")} ${pick("hour")}:${pick("minute")}:${pick("second")} JST`;
 }

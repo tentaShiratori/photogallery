@@ -37,16 +37,10 @@ function printCountSection(title: string, values: readonly number[]): void {
   const stats = summarize(values);
   console.log(title);
   console.log(`  回ごと: ${values.map((value) => String(value)).join(", ")}`);
-  console.log(
-    `  中央値: ${stats.median.toFixed(1)}  p90: ${stats.p90.toFixed(1)}  最大: ${stats.max.toFixed(1)}`,
-  );
+  console.log(`  中央値: ${stats.median.toFixed(1)}  p90: ${stats.p90.toFixed(1)}  最大: ${stats.max.toFixed(1)}`);
 }
 
-export async function runBenchmark(
-  context: BrowserContext,
-  url: string,
-  local: boolean,
-): Promise<void> {
+export async function runBenchmark(context: BrowserContext, url: string, local: boolean): Promise<void> {
   console.error(`暖機 ${WARMUP_RUNS} 回のあと、計測 ${MEASURE_RUNS} 回… (${url})`);
   for (let i = 0; i < WARMUP_RUNS; i++) {
     await oneRun(context, url);

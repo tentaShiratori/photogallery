@@ -1,13 +1,4 @@
-export const IMAGE_EXTENSIONS = [
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "webp",
-  "avif",
-  "heic",
-  "heif",
-] as const;
+export const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "heif"] as const;
 
 export const VIDEO_EXTENSIONS = ["mp4", "mov", "webm", "m4v"] as const;
 
@@ -49,8 +40,7 @@ export function kindForName(name: string): MediaKind | null {
 
 export function contentTypeForName(name: string): string {
   const extension = extensionOf(name);
-  if (extension in CONTENT_TYPES)
-    return CONTENT_TYPES[extension as ImageExtension | VideoExtension];
+  if (extension in CONTENT_TYPES) return CONTENT_TYPES[extension as ImageExtension | VideoExtension];
   return "application/octet-stream";
 }
 

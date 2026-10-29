@@ -1,11 +1,7 @@
 import { contentTypeForName, byteContentRange, keyFromMediaPath, kindForName } from "../lib/media";
 import { AppHanlder } from "../lib/types";
 
-export async function serveObject(
-  request: Request,
-  bucket: R2Bucket,
-  key: string,
-): Promise<Response> {
+export async function serveObject(request: Request, bucket: R2Bucket, key: string): Promise<Response> {
   const range = request.headers.get("Range");
   const object = await bucket.get(key, range ? { range: request.headers } : undefined);
   if (object === null) {

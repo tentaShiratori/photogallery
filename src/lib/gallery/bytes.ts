@@ -30,30 +30,15 @@ export function u32be(bytes: Uint8Array, offset: number): number | null {
 
 export function fourcc(bytes: Uint8Array, offset: number): string | null {
   if (offset < 0 || offset + 4 > bytes.length) return null;
-  return String.fromCharCode(
-    bytes[offset]!,
-    bytes[offset + 1]!,
-    bytes[offset + 2]!,
-    bytes[offset + 3]!,
-  );
+  return String.fromCharCode(bytes[offset]!, bytes[offset + 1]!, bytes[offset + 2]!, bytes[offset + 3]!);
 }
 
-export async function takeUpTo(
-  read: RangeRead,
-  key: string,
-  offset: number,
-  length: number,
-): Promise<Uint8Array> {
+export async function takeUpTo(read: RangeRead, key: string, offset: number, length: number): Promise<Uint8Array> {
   if (length <= 0 || offset < 0) return new Uint8Array();
   return read(key, offset, length);
 }
 
-export async function take(
-  read: RangeRead,
-  key: string,
-  offset: number,
-  length: number,
-): Promise<Uint8Array | null> {
+export async function take(read: RangeRead, key: string, offset: number, length: number): Promise<Uint8Array | null> {
   const bytes = await takeUpTo(read, key, offset, length);
   if (bytes.length !== length) return null;
   return bytes;

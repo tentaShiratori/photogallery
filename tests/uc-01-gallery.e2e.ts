@@ -3,15 +3,7 @@ import { expect } from "e2e";
 import { ACCESS_EMAIL } from "../e2e/access.ts";
 import { catalog, FIRST_PAGE } from "../e2e/catalog.ts";
 import { BREAKPOINT_PX } from "../e2e/viewports.ts";
-import {
-  backToYears,
-  gridTiles,
-  sentinel,
-  yearCard,
-  yearCards,
-  yearHeading,
-  yearList,
-} from "../e2e/locators.ts";
+import { backToYears, gridTiles, sentinel, yearCard, yearCards, yearHeading, yearList } from "../e2e/locators.ts";
 
 test("UC-01 年一覧はログインメール付きで年が並ぶ", async ({ app, browser }) => {
   await app.open("/");

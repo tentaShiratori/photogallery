@@ -1,15 +1,7 @@
 import { test } from "@e2e-dev/web";
 import { expect } from "e2e";
 import { catalog, FIRST_PAGE } from "../e2e/catalog.ts";
-import {
-  caption,
-  closeViewer,
-  gridTile,
-  gridTiles,
-  stageImage,
-  stageVideo,
-  viewer,
-} from "../e2e/locators.ts";
+import { caption, closeViewer, gridTile, gridTiles, stageImage, stageVideo, viewer } from "../e2e/locators.ts";
 import { expectUcScreenshot } from "../e2e/spec-screenshot.ts";
 
 const TEST_FILE = "tests/uc-02-screenshots.e2e.ts";

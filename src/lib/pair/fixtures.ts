@@ -55,13 +55,9 @@ export function memoryBucket(objects: readonly Stored[]) {
   return {
     bucket,
     prefixesListed: () =>
-      new Set(
-        calls.filter((call) => call.options.delimiter === undefined).map((c) => c.options.prefix),
-      ),
+      new Set(calls.filter((call) => call.options.delimiter === undefined).map((c) => c.options.prefix)),
     objectsRead: (prefix: string) =>
-      calls
-        .filter((call) => call.options.prefix === prefix)
-        .reduce((sum, call) => sum + call.objects, 0),
+      calls.filter((call) => call.options.prefix === prefix).reduce((sum, call) => sum + call.objects, 0),
     discoveryCalls: () => calls.filter((call) => call.options.delimiter !== undefined).length,
   };
 }

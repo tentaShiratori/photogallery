@@ -1,9 +1,8 @@
 export const barePng = new Uint8Array([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-  0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xff, 0xff, 0x3f,
-  0x00, 0x05, 0xfe, 0x02, 0xfe, 0xdc, 0xcc, 0x59, 0xe7, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
-  0x44, 0xae, 0x42, 0x60, 0x82,
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
+  0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49,
+  0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xff, 0xff, 0x3f, 0x00, 0x05, 0xfe, 0x02, 0xfe, 0xdc, 0xcc, 0x59, 0xe7,
+  0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 ]);
 
 export function macSeconds(
@@ -14,8 +13,7 @@ export function macSeconds(
   minute: number,
   second: number,
 ): number {
-  const seconds =
-    (Date.UTC(year, month - 1, day, hour, minute, second) - Date.UTC(1904, 0, 1)) / 1000;
+  const seconds = (Date.UTC(year, month - 1, day, hour, minute, second) - Date.UTC(1904, 0, 1)) / 1000;
   if (!Number.isInteger(seconds) || seconds <= 0 || seconds > 0xffffffff) {
     throw new Error(`creation_time does not fit uint32: ${seconds}`);
   }
@@ -87,8 +85,7 @@ function fourccAt(bytes: Uint8Array, offset: number): string {
 }
 
 function assertExifText(text: string): void {
-  if (!/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(text))
-    throw new Error(`bad exif text: ${text}`);
+  if (!/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(text)) throw new Error(`bad exif text: ${text}`);
 }
 
 function tiff(tag: number, text: string, order: "II" | "MM", exifIfd: boolean): Uint8Array {
@@ -152,11 +149,7 @@ function indexedBox(index: number, payload: Uint8Array): Uint8Array {
 }
 
 function keyedMeta(keys: QuickTimeKeys): Uint8Array {
-  const hdlr = fullBox(
-    "hdlr",
-    0,
-    concat([be32(0), ascii("mdta"), new Uint8Array(12), new Uint8Array(1)]),
-  );
+  const hdlr = fullBox("hdlr", 0, concat([be32(0), ascii("mdta"), new Uint8Array(12), new Uint8Array(1)]));
   const keysBox = fullBox(
     "keys",
     0,
@@ -187,19 +180,13 @@ export function mp4(options: {
   const ftyp = box("ftyp", concat([ascii("isom"), be32(0)]));
   const payload = new Uint8Array(48).fill(0xab);
   const mdat = options.wideMdat ? box64("mdat", payload) : box("mdat", payload);
-  const mvhd = fullBox(
-    "mvhd",
-    0,
-    concat([be32(options.creationSeconds), be32(options.modificationSeconds ?? 0)]),
-  );
+  const mvhd = fullBox("mvhd", 0, concat([be32(options.creationSeconds), be32(options.modificationSeconds ?? 0)]));
   const moov = box("moov", options.keys ? concat([mvhd, keyedMeta(options.keys)]) : mvhd);
   const headerSize = options.wideMdat ? 16 : 8;
   const parts = options.moov === "after-mdat" ? [ftyp, mdat, moov] : [ftyp, moov, mdat];
   const bytes = concat(parts);
   const mdatPayloadStart =
-    options.moov === "after-mdat"
-      ? ftyp.length + headerSize
-      : ftyp.length + moov.length + headerSize;
+    options.moov === "after-mdat" ? ftyp.length + headerSize : ftyp.length + moov.length + headerSize;
   return { bytes, mdatPayloadStart, mdatPayloadEnd: mdatPayloadStart + payload.length };
 }
 
@@ -225,8 +212,7 @@ export function heicExif(text: string, decoyCreationSeconds: number, method = 0)
   const moov = box("moov", mvhd);
   const file = concat([ftyp, meta, moov, extent]);
   const ilocStart = ftyp.length + 12 + iinf.length;
-  if (fourccAt(file, ilocStart + 4) !== "iloc")
-    throw new Error("iloc box is not where the fixture expects");
+  if (fourccAt(file, ilocStart + 4) !== "iloc") throw new Error("iloc box is not where the fixture expects");
   const offsetField = ilocStart + 24;
   const view = new DataView(file.buffer, file.byteOffset, file.byteLength);
   if (view.getUint32(offsetField) !== 0) throw new Error("extent offset placeholder is not zero");

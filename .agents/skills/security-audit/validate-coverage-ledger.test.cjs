@@ -40,9 +40,7 @@ function unit(overrides = {}) {
     starting_paths: ["src/router.ts", "src/authz.ts"],
     ordinary_attack_class_block: "ATTACK-CLASSES.md#Access control",
     selected_companion_blocks: [],
-    excluded_blocks: [
-      { block: "WEB-PROTOCOL-AND-AUTH.md#Cache behavior", reason: "The route is not cached." },
-    ],
+    excluded_blocks: [{ block: "WEB-PROTOCOL-AND-AUTH.md#Cache behavior", reason: "The route is not cached." }],
     prior_status: "new",
     attempts: [],
     wave: 1,
@@ -80,12 +78,7 @@ function cliOutput(result) {
 }
 
 const TERMINAL_CONTROL_PAYLOAD = "\u001b\u0007\u0085\u202e";
-const TERMINAL_CONTROL_BYTES = [
-  Buffer.from([0x1b]),
-  Buffer.from([0x07]),
-  Buffer.from("\u0085"),
-  Buffer.from("\u202e"),
-];
+const TERMINAL_CONTROL_BYTES = [Buffer.from([0x1b]), Buffer.from([0x07]), Buffer.from("\u0085"), Buffer.from("\u202e")];
 
 function assertNoInjectedControlBytes(output) {
   const bytes = Buffer.isBuffer(output) ? output : Buffer.from(output, "utf8");
@@ -135,11 +128,7 @@ test("accepts an empty ledger and complete units", () => {
 
   const missingAttempts = unit();
   delete missingAttempts.attempts;
-  assert(
-    errorsFor([missingAttempts]).some((error) =>
-      error.includes('missing required field "attempts"'),
-    ),
-  );
+  assert(errorsFor([missingAttempts]).some((error) => error.includes('missing required field "attempts"')));
 
   const covered = unit({
     status: "covered",
@@ -177,9 +166,7 @@ test("text preflight ignores structural characters and escapes inside strings", 
 
 test("text preflight enforces structural cardinality limits", () => {
   const depthLimit = LIMITS.nestingDepth;
-  assert.doesNotThrow(() =>
-    preflightJsonText(`${"[".repeat(depthLimit)}0${"]".repeat(depthLimit)}`),
-  );
+  assert.doesNotThrow(() => preflightJsonText(`${"[".repeat(depthLimit)}0${"]".repeat(depthLimit)}`));
   assert.throws(
     () => preflightJsonText(`${"[".repeat(depthLimit + 1)}0${"]".repeat(depthLimit + 1)}`),
     /exceeds nesting depth limit 64/,
@@ -191,10 +178,7 @@ test("text preflight enforces structural cardinality limits", () => {
   const tooManyItems = `[[${"null,".repeat(LIMITS.collectionItems)}null]]`;
   assert.throws(() => preflightJsonText(tooManyItems), /exceeds 1000 item array limit/);
 
-  const objectFields = Array.from(
-    { length: LIMITS.objectFields + 1 },
-    (_, index) => `"field${index}":null`,
-  ).join(",");
+  const objectFields = Array.from({ length: LIMITS.objectFields + 1 }, (_, index) => `"field${index}":null`).join(",");
   assert.throws(() => preflightJsonText(`[{${objectFields}}]`), /exceeds 1000 field object limit/);
 
   const fullArray = `[${"null,".repeat(LIMITS.collectionItems - 1)}null]`;
@@ -236,11 +220,7 @@ test("rejects noncanonical, duplicate, and colliding IDs", () => {
 
   const collision = unit();
   const differentMeaning = unit({ surface: "Delete-user route" });
-  assert(
-    errorsFor([collision, differentMeaning]).some((error) =>
-      error.includes("canonical identity collision"),
-    ),
-  );
+  assert(errorsFor([collision, differentMeaning]).some((error) => error.includes("canonical identity collision")));
 });
 
 test("requires canonical references to be own properties", () => {
@@ -254,12 +234,8 @@ test("rejects aliases for one semantic tuple", () => {
   const first = unit();
   const refs = { ...first.canonical_refs, surface: "src/alias.ts#updateUser" };
   const alias = unit({ canonical_refs: refs });
-  const ledger = [first, alias].sort((left, right) =>
-    left.coverage_id.localeCompare(right.coverage_id),
-  );
-  assert(
-    errorsFor(ledger).some((error) => error.includes("semantic tuple already uses coverage ID")),
-  );
+  const ledger = [first, alias].sort((left, right) => left.coverage_id.localeCompare(right.coverage_id));
+  assert(errorsFor(ledger).some((error) => error.includes("semantic tuple already uses coverage ID")));
 });
 
 test("requires lexicographic order", () => {
@@ -346,16 +322,11 @@ test("requires owned artifacts for local checks and null artifacts for source ch
     reviewed_paths: ["src/router.ts"],
     local_checks: [sourceCheck("hunter-1", { artifact: "agents/hunter-1/artifacts/source.txt" })],
   });
-  assert(
-    errorsFor([sourceWithArtifact]).some((error) =>
-      error.includes("source-only check must use null"),
-    ),
-  );
+  assert(errorsFor([sourceWithArtifact]).some((error) => error.includes("source-only check must use null")));
 });
 
 test("requires canonical lowercase filesystem-safe agent IDs", () => {
-  for (const value of ["hunter-1", "verifier_2", "a0"])
-    assert.equal(isSafeAgentId(value), true, value);
+  for (const value of ["hunter-1", "verifier_2", "a0"]) assert.equal(isSafeAgentId(value), true, value);
   for (const value of [
     "Hunter-1",
     "hunter.1",
@@ -383,9 +354,7 @@ test("enforces state evidence", () => {
     ),
   );
   assert(errorsFor([unit({ status: "blocked" })]).some((error) => error.includes("unresolved")));
-  assert(
-    errorsFor([unit({ status: "candidate" })]).some((error) => error.includes("reviewed_paths")),
-  );
+  assert(errorsFor([unit({ status: "candidate" })]).some((error) => error.includes("reviewed_paths")));
 
   assert.deepEqual(errorsFor([unit({ status: "in_progress", agent_id: "hunter-1" })]), []);
   const inProgressEvidence = unit({
@@ -394,26 +363,20 @@ test("enforces state evidence", () => {
     reviewed_paths: ["src/router.ts"],
     local_checks: [sourceCheck()],
   });
-  assert(
-    errorsFor([inProgressEvidence]).some((error) => error.includes("must keep this array empty")),
-  );
+  assert(errorsFor([inProgressEvidence]).some((error) => error.includes("must keep this array empty")));
 
   const assignedPlanned = unit({
     agent_id: "hunter-1",
     reviewed_paths: ["src/router.ts"],
     local_checks: [sourceCheck()],
   });
-  assert(
-    errorsFor([assignedPlanned]).some((error) => error.includes("planned unit must be unassigned")),
-  );
+  assert(errorsFor([assignedPlanned]).some((error) => error.includes("planned unit must be unassigned")));
 
   const candidate = unit({
     status: "candidate",
     agent_id: "hunter-1",
     reviewed_paths: ["src/router.ts"],
-    local_checks: [
-      sourceCheck("hunter-1", { invariant: "Ownership is required.", result: "No check exists." }),
-    ],
+    local_checks: [sourceCheck("hunter-1", { invariant: "Ownership is required.", result: "No check exists." })],
     result_fingerprints: ["src-router-missing-owner-check"],
     unresolved: ["validation_budget_exhausted"],
   });
@@ -516,11 +479,7 @@ test("rejects reassignment owner reuse and evidence mixing", () => {
     status: "in_progress",
     agent_id: "hunter-1",
   });
-  assert(
-    errorsFor([reusedOwner]).some((error) =>
-      error.includes("current assignment owner must be fresh"),
-    ),
-  );
+  assert(errorsFor([reusedOwner]).some((error) => error.includes("current assignment owner must be fresh")));
 
   const mixedEvidence = unit({
     attempts: [archivedAttempt({ local_checks: [localCheck()] })],
@@ -532,9 +491,7 @@ test("rejects reassignment owner reuse and evidence mixing", () => {
   });
   const errors = errorsFor([mixedEvidence]);
   assert(errors.some((error) => error.includes("prior assignment owner evidence must remain")));
-  assert(
-    errors.some((error) => error.includes("artifact from an archived attempt cannot be reused")),
-  );
+  assert(errors.some((error) => error.includes("artifact from an archived attempt cannot be reused")));
 
   const mixedHistory = unit({
     attempts: [
@@ -551,15 +508,9 @@ test("rejects reassignment owner reuse and evidence mixing", () => {
   });
   const historyErrors = errorsFor([mixedHistory]);
   assert(
-    historyErrors.some((error) =>
-      error.includes("prior assignment owner evidence must remain in its earlier attempt"),
-    ),
+    historyErrors.some((error) => error.includes("prior assignment owner evidence must remain in its earlier attempt")),
   );
-  assert(
-    historyErrors.some((error) =>
-      error.includes("artifact from an earlier attempt cannot be reused"),
-    ),
-  );
+  assert(historyErrors.some((error) => error.includes("artifact from an earlier attempt cannot be reused")));
 
   const unordered = unit({
     attempts: [
@@ -671,39 +622,27 @@ test("quotes input-derived controls in direct validation errors", () => {
   assertNoInjectedControlBytes(output);
 });
 
-test(
-  "quotes input-derived controls in CLI validation errors",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const value = unit({
-      status: `invalid-${TERMINAL_CONTROL_PAYLOAD}`,
-      result_fingerprints: ["force-state-error"],
-    });
-    const result = runCli(JSON.stringify([value]));
+test("quotes input-derived controls in CLI validation errors", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const value = unit({
+    status: `invalid-${TERMINAL_CONTROL_PAYLOAD}`,
+    result_fingerprints: ["force-state-error"],
+  });
+  const result = runCli(JSON.stringify([value]));
 
-    assert.equal(result.status, 1, cliOutput(result));
-    assert.match(result.stderr, /\$\[0\]\.status/);
-    assert.match(result.stderr, /\\u001b/);
-    assertNoInjectedControlBytes(result.stderr);
-  },
-);
+  assert.equal(result.status, 1, cliOutput(result));
+  assert.match(result.stderr, /\$\[0\]\.status/);
+  assert.match(result.stderr, /\\u001b/);
+  assertNoInjectedControlBytes(result.stderr);
+});
 
-test(
-  "returns a generic syntax error without parser-supplied controls",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const malformed = Buffer.concat([
-      Buffer.from("["),
-      Buffer.from(TERMINAL_CONTROL_PAYLOAD),
-      Buffer.from("]"),
-    ]);
-    const result = runCli(malformed);
+test("returns a generic syntax error without parser-supplied controls", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const malformed = Buffer.concat([Buffer.from("["), Buffer.from(TERMINAL_CONTROL_PAYLOAD), Buffer.from("]")]);
+  const result = runCli(malformed);
 
-    assert.equal(result.status, 1, cliOutput(result));
-    assert.equal(result.stderr, "Failed to parse coverage ledger: invalid JSON syntax\n");
-    assertNoInjectedControlBytes(result.stderr);
-  },
-);
+  assert.equal(result.status, 1, cliOutput(result));
+  assert.equal(result.stderr, "Failed to parse coverage ledger: invalid JSON syntax\n");
+  assertNoInjectedControlBytes(result.stderr);
+});
 
 test("does not reflect controls from a failed CLI input path", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-coverage-ledger-path-"));
@@ -767,30 +706,26 @@ test(
   },
 );
 
-test(
-  "rejects a symlink through the CLI",
-  { skip: process.platform === "win32" || !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-coverage-ledger-symlink-"));
-    const targetPath = path.join(directory, "target.json");
-    const symlinkPath = path.join(directory, "coverage-ledger.json");
-    try {
-      fs.writeFileSync(targetPath, JSON.stringify([unit()]));
-      fs.symlinkSync(targetPath, symlinkPath);
-      const result = spawnSync(process.execPath, [validatorPath, symlinkPath], {
-        encoding: "utf8",
-        timeout: CLI_TIMEOUT_MS,
-      });
-      const output = cliOutput(result);
-      assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
-      assert.equal(result.status, 1, output);
-      assert.match(output, /input must not be a symlink/);
-      assert.doesNotMatch(output, /stack|at validate-coverage-ledger/i);
-    } finally {
-      fs.rmSync(directory, { recursive: true, force: true });
-    }
-  },
-);
+test("rejects a symlink through the CLI", { skip: process.platform === "win32" || !HAS_SAFE_INPUT_OPEN }, () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "validate-coverage-ledger-symlink-"));
+  const targetPath = path.join(directory, "target.json");
+  const symlinkPath = path.join(directory, "coverage-ledger.json");
+  try {
+    fs.writeFileSync(targetPath, JSON.stringify([unit()]));
+    fs.symlinkSync(targetPath, symlinkPath);
+    const result = spawnSync(process.execPath, [validatorPath, symlinkPath], {
+      encoding: "utf8",
+      timeout: CLI_TIMEOUT_MS,
+    });
+    const output = cliOutput(result);
+    assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
+    assert.equal(result.status, 1, output);
+    assert.match(output, /input must not be a symlink/);
+    assert.doesNotMatch(output, /stack|at validate-coverage-ledger/i);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("rejects deeply nested input without recursion failure", () => {
   let nested = 0;
@@ -806,34 +741,27 @@ test("rejects deeply nested input without recursion failure", () => {
   assert.doesNotMatch(output, /RangeError|Maximum call stack|stack|at validate-coverage-ledger/i);
 });
 
-test(
-  "rejects multi-megabyte nesting under a constrained Node heap",
-  { skip: !HAS_SAFE_INPUT_OPEN },
-  () => {
-    const openContainers = "[".repeat(2000000);
-    const cases = [openContainers, `${openContainers}0${"]".repeat(2000000)}`];
-    for (const contents of cases) {
-      const result = runCli(contents, {
-        nodeArgs: ["--max-old-space-size=64"],
-        timeout: HOSTILE_CLI_TIMEOUT_MS,
-      });
-      const output = cliOutput(result);
-      assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
-      assert.equal(result.status, 1, output);
-      assert.match(output, /exceeds nesting depth limit 64/);
-      assert.doesNotMatch(
-        output,
-        /heap out of memory|allocation failed|RangeError|Maximum call stack|stack|at validate-coverage-ledger/i,
-      );
-    }
-  },
-);
+test("rejects multi-megabyte nesting under a constrained Node heap", { skip: !HAS_SAFE_INPUT_OPEN }, () => {
+  const openContainers = "[".repeat(2000000);
+  const cases = [openContainers, `${openContainers}0${"]".repeat(2000000)}`];
+  for (const contents of cases) {
+    const result = runCli(contents, {
+      nodeArgs: ["--max-old-space-size=64"],
+      timeout: HOSTILE_CLI_TIMEOUT_MS,
+    });
+    const output = cliOutput(result);
+    assert.notEqual(result.error && result.error.code, "ETIMEDOUT", output);
+    assert.equal(result.status, 1, output);
+    assert.match(output, /exceeds nesting depth limit 64/);
+    assert.doesNotMatch(
+      output,
+      /heap out of memory|allocation failed|RangeError|Maximum call stack|stack|at validate-coverage-ledger/i,
+    );
+  }
+});
 
 test("caps malformed 10000-unit validation output", () => {
-  assert.equal(
-    errorsFor(Array.from({ length: LIMITS.units }, () => null)).length,
-    LIMITS.validationErrors,
-  );
+  assert.equal(errorsFor(Array.from({ length: LIMITS.units }, () => null)).length, LIMITS.validationErrors);
   if (!HAS_SAFE_INPUT_OPEN) return;
 
   const result = runCli(JSON.stringify(Array.from({ length: LIMITS.units }, () => null)));

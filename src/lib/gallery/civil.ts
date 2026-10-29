@@ -15,14 +15,7 @@ export class CaptureInstant {
   readonly minute: number;
   readonly second: number;
 
-  private constructor(
-    year: number,
-    month: number,
-    day: number,
-    hour: number,
-    minute: number,
-    second: number,
-  ) {
+  private constructor(year: number, month: number, day: number, hour: number, minute: number, second: number) {
     this.year = year;
     this.month = month;
     this.day = day;

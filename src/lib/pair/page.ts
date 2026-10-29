@@ -66,9 +66,7 @@ export async function readGroup(
     const limits = shareRoom(GROUP_OBJECT_CAP - heads.length, open.length);
     if (limits.length === 0) return { heads, truncated: true };
     const pages = await Promise.all(
-      limits.map((limit, index) =>
-        bucket.list({ prefix: open[index].prefix, cursor: open[index].cursor, limit }),
-      ),
+      limits.map((limit, index) => bucket.list({ prefix: open[index].prefix, cursor: open[index].cursor, limit })),
     );
     for (const [index, page] of pages.entries()) {
       const side = open[index];

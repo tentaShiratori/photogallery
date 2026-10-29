@@ -19,18 +19,7 @@ describe("parseYearQuery", () => {
     expect(parseYearQuery("2024")).toBe(2024);
     expect(parseYearQuery("7")).toBe(7);
     expect(parseYearQuery("9999")).toBe(9999);
-    for (const raw of [
-      "",
-      "0",
-      "007",
-      "10000",
-      "-1",
-      "20.5",
-      "abc",
-      " 2024",
-      "UNKNOWN",
-      "unknown ",
-    ]) {
+    for (const raw of ["", "0", "007", "10000", "-1", "20.5", "abc", " 2024", "UNKNOWN", "unknown "]) {
       expect(parseYearQuery(raw)).toBeNull();
     }
   });

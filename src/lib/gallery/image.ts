@@ -1,14 +1,4 @@
-import {
-  EXIF_CAP,
-  MAX_CHUNK_STEPS,
-  type RangeRead,
-  fourcc,
-  take,
-  takeUpTo,
-  u16,
-  u32,
-  u32be,
-} from "./bytes.ts";
+import { EXIF_CAP, MAX_CHUNK_STEPS, type RangeRead, fourcc, take, takeUpTo, u16, u32, u32be } from "./bytes.ts";
 import { CaptureInstant } from "./civil.ts";
 
 function civilFromExifText(text: string): CaptureInstant | null {
@@ -31,12 +21,7 @@ type IfdEntry = {
   readonly inline: Uint8Array;
 };
 
-function findEntry(
-  bytes: Uint8Array,
-  ifdOffset: number,
-  tag: number,
-  little: boolean,
-): IfdEntry | null {
+function findEntry(bytes: Uint8Array, ifdOffset: number, tag: number, little: boolean): IfdEntry | null {
   const count = u16(bytes, ifdOffset, little);
   if (count === null || count > 256) return null;
   if (ifdOffset + 2 + count * 12 > bytes.length) return null;
@@ -53,12 +38,7 @@ function findEntry(
   return null;
 }
 
-function asciiTag(
-  bytes: Uint8Array,
-  ifdOffset: number,
-  tag: number,
-  little: boolean,
-): string | null {
+function asciiTag(bytes: Uint8Array, ifdOffset: number, tag: number, little: boolean): string | null {
   const entry = findEntry(bytes, ifdOffset, tag, little);
   if (!entry || entry.type !== 2 || entry.count <= 0 || entry.count > 64) return null;
   const raw =
@@ -78,12 +58,7 @@ function asciiTag(
 
 export function dateTimeOriginalFromTiff(bytes: Uint8Array): CaptureInstant | null {
   if (bytes.length < 8) return null;
-  const little =
-    bytes[0] === 0x49 && bytes[1] === 0x49
-      ? true
-      : bytes[0] === 0x4d && bytes[1] === 0x4d
-        ? false
-        : null;
+  const little = bytes[0] === 0x49 && bytes[1] === 0x49 ? true : bytes[0] === 0x4d && bytes[1] === 0x4d ? false : null;
   if (little === null) return null;
   if (u16(bytes, 2, little) !== 42) return null;
   const ifd0 = u32(bytes, 4, little);
@@ -110,11 +85,7 @@ function exifApp1(payload: Uint8Array): CaptureInstant | null {
   return dateTimeOriginalFromTiff(payload.subarray(6));
 }
 
-export async function instantFromJpeg(
-  key: string,
-  size: number,
-  read: RangeRead,
-): Promise<CaptureInstant | null> {
+export async function instantFromJpeg(key: string, size: number, read: RangeRead): Promise<CaptureInstant | null> {
   const soi = await take(read, key, 0, 2);
   if (!soi || soi[0] !== 0xff || soi[1] !== 0xd8) return null;
   let pos = 2;
@@ -153,11 +124,7 @@ export async function instantFromJpeg(
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
-export async function instantFromPng(
-  key: string,
-  size: number,
-  read: RangeRead,
-): Promise<CaptureInstant | null> {
+export async function instantFromPng(key: string, size: number, read: RangeRead): Promise<CaptureInstant | null> {
   const signature = await take(read, key, 0, 8);
   if (!signature || PNG_SIGNATURE.some((byte, index) => signature[index] !== byte)) return null;
   let pos = 8;
@@ -179,11 +146,7 @@ export async function instantFromPng(
   return null;
 }
 
-export async function instantFromWebp(
-  key: string,
-  size: number,
-  read: RangeRead,
-): Promise<CaptureInstant | null> {
+export async function instantFromWebp(key: string, size: number, read: RangeRead): Promise<CaptureInstant | null> {
   const head = await take(read, key, 0, 12);
   if (!head || fourcc(head, 0) !== "RIFF" || fourcc(head, 8) !== "WEBP") return null;
   let pos = 12;

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import {
-  PRIMARY_SCHOOL_GRADE_1_YEAR,
-  schoolGradeForLabel,
-  schoolGradeForYear,
-} from "./school-grade.ts";
+import { PRIMARY_SCHOOL_GRADE_1_YEAR, schoolGradeForLabel, schoolGradeForYear } from "./school-grade.ts";
 
 describe("PRIMARY_SCHOOL_GRADE_1_YEAR", () => {
   it("は 2003 である", () => {

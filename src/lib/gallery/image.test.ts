@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import { embeddedCapture } from "./index.ts";
 import { noon, openFiles, overlaps } from "./fixtures.ts";
-import {
-  heicExif,
-  jpegDateTime,
-  jpegExif,
-  macSeconds,
-  pngExif,
-  webpExif,
-} from "../../../test/capture-fixtures.ts";
+import { heicExif, jpegDateTime, jpegExif, macSeconds, pngExif, webpExif } from "../../../test/capture-fixtures.ts";
 
 describe("embeddedCapture", () => {
   it("JPEG の DateTimeOriginal を返し、DateTime だけでは null", async () => {
@@ -63,11 +56,9 @@ describe("embeddedCapture", () => {
       minute: 6,
       second: 7,
     });
-    expect(
-      calls.some((call) =>
-        overlaps(call.offset, call.length, built.idatPayloadStart, built.idatPayloadEnd),
-      ),
-    ).toBe(false);
+    expect(calls.some((call) => overlaps(call.offset, call.length, built.idatPayloadStart, built.idatPayloadEnd))).toBe(
+      false,
+    );
   });
 
   it("WebP の EXIF を読み、フレーム本体は読まない", async () => {
@@ -82,9 +73,7 @@ describe("embeddedCapture", () => {
       second: 5,
     });
     expect(
-      calls.some((call) =>
-        overlaps(call.offset, call.length, built.framePayloadStart, built.framePayloadEnd),
-      ),
+      calls.some((call) => overlaps(call.offset, call.length, built.framePayloadStart, built.framePayloadEnd)),
     ).toBe(false);
   });
 });

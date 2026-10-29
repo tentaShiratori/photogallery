@@ -43,9 +43,7 @@ async function previewMedias(bucket: Lister, id: GroupId): Promise<readonly Medi
     const open = [bodySide, thumbSide].filter((side) => side.open);
     if (open.length === 0) break;
     const pages = await Promise.all(
-      open.map((side) =>
-        bucket.list({ prefix: side.prefix, cursor: side.cursor, limit: PREVIEW_PAGE_SIZE }),
-      ),
+      open.map((side) => bucket.list({ prefix: side.prefix, cursor: side.cursor, limit: PREVIEW_PAGE_SIZE })),
     );
     for (const [index, page] of pages.entries()) {
       const side = open[index]!;
@@ -75,9 +73,7 @@ async function previewMedias(bucket: Lister, id: GroupId): Promise<readonly Medi
   return previews.length > 0 ? previews : null;
 }
 
-export async function readYearList(
-  bucket: Lister,
-): Promise<{ readonly years: readonly YearListYear[] }> {
+export async function readYearList(bucket: Lister): Promise<{ readonly years: readonly YearListYear[] }> {
   const discovered = [...(await discoverYears(bucket))].sort((left, right) => right - left);
   const [yearCards, unknown] = await Promise.all([
     Promise.all(
@@ -99,10 +95,7 @@ export async function readYearList(
   return { years };
 }
 
-export async function readYearContents(
-  bucket: Lister,
-  query: YearQuery,
-): Promise<YearGroup | null> {
+export async function readYearContents(bucket: Lister, query: YearQuery): Promise<YearGroup | null> {
   const id = groupIdOf(query);
   const { body, thumb } = prefixesOf(id);
   if (id.kind === "unknown") {

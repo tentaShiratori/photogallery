@@ -8,12 +8,7 @@ async function putPair(sink: ObjectSink, item: PlannedFile): Promise<void> {
   const info = await stat(item.filePath);
   const thumb = await thumbnailBytes(item.filePath, item.plan.kind);
   await sink.put(item.plan.thumbKey, thumb.bytes, thumb.contentType, thumb.bytes.byteLength);
-  await sink.put(
-    item.plan.bodyKey,
-    createReadStream(item.filePath),
-    item.plan.bodyContentType,
-    info.size,
-  );
+  await sink.put(item.plan.bodyKey, createReadStream(item.filePath), item.plan.bodyContentType, info.size);
   console.log(`uploaded ${item.name} -> ${item.plan.bodyKey} (${info.size} bytes)`);
 }
 

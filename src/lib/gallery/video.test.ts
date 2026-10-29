@@ -16,11 +16,9 @@ describe("embeddedCapture", () => {
       minute: 0,
       second: 0,
     });
-    expect(
-      calls.some((call) =>
-        overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd),
-      ),
-    ).toBe(false);
+    expect(calls.some((call) => overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd))).toBe(
+      false,
+    );
   });
 
   it("moov が mdat より前でも同じ時刻になり、mdat 本体は読まない", async () => {
@@ -35,11 +33,9 @@ describe("embeddedCapture", () => {
       minute: 0,
       second: 0,
     });
-    expect(
-      calls.some((call) =>
-        overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd),
-      ),
-    ).toBe(false);
+    expect(calls.some((call) => overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd))).toBe(
+      false,
+    );
   });
 
   it("creationdate の年から秒までを使い、時差と mvhd は捨てる", async () => {
@@ -61,9 +57,7 @@ describe("embeddedCapture", () => {
       const { calls, read } = openFiles(new Map([[name, built.bytes]]));
       expect(await embeddedCapture(name, built.bytes.length, read)).toEqual(expected);
       expect(
-        calls.some((call) =>
-          overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd),
-        ),
+        calls.some((call) => overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd)),
       ).toBe(false);
     }
   });
@@ -89,18 +83,16 @@ describe("embeddedCapture", () => {
       minute: 0,
       second: 0,
     };
-    const malformed = [
-      "2014-09-15T18:33:31",
-      "2014-09-15T18:33:31Z",
-      "2014-13-15T18:33:31+0900",
-    ].map((creationdate, index) => ({
-      name: `bad-${index}.mp4`,
-      built: mp4({
-        creationSeconds: macSeconds(2023, 12, 31, 15, 0, 0),
-        moov: "after-mdat",
-        keys: creationdateKeys("moov", creationdate),
+    const malformed = ["2014-09-15T18:33:31", "2014-09-15T18:33:31Z", "2014-13-15T18:33:31+0900"].map(
+      (creationdate, index) => ({
+        name: `bad-${index}.mp4`,
+        built: mp4({
+          creationSeconds: macSeconds(2023, 12, 31, 15, 0, 0),
+          moov: "after-mdat",
+          keys: creationdateKeys("moov", creationdate),
+        }),
       }),
-    }));
+    );
     const files = new Map<string, Uint8Array>([
       ["bare.mov", bare.bytes],
       ...malformed.map(({ name, built }) => [name, built.bytes] as const),
@@ -223,9 +215,7 @@ describe("embeddedCapture", () => {
       },
     });
     const { read } = openFiles(new Map([["android-with-creationdate.mov", built.bytes]]));
-    expect(
-      await embeddedCapture("android-with-creationdate.mov", built.bytes.length, read),
-    ).toEqual({
+    expect(await embeddedCapture("android-with-creationdate.mov", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
       day: 2,

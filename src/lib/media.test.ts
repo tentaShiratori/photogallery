@@ -23,10 +23,7 @@ describe("media kinds", () => {
   });
 
   it("フォルダ直下の名前から画像と動画だけを選ぶ", () => {
-    expect(selectUploadNames(["a.jpg", "b.MP4", "c.txt", ".hidden.png", "readme"])).toEqual([
-      "a.jpg",
-      "b.MP4",
-    ]);
+    expect(selectUploadNames(["a.jpg", "b.MP4", "c.txt", ".hidden.png", "readme"])).toEqual(["a.jpg", "b.MP4"]);
   });
 });
 

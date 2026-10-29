@@ -8,9 +8,7 @@ async function renderToString(element: { toString(): string | Promise<string> })
 
 describe("GalleryContent", () => {
   it("認証メールをエスケープして出す", async () => {
-    const html = await renderToString(
-      <GalleryContent email="<img src=x onerror=alert(1)>@example.com" />,
-    );
+    const html = await renderToString(<GalleryContent email="<img src=x onerror=alert(1)>@example.com" />);
     expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;@example.com");
     expect(html).not.toContain("<img src=x onerror");
   });

@@ -1,21 +1,6 @@
 import type { CivilCapture } from "../gallery/index.ts";
-import {
-  captureFromKey,
-  classify,
-  kindOfBody,
-  thumbKeyFor,
-  urlForBody,
-  urlForThumb,
-} from "./stem.ts";
-import {
-  mediaSeal,
-  type BodyKey,
-  type Media,
-  type Stem,
-  type ThumbKey,
-  type Year,
-  type YearGroup,
-} from "./types.ts";
+import { captureFromKey, classify, kindOfBody, thumbKeyFor, urlForBody, urlForThumb } from "./stem.ts";
+import { mediaSeal, type BodyKey, type Media, type Stem, type ThumbKey, type Year, type YearGroup } from "./types.ts";
 
 export type GroupId = { readonly kind: "year"; readonly year: Year } | { readonly kind: "unknown" };
 
@@ -128,10 +113,7 @@ function slotsFromHeads(heads: readonly BucketHead[]): Map<Stem, Slot> {
     const found = classify(head.key);
     if (!found) continue;
     const current = slots.get(found.stem) ?? { status: "empty" };
-    const next =
-      found.role === "body"
-        ? seeBody(current, head, found.bodyKey)
-        : seeThumb(current, found.thumbKey);
+    const next = found.role === "body" ? seeBody(current, head, found.bodyKey) : seeThumb(current, found.thumbKey);
     slots.set(found.stem, next);
   }
   return slots;
@@ -145,11 +127,7 @@ function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
   return ranked;
 }
 
-export function groupFromHeads(
-  id: GroupId,
-  heads: readonly BucketHead[],
-  truncated: boolean,
-): YearGroup | null {
+export function groupFromHeads(id: GroupId, heads: readonly BucketHead[], truncated: boolean): YearGroup | null {
   const ranked = pairsFromHeads(heads);
   const items =
     id.kind === "year"
@@ -164,10 +142,7 @@ export function groupFromHeads(
   return { label, truncated, items: [first, ...rest] };
 }
 
-export function previewMediasFromHeads(
-  id: GroupId,
-  heads: readonly BucketHead[],
-): readonly Media[] {
+export function previewMediasFromHeads(id: GroupId, heads: readonly BucketHead[]): readonly Media[] {
   const ranked = pairsFromHeads(heads);
   const items =
     id.kind === "year"

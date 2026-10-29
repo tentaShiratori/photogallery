@@ -20,12 +20,7 @@ export type Box = {
   readonly payloadOffset: number;
 };
 
-export async function readBox(
-  key: string,
-  offset: number,
-  fileSize: number,
-  read: RangeRead,
-): Promise<Box | null> {
+export async function readBox(key: string, offset: number, fileSize: number, read: RangeRead): Promise<Box | null> {
   if (offset < 0 || offset + 8 > fileSize) return null;
   const head = await take(read, key, offset, 8);
   if (!head) return null;
@@ -113,10 +108,7 @@ function sizedInt(bytes: Uint8Array, offset: number, size: number): bigint | nul
   return null;
 }
 
-function itemExtent(
-  payload: Uint8Array,
-  itemId: number,
-): { method: number; offset: number; length: number } | null {
+function itemExtent(payload: Uint8Array, itemId: number): { method: number; offset: number; length: number } | null {
   if (payload.length < 6) return null;
   const version = payload[0]!;
   if (version > 2) return null;
@@ -160,10 +152,7 @@ function itemExtent(
     }
     if (id === itemId && first) {
       const fileOffset = base + first.offset;
-      if (
-        fileOffset > BigInt(Number.MAX_SAFE_INTEGER) ||
-        first.length > BigInt(Number.MAX_SAFE_INTEGER)
-      ) {
+      if (fileOffset > BigInt(Number.MAX_SAFE_INTEGER) || first.length > BigInt(Number.MAX_SAFE_INTEGER)) {
         return null;
       }
       return { method, offset: Number(fileOffset), length: Number(first.length) };
@@ -198,11 +187,7 @@ async function exifFromMeta(
   return dateTimeOriginalFromTiff(extent.subarray(tiffAt));
 }
 
-export async function instantFromBmffExif(
-  key: string,
-  size: number,
-  read: RangeRead,
-): Promise<CaptureInstant | null> {
+export async function instantFromBmffExif(key: string, size: number, read: RangeRead): Promise<CaptureInstant | null> {
   let offset = 0;
   for (let step = 0; step < MAX_BOX_STEPS && offset + 8 <= size; step++) {
     const box = await readBox(key, offset, size, read);

@@ -87,8 +87,7 @@ const PATH_FORBIDDEN_CHARACTER = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}\p{Default_Ignorable_
 const WINDOWS_RESERVED_COMPONENT =
   /^(?:con|prn|aux|nul|clock\$|conin\$|conout\$|com[1-9\u00b9\u00b2\u00b3]|lpt[1-9\u00b9\u00b2\u00b3])(?:\.|$)/iu;
 const UTF8_DECODER = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
-const UNSAFE_DIAGNOSTIC_CHARACTER =
-  /[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}\p{Default_Ignorable_Code_Point}]/gu;
+const UNSAFE_DIAGNOSTIC_CHARACTER = /[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}\p{Default_Ignorable_Code_Point}]/gu;
 const MAX_DIAGNOSTIC_STRING_LENGTH = 256;
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -99,9 +98,7 @@ class SafeInputError extends Error {}
 function escapeUnsafeDiagnosticCharacters(value) {
   return String(value).replace(UNSAFE_DIAGNOSTIC_CHARACTER, (character) => {
     const codePoint = character.codePointAt(0);
-    return codePoint <= 0xffff
-      ? `\\u${codePoint.toString(16).padStart(4, "0")}`
-      : `\\u{${codePoint.toString(16)}}`;
+    return codePoint <= 0xffff ? `\\u${codePoint.toString(16).padStart(4, "0")}` : `\\u{${codePoint.toString(16)}}`;
   });
 }
 
@@ -109,9 +106,7 @@ function safeQuote(value) {
   let serialized;
   if (typeof value === "string") {
     const clipped =
-      value.length > MAX_DIAGNOSTIC_STRING_LENGTH
-        ? `${value.slice(0, MAX_DIAGNOSTIC_STRING_LENGTH)}...`
-        : value;
+      value.length > MAX_DIAGNOSTIC_STRING_LENGTH ? `${value.slice(0, MAX_DIAGNOSTIC_STRING_LENGTH)}...` : value;
     serialized = JSON.stringify(clipped);
   } else if (value === null || typeof value === "boolean") {
     serialized = String(value);
@@ -129,10 +124,7 @@ function createErrorList() {
     value(...messages) {
       const remaining = LIMITS.validationErrors - this.length;
       if (remaining > 0) {
-        Array.prototype.push.apply(
-          this,
-          messages.slice(0, remaining).map(escapeUnsafeDiagnosticCharacters),
-        );
+        Array.prototype.push.apply(this, messages.slice(0, remaining).map(escapeUnsafeDiagnosticCharacters));
       }
       return this.length;
     },
@@ -178,11 +170,7 @@ function preflightJsonText(contents) {
       container.items++;
       const limit = container.topLevel ? MAX_UNITS : LIMITS.collectionItems;
       if (container.items > limit) {
-        fail(
-          container.topLevel
-            ? `exceeds ${limit} top-level unit limit`
-            : `exceeds ${limit} item array limit`,
-        );
+        fail(container.topLevel ? `exceeds ${limit} top-level unit limit` : `exceeds ${limit} item array limit`);
       }
       container.state = "commaOrEnd";
     } else {
@@ -282,8 +270,7 @@ function preflightJsonText(contents) {
       container.state = "value";
     } else if (character === ",") {
       const container = currentContainer();
-      if (!container || container.state !== "commaOrEnd")
-        fail("has malformed JSON collection structure");
+      if (!container || container.state !== "commaOrEnd") fail("has malformed JSON collection structure");
       container.state = container.type === "array" ? "value" : "key";
     } else {
       beginValue();
@@ -370,11 +357,7 @@ function isVisibleText(value, maxLength = MAX_TEXT_LENGTH) {
 }
 
 function isCanonicalRef(value) {
-  return (
-    isVisibleText(value, 1024) &&
-    !PATH_FORBIDDEN_CHARACTER.test(value) &&
-    value.normalize("NFC") === value
-  );
+  return isVisibleText(value, 1024) && !PATH_FORBIDDEN_CHARACTER.test(value) && value.normalize("NFC") === value;
 }
 
 function encodeCanonicalRef(value) {
@@ -389,9 +372,7 @@ function encodeCanonicalRef(value) {
       byte === 0x2e ||
       byte === 0x5f ||
       byte === 0x7e;
-    encoded += unreserved
-      ? String.fromCharCode(byte)
-      : `%${byte.toString(16).toUpperCase().padStart(2, "0")}`;
+    encoded += unreserved ? String.fromCharCode(byte) : `%${byte.toString(16).toUpperCase().padStart(2, "0")}`;
   }
   return encoded;
 }
@@ -416,12 +397,7 @@ function isSafeRelativePath(value) {
     value.includes(":")
   )
     return false;
-  if (
-    path.posix.isAbsolute(value) ||
-    path.win32.isAbsolute(value) ||
-    /^[A-Za-z]:/.test(value) ||
-    value.startsWith("~")
-  )
+  if (path.posix.isAbsolute(value) || path.win32.isAbsolute(value) || /^[A-Za-z]:/.test(value) || value.startsWith("~"))
     return false;
   return value
     .split("/")
@@ -436,11 +412,7 @@ function isSafeRelativePath(value) {
 }
 
 function isSafeAgentId(value) {
-  return (
-    typeof value === "string" &&
-    AGENT_ID_PATTERN.test(value) &&
-    !WINDOWS_RESERVED_AGENT_ID.test(value)
-  );
+  return typeof value === "string" && AGENT_ID_PATTERN.test(value) && !WINDOWS_RESERVED_AGENT_ID.test(value);
 }
 
 function isOwnedArtifactPath(value, agentId) {
@@ -461,13 +433,11 @@ function validateStringArray(value, location, errors, options = {}) {
   value.slice(0, MAX_LIST_ITEMS).forEach((entry, index) => {
     const entryLocation = `${location}[${index}]`;
     const valid = pathValue ? isSafeRelativePath(entry) : isVisibleText(entry);
-    if (!valid)
-      errors.push(`${entryLocation}: invalid ${pathValue ? "repository-relative path" : "text"}`);
+    if (!valid) errors.push(`${entryLocation}: invalid ${pathValue ? "repository-relative path" : "text"}`);
     if (fingerprint && typeof entry === "string" && !FINGERPRINT_PATTERN.test(entry)) {
       errors.push(`${entryLocation}: invalid fingerprint`);
     }
-    if (typeof entry === "string" && seen.has(entry))
-      errors.push(`${entryLocation}: duplicate entry`);
+    if (typeof entry === "string" && seen.has(entry)) errors.push(`${entryLocation}: duplicate entry`);
     if (typeof entry === "string") seen.add(entry);
   });
 }
@@ -484,18 +454,10 @@ function validateChecks(value, location, errors) {
       errors.push(`${base}: expected object`);
       return;
     }
-    for (const field of [
-      "agent_id",
-      "reviewed_paths",
-      "invariant",
-      "method",
-      "result",
-      "artifact",
-    ]) {
+    for (const field of ["agent_id", "reviewed_paths", "invariant", "method", "result", "artifact"]) {
       if (!hasOwn(check, field)) errors.push(`${base}: missing required field ${safeQuote(field)}`);
     }
-    if (!isSafeAgentId(check.agent_id))
-      errors.push(`${base}.agent_id: expected a canonical lowercase agent ID`);
+    if (!isSafeAgentId(check.agent_id)) errors.push(`${base}.agent_id: expected a canonical lowercase agent ID`);
     validateStringArray(check.reviewed_paths, `${base}.reviewed_paths`, errors, {
       allowEmpty: false,
       pathValue: true,
@@ -560,8 +522,7 @@ function validateExcludedBlocks(value, location, errors) {
     }
     if (!isVisibleText(entry.block)) errors.push(`${base}.block: invalid text`);
     if (!isVisibleText(entry.reason)) errors.push(`${base}.reason: invalid text`);
-    if (typeof entry.block === "string" && seen.has(entry.block))
-      errors.push(`${base}.block: duplicate entry`);
+    if (typeof entry.block === "string" && seen.has(entry.block)) errors.push(`${base}.block: duplicate entry`);
     if (typeof entry.block === "string") seen.add(entry.block);
   });
 }
@@ -578,18 +539,14 @@ function semanticKey(unit) {
 
 function hasValidSemanticFields(unit) {
   return (
-    ["surface", "boundary", "subsystem", "attack_class"].every((field) =>
-      isVisibleText(unit[field]),
-    ) &&
+    ["surface", "boundary", "subsystem", "attack_class"].every((field) => isVisibleText(unit[field])) &&
     (!hasOwn(unit, "lifecycle") || isVisibleText(unit.lifecycle))
   );
 }
 
 function requireEmptyArray(unit, field, base, errors) {
   if (Array.isArray(unit[field]) && unit[field].length > 0) {
-    errors.push(
-      `${base}.${field}: unit with status ${safeQuote(unit.status)} must keep this array empty`,
-    );
+    errors.push(`${base}.${field}: unit with status ${safeQuote(unit.status)} must keep this array empty`);
   }
 }
 
@@ -623,9 +580,7 @@ function validateStateInvariants(unit, base, errors) {
     case "out_of_scope":
     case "deferred":
       if (unit.agent_id !== null)
-        errors.push(
-          `${base}.agent_id: unit with status ${safeQuote(unit.status)} must be unassigned`,
-        );
+        errors.push(`${base}.agent_id: unit with status ${safeQuote(unit.status)} must be unassigned`);
       emptyEvidence();
       requireNonemptyArray(unit, "unresolved", base, errors);
       break;
@@ -660,8 +615,7 @@ function validateAttempts(value, unit, base, errors) {
     errors.push(`${base}.attempts: expected array`);
     return;
   }
-  if (value.length > MAX_LIST_ITEMS)
-    errors.push(`${base}.attempts: exceeds ${MAX_LIST_ITEMS} entries`);
+  if (value.length > MAX_LIST_ITEMS) errors.push(`${base}.attempts: exceeds ${MAX_LIST_ITEMS} entries`);
 
   const priorOwners = new Set();
   const priorArtifacts = new Set();
@@ -673,8 +627,7 @@ function validateAttempts(value, unit, base, errors) {
       return;
     }
     for (const field of ATTEMPT_FIELDS) {
-      if (!hasOwn(attempt, field))
-        errors.push(`${attemptBase}: missing required field ${safeQuote(field)}`);
+      if (!hasOwn(attempt, field)) errors.push(`${attemptBase}: missing required field ${safeQuote(field)}`);
     }
     if (!Number.isInteger(attempt.wave) || attempt.wave < 1) {
       errors.push(`${attemptBase}.wave: expected a positive integer`);
@@ -682,9 +635,7 @@ function validateAttempts(value, unit, base, errors) {
       if (attempt.wave <= previousWave)
         errors.push(`${attemptBase}.wave: archived attempt waves must be strictly increasing`);
       if (Number.isInteger(unit.wave) && attempt.wave >= unit.wave) {
-        errors.push(
-          `${attemptBase}.wave: archived attempt wave must precede current wave ${safeQuote(unit.wave)}`,
-        );
+        errors.push(`${attemptBase}.wave: archived attempt wave must precede current wave ${safeQuote(unit.wave)}`);
       }
       previousWave = attempt.wave;
     }
@@ -693,9 +644,7 @@ function validateAttempts(value, unit, base, errors) {
     }
     let hasFreshOwner = false;
     if (!isSafeAgentId(attempt.agent_id)) {
-      errors.push(
-        `${attemptBase}.agent_id: archived attempt requires a canonical lowercase agent ID`,
-      );
+      errors.push(`${attemptBase}.agent_id: archived attempt requires a canonical lowercase agent ID`);
     } else if (priorOwners.has(attempt.agent_id)) {
       errors.push(`${attemptBase}.agent_id: assignment owner must be fresh for each attempt`);
     } else {
@@ -710,8 +659,7 @@ function validateAttempts(value, unit, base, errors) {
       fingerprint: true,
     });
     validateStringArray(attempt.unresolved, `${attemptBase}.unresolved`, errors);
-    if (!isVisibleText(attempt.reassignment_reason))
-      errors.push(`${attemptBase}.reassignment_reason: invalid text`);
+    if (!isVisibleText(attempt.reassignment_reason)) errors.push(`${attemptBase}.reassignment_reason: invalid text`);
     validateStateInvariants(attempt, attemptBase, errors);
 
     if (Array.isArray(attempt.local_checks)) {
@@ -727,8 +675,7 @@ function validateAttempts(value, unit, base, errors) {
             `${attemptBase}.local_checks[${checkIndex}].artifact: artifact from an earlier attempt cannot be reused`,
           );
         }
-        if (check.method === "local" && typeof check.artifact === "string")
-          priorArtifacts.add(check.artifact);
+        if (check.method === "local" && typeof check.artifact === "string") priorArtifacts.add(check.artifact);
       });
     }
     if (hasFreshOwner) priorOwners.add(attempt.agent_id);
@@ -746,9 +693,7 @@ function validateAttempts(value, unit, base, errors) {
         );
       }
       if (typeof check.artifact === "string" && priorArtifacts.has(check.artifact)) {
-        errors.push(
-          `${base}.local_checks[${index}].artifact: artifact from an archived attempt cannot be reused`,
-        );
+        errors.push(`${base}.local_checks[${index}].artifact: artifact from an archived attempt cannot be reused`);
       }
     });
   }
@@ -765,16 +710,13 @@ function collectUnitErrors(unit, index) {
   for (const field of ["surface", "boundary", "subsystem", "attack_class"]) {
     if (!isVisibleText(unit[field])) errors.push(`${base}.${field}: invalid text`);
   }
-  if (hasOwn(unit, "lifecycle") && !isVisibleText(unit.lifecycle))
-    errors.push(`${base}.lifecycle: invalid text`);
+  if (hasOwn(unit, "lifecycle") && !isVisibleText(unit.lifecycle)) errors.push(`${base}.lifecycle: invalid text`);
 
   let expectedId = null;
   if (!isObject(unit.canonical_refs)) {
     errors.push(`${base}.canonical_refs: expected object`);
   } else {
-    const expectedFields = hasOwn(unit.canonical_refs, "lifecycle")
-      ? [...REF_FIELDS, "lifecycle"]
-      : REF_FIELDS;
+    const expectedFields = hasOwn(unit.canonical_refs, "lifecycle") ? [...REF_FIELDS, "lifecycle"] : REF_FIELDS;
     for (const field of expectedFields) {
       if (!hasOwn(unit.canonical_refs, field)) {
         errors.push(`${base}.canonical_refs: missing required field ${safeQuote(field)}`);
@@ -804,10 +746,7 @@ function collectUnitErrors(unit, index) {
     allowEmpty: false,
     pathValue: true,
   });
-  if (
-    unit.ordinary_attack_class_block !== null &&
-    !isVisibleText(unit.ordinary_attack_class_block)
-  ) {
+  if (unit.ordinary_attack_class_block !== null && !isVisibleText(unit.ordinary_attack_class_block)) {
     errors.push(`${base}.ordinary_attack_class_block: expected null or non-empty text`);
   }
   validateStringArray(unit.selected_companion_blocks, `${base}.selected_companion_blocks`, errors);
@@ -823,10 +762,8 @@ function collectUnitErrors(unit, index) {
 
   if (!PRIOR_STATUSES.has(unit.prior_status))
     errors.push(`${base}.prior_status: invalid value ${safeQuote(unit.prior_status)}`);
-  if (!STATUSES.has(unit.status))
-    errors.push(`${base}.status: invalid value ${safeQuote(unit.status)}`);
-  if (!Number.isInteger(unit.wave) || unit.wave < 1)
-    errors.push(`${base}.wave: expected a positive integer`);
+  if (!STATUSES.has(unit.status)) errors.push(`${base}.status: invalid value ${safeQuote(unit.status)}`);
+  if (!Number.isInteger(unit.wave) || unit.wave < 1) errors.push(`${base}.wave: expected a positive integer`);
   if (unit.agent_id !== null && !isSafeAgentId(unit.agent_id))
     errors.push(`${base}.agent_id: expected null or a safe agent ID`);
 
@@ -847,12 +784,7 @@ function collectUnitErrors(unit, index) {
 function readFileWithinLimit(file) {
   const noFollow = fs.constants.O_NOFOLLOW;
   const nonBlock = fs.constants.O_NONBLOCK;
-  if (
-    !Number.isInteger(noFollow) ||
-    noFollow === 0 ||
-    !Number.isInteger(nonBlock) ||
-    nonBlock === 0
-  ) {
+  if (!Number.isInteger(noFollow) || noFollow === 0 || !Number.isInteger(nonBlock) || nonBlock === 0) {
     // Node exposes no race-safe fallback on these platforms, so reject all inputs.
     throw new SafeInputError("OS no-follow and nonblocking input protection is unavailable");
   }
@@ -868,8 +800,7 @@ function readFileWithinLimit(file) {
   try {
     const stat = fs.fstatSync(descriptor);
     if (!stat.isFile()) throw new SafeInputError("input must be a regular file");
-    if (stat.size > MAX_INPUT_BYTES)
-      throw new SafeInputError(`input exceeds ${MAX_INPUT_BYTES} byte limit`);
+    if (stat.size > MAX_INPUT_BYTES) throw new SafeInputError(`input exceeds ${MAX_INPUT_BYTES} byte limit`);
 
     const chunks = [];
     const buffer = Buffer.allocUnsafe(64 * 1024);
@@ -878,8 +809,7 @@ function readFileWithinLimit(file) {
       const count = fs.readSync(descriptor, buffer, 0, buffer.length, null);
       if (count === 0) break;
       bytesRead += count;
-      if (bytesRead > MAX_INPUT_BYTES)
-        throw new SafeInputError(`input exceeds ${MAX_INPUT_BYTES} byte limit`);
+      if (bytesRead > MAX_INPUT_BYTES) throw new SafeInputError(`input exceeds ${MAX_INPUT_BYTES} byte limit`);
       chunks.push(Buffer.from(buffer.subarray(0, count)));
     }
     try {
@@ -952,8 +882,7 @@ function run(file) {
   try {
     contents = readFileWithinLimit(file);
   } catch (error) {
-    const reason =
-      error instanceof SafeInputError ? error.message : "input could not be opened or read safely";
+    const reason = error instanceof SafeInputError ? error.message : "input could not be opened or read safely";
     console.error(`Failed to read coverage ledger: ${reason}`);
     return 1;
   }
@@ -982,10 +911,7 @@ function run(file) {
   }
   for (const message of errors) console.error("ERROR:", message);
   if (errors.length > 0) {
-    const cap =
-      errors.length === LIMITS.validationErrors
-        ? `; output capped at ${LIMITS.validationErrors}`
-        : "";
+    const cap = errors.length === LIMITS.validationErrors ? `; output capped at ${LIMITS.validationErrors}` : "";
     console.error(`FAIL: ${errors.length} validation error(s)${cap}`);
     return 1;
   }

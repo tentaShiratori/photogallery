@@ -129,9 +129,7 @@ export function yearListView(state: YearListState): YearListView {
     case "failed":
       return { status: LIST_FAILED, years: [] };
     case "ready":
-      return state.years.length === 0
-        ? { status: EMPTY, years: [] }
-        : { status: null, years: state.years };
+      return state.years.length === 0 ? { status: EMPTY, years: [] } : { status: null, years: state.years };
   }
 }
 

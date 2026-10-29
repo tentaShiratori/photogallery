@@ -19,9 +19,7 @@ if (status !== "completed") {
 }
 
 if (loopCount >= MAX_LOOP) {
-  process.stderr.write(
-    `stop hook: loop_count=${loopCount} reached MAX_LOOP=${MAX_LOOP}; skipping follow-up\n`,
-  );
+  process.stderr.write(`stop hook: loop_count=${loopCount} reached MAX_LOOP=${MAX_LOOP}; skipping follow-up\n`);
   respond({});
 }
 

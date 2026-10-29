@@ -77,8 +77,7 @@ export class YearListPage {
       () => {
         const titleOk = document.title.includes("フォトギャラリー");
         const host = location.hostname;
-        const access =
-          host.includes("cloudflareaccess.com") || host.includes("accounts.google.com");
+        const access = host.includes("cloudflareaccess.com") || host.includes("accounts.google.com");
         return titleOk && !access;
       },
       { timeout: 10 * 60 * 1000 },
@@ -94,8 +93,7 @@ export class YearListPage {
 
   async collectMarks(): Promise<ClientMarks> {
     await this.page.waitForFunction(
-      (names: readonly string[]) =>
-        names.every((name) => performance.getEntriesByName(name).length > 0),
+      (names: readonly string[]) => names.every((name) => performance.getEntriesByName(name).length > 0),
       [MARK_LOADING, MARK_API, MARK_READY],
       { timeout: 120_000 },
     );

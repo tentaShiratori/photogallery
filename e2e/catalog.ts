@@ -1,16 +1,6 @@
 export const FIRST_PAGE = 60;
 
-export type YearLabel =
-  | "2024"
-  | "2023"
-  | "2019"
-  | "2018"
-  | "2015"
-  | "2009"
-  | "2008"
-  | "2003"
-  | "2002"
-  | "年不明";
+export type YearLabel = "2024" | "2023" | "2019" | "2018" | "2015" | "2009" | "2008" | "2003" | "2002" | "年不明";
 
 export type CatalogBody = {
   readonly key: string;
@@ -25,18 +15,7 @@ export type GalleryCatalog = {
   readonly newest: (label: YearLabel) => CatalogBody;
 };
 
-const LABELS: readonly YearLabel[] = [
-  "2024",
-  "2023",
-  "2019",
-  "2018",
-  "2015",
-  "2009",
-  "2008",
-  "2003",
-  "2002",
-  "年不明",
-];
+const LABELS: readonly YearLabel[] = ["2024", "2023", "2019", "2018", "2015", "2009", "2008", "2003", "2002", "年不明"];
 
 const IMAGE_KEY = "2024-08-02T12-00-00.png";
 const VIDEO_KEY = "2023-05-01T08-30-00.mp4";
@@ -54,8 +33,7 @@ const GRADE_BOUNDARY_KEYS: ReadonlyArray<{ key: string; label: YearLabel }> = [
 
 const EXTRA_2024_KEYS = Array.from(
   { length: 64 },
-  (_, i) =>
-    `2024-01-01T00-${String(Math.floor(i / 60)).padStart(2, "0")}-${String(i % 60).padStart(2, "0")}.png`,
+  (_, i) => `2024-01-01T00-${String(Math.floor(i / 60)).padStart(2, "0")}-${String(i % 60).padStart(2, "0")}.png`,
 );
 
 function buildBodies(): CatalogBody[] {
