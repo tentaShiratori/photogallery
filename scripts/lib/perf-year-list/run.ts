@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { chromium, type BrowserContext } from "playwright-core";
+import { perfYearListEnv } from "../env.ts";
 import { PROFILE_DIR } from "./cli.ts";
 import { YearListPage, type ClientMarks, type ServerTiming } from "./year-list-page.ts";
 
@@ -13,7 +14,7 @@ export type RunSample = {
 
 function chromeLaunchOptions(): { readonly channel?: "chrome"; readonly executablePath?: string } {
   const candidates = [
-    process.env.PHOTOGALLERY_CHROME,
+    perfYearListEnv().PHOTOGALLERY_CHROME,
     "/usr/local/bin/google-chrome",
     "/usr/bin/google-chrome",
     "/usr/bin/google-chrome-stable",

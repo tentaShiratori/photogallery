@@ -1,17 +1,10 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as readline from "node:readline/promises";
+import { uploadPrdEnv } from "./lib/env.ts";
 import { assertDirectory, FolderArgError, resolveFolderArg } from "./lib/folder-arg.ts";
 import { destinationLine, type ObjectSink } from "./lib/object-sink.ts";
 import { listUploadTargets, planUploads } from "./lib/prepare.ts";
 import { putAll } from "./lib/put-all.ts";
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) {
-    throw new Error(`${name} が未設定です。.env.example を見て .env を作ってください。`);
-  }
-  return value;
-}
 
 async function confirmYes(): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -24,22 +17,19 @@ async function confirmYes(): Promise<boolean> {
 }
 
 function openPrdSink(): ObjectSink {
-  const accountId = requiredEnv("R2_ACCOUNT_ID");
-  const accessKeyId = requiredEnv("R2_ACCESS_KEY_ID");
-  const secretAccessKey = requiredEnv("R2_SECRET_ACCESS_KEY");
-  const bucket = requiredEnv("R2_BUCKET_NAME");
+  const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME } = uploadPrdEnv();
 
   const client = new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
+    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
   });
 
   return {
     async put(key, body, contentType, contentLength) {
       await client.send(
         new PutObjectCommand({
-          Bucket: bucket,
+          Bucket: R2_BUCKET_NAME,
           Key: key,
           Body: body,
           ContentLength: contentLength,
