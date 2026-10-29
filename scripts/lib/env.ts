@@ -3,11 +3,9 @@ import * as v from "valibot";
 
 type RuntimeEnv = Record<string, string | undefined>;
 
-const unsetMessage = (name: string) =>
-  `${name} が未設定です。.env.example を見て .env を作ってください。`;
+const unsetMessage = (name: string) => `${name} が未設定です。.env.example を見て .env を作ってください。`;
 
-const requiredString = (name: string) =>
-  v.message(v.pipe(v.string(), v.trim(), v.nonEmpty()), unsetMessage(name));
+const requiredString = (name: string) => v.message(v.pipe(v.string(), v.trim(), v.nonEmpty()), unsetMessage(name));
 
 /** Optional string: missing, blank, or whitespace-only → undefined; otherwise trimmed. */
 const optionalTrimmedString = () =>

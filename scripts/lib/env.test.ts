@@ -25,12 +25,7 @@ describe("uploadPrdEnv", () => {
   });
 
   it("未設定や空のとき .env.example を促す", () => {
-    for (const name of [
-      "R2_ACCOUNT_ID",
-      "R2_ACCESS_KEY_ID",
-      "R2_SECRET_ACCESS_KEY",
-      "R2_BUCKET_NAME",
-    ] as const) {
+    for (const name of ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"] as const) {
       const message = `${name} が未設定です。.env.example を見て .env を作ってください。`;
       expect(() => uploadPrdEnv({ ...r2Filled, [name]: undefined })).toThrow(message);
       expect(() => uploadPrdEnv({ ...r2Filled, [name]: "" })).toThrow(message);

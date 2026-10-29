@@ -1,12 +1,6 @@
 import * as v from "valibot";
 import type { YearListResponse, YearScreenResponse } from "../../lib/media-response.ts";
-import {
-  readYearContents,
-  readYearList,
-  serverTimingHeader,
-  timedLister,
-  yearQuerySchema,
-} from "../../lib/pair";
+import { readYearContents, readYearList, serverTimingHeader, timedLister, yearQuerySchema } from "../../lib/pair";
 import { AppHanlder } from "../../lib/types";
 
 export type { YearListResponse, YearScreenResponse };
