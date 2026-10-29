@@ -1,0 +1,37 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "refactor",
+  "steps": [
+    {
+      "file": "src/lib/tab-icon.ts",
+      "description": "このファイルはroutes/favicon.svg.tsに移動して。src/index.tsxでもTAB_ICON_PATHじゃなくて文字列でパスを指定していい。",
+      "line": 1
+    },
+    {
+      "file": "src/lib/gallery/index.ts",
+      "description": "GLOSSARY.mdにある用語に合わせてドメインモデルとその振る舞いをまとめて１つのフォルダに入れる形式にしてほしい。galleryは画面の用語なのでフォルダ名とコードがあってない。画像と動画両方を扱っているので、GLoSSARYに合わせるとcaptureがよさそう。",
+      "line": 1
+    },
+    {
+      "file": "src/lib/media.ts",
+      "description": "## 背景\r\n用語集のギャラリーは、年の一覧と年の画面を合わせたものである。`src/lib/gallery` がしているのは、バイト列から撮影日時を決めることであり、画面のギャラリーではない。\r\n`src/lib/pair` には次の 3 つが同居している。pair は用語集にない。指しているのは `group.ts` の、本体とサムネイルが揃ったという段階だけである。\r\n1. 名前（`stem.ts`）。本体キー、サムネイルキー、URL、`StemClaim`。\r\n2. メディアを揃えて年に載せる（`group.ts`）。\r\n3. 年の一覧と年の画面をストレージから読む（`year-list.ts` など）。\r\n`src/lib/media.ts` は画像と動画の拡張子判定と配信パスであり、用語集のメディアではない。フォルダを `media/` にすると、`from \"../media\"` がファイルとフォルダのどちらにも当たる。\r\n## 決めたこと\r\n1. `src/lib/pair/` を `src/lib/name/` と `src/lib/media/` に分ける。\r\n   - `name`: 名前の形。アップロードと一覧の両方が使う。\r\n   - `media`: 揃ったメディアを、年の一覧と年の画面向けに読む。\r\n2. 今の `src/lib/media.ts` は `src/lib/kind.ts` に改名する。中身は分けない。\r\n3. `pair/types.ts` と `pair/index.ts` は分割する。`Stem` と `BodyKey` などは `name`、`Media` と `YearGroup` などは `media`。`group.ts` が今パッケージ内だけで使っている `classify` などは、`name` の公開入口から出す。\r\n4. 実行時の挙動は変えない。`GLOSSARY.md` と仕様書は変えない。`AGENTS.md` と `.fallowrc.jsonc` のパスは直す。`readPage` はテスト以外から呼ばれていないが、この issue では消さない。\r\n5. `media-response.ts`、`school-grade.ts`、`src/lib/types.ts` はそのまま。\r\n6. `tab-icon.ts`と`gallery`は別で指示した通り。\r\n\r\n`src/lib`の修正イメージは次である。矢印は変更前のパス。矢印なしは今のパスのまま。\r\n```tree\r\nsrc/lib/\r\n  kind.ts                           ← media.ts\r\n  kind.test.ts                      ← media.test.ts\r\n  media/\r\n    fixtures.ts                     ← pair/fixtures.ts\r\n    group.ts                        ← pair/group.ts\r\n    index.ts                        ← pair/index.ts（一覧側）\r\n    page.ts                         ← pair/page.ts\r\n    page.test.ts                    ← pair/page.test.ts\r\n    timing.ts                       ← pair/timing.ts\r\n    timing.test.ts                  ← pair/timing.test.ts\r\n    types.ts                        ← pair/types.ts（Media / Year 側）\r\n    year-list.ts                    ← pair/year-list.ts\r\n    year-list.test.ts               ← pair/year-list.test.ts\r\n    year.ts                         ← pair/year.ts\r\n    year.test.ts                    ← pair/year.test.ts\r\n  media-response.ts\r\n  media-response.test.ts\r\n  name/\r\n    index.ts                        ← pair/index.ts（名前側）\r\n    stem.ts                         ← pair/stem.ts\r\n    stem.test.ts                    ← pair/stem.test.ts\r\n    types.ts                        ← pair/types.ts（Stem / BodyKey 側）\r\n  school-grade.ts\r\n  school-grade.test.ts\r\n  types.ts\r\n```",
+      "line": 1
+    },
+    {
+      "file": "src/routes/lib/client.tsx",
+      "description": "position: fixedにするなりして固定しないと不便",
+      "line": 189
+    },
+    {
+      "file": "src/routes/lib/feed.ts",
+      "description": "これラップする必要ない",
+      "line": 34
+    },
+    {
+      "file": "src/routes/lib/client.tsx",
+      "description": "YearFeedとYearListの処理はそれぞれcustom hookに分けて。",
+      "line": 77
+    }
+  ],
+  "ref": "main"
+}
