@@ -40,6 +40,10 @@ _Avoid_: dev mode, logged out, guest
 撮影日時の年が決まらないメディアのラベル。あるときは年の一覧の最後。
 _Avoid_: uncategorized, other
 
+**学年 (School grade)**:
+年の横に出す、その年の 4 月からの学年。
+_Avoid_: academic year, grade level, school year
+
 ## 時刻
 
 **撮影日時 (Capture date-time)**:

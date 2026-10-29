@@ -13,7 +13,7 @@ import {
   yearList,
 } from "../e2e/locators.ts";
 
-test("UC-01 年一覧はログインメール付きで四つの年が並ぶ", async ({ app, browser }) => {
+test("UC-01 年一覧はログインメール付きで年が並ぶ", async ({ app, browser }) => {
   await app.open("/");
   await expect(browser).toHaveTitle("フォトギャラリー");
   await expect(browser.locator("h1")).toHaveText("フォトギャラリー");
@@ -23,6 +23,26 @@ test("UC-01 年一覧はログインメール付きで四つの年が並ぶ", as
   for (let i = 0; i < catalog.labels.length; i++) {
     await expect(yearCards(browser).nth(i)).toContainText(catalog.labels[i]);
   }
+});
+
+test("UC-01 年の横に学年が出る境界", async ({ app, browser }) => {
+  await app.open("/");
+  await expect(yearCard(browser, "2003")).toContainText("小学１年");
+  await expect(yearCard(browser, "2008")).toContainText("小学６年");
+  await expect(yearCard(browser, "2009")).toContainText("中学１年");
+  await expect(yearCard(browser, "2015")).toContainText("大学１年");
+  await expect(yearCard(browser, "2018")).toContainText("大学４年");
+  await expect(yearCard(browser, "2002")).not.toContainText("小学");
+  await expect(yearCard(browser, "2019")).not.toContainText("大学");
+  const unknownText = await yearCard(browser, "年不明").textContent();
+  expect(unknownText).not.toMatch(/小学|中学|高校|大学/);
+
+  await yearCard(browser, "2018").tap();
+  await expect(yearHeading(browser, "2018")).toContainText("大学４年");
+  await backToYears(browser).tap();
+  await yearCard(browser, "2002").tap();
+  const heading2002 = await yearHeading(browser, "2002").textContent();
+  expect(heading2002).not.toMatch(/小学|中学|高校|大学/);
 });
 
 test("UC-01 640px で年カードが横並びか縦積みになる", async ({ app, browser }) => {

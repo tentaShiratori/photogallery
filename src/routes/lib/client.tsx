@@ -16,6 +16,7 @@ import {
   type ParsedMedia,
   type ParsedYearCard,
 } from "./feed";
+import { schoolGradeForLabel } from "../../lib/school-grade.ts";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
 
@@ -59,7 +60,7 @@ const previewThumbClass = css`
   border: 1px solid var(--line);
   background: #ece7dc;
   @media (max-width: 640px) {
-    height: 96px;
+    height: 72px;
   }
 `;
 
@@ -108,6 +109,13 @@ const yearLabelUnknownClass = css`
   @media (max-width: 640px) {
     font-size: 1rem;
   }
+`;
+
+const schoolGradeClass = css`
+  margin-left: 0.4em;
+  color: var(--muted);
+  font-size: 0.72em;
+  font-weight: 400;
 `;
 
 const yearHeadClass = css`
@@ -177,11 +185,13 @@ const YearCard: FC<{
   onOpen: (yearToken: string) => void;
 }> = ({ card, onOpen }) => {
   const token = yearTokenFromLabel(card.label);
+  const grade = schoolGradeForLabel(card.label);
   const open = () => onOpen(token);
   return (
     <button class={yearCardClass} type="button" onClick={open}>
       <span class={card.label === "年不明" ? yearLabelUnknownClass : yearLabelClass}>
         {card.label}
+        {grade !== null && <span class={schoolGradeClass}>{grade}</span>}
       </span>
       <PreviewGrid previews={card.previews} onOpen={open} />
     </button>
@@ -277,6 +287,7 @@ const Gallery: FC = () => {
 
   const listView = yearListView(yearList);
   const screenView = yearScreenView(yearFeed);
+  const screenGrade = screenView.label !== null ? schoolGradeForLabel(screenView.label) : null;
 
   if (yearToken !== null) {
     return (
@@ -288,6 +299,7 @@ const Gallery: FC = () => {
           {screenView.label !== null && (
             <h2 class={headingClass}>
               {screenView.label}
+              {screenGrade !== null && <span class={schoolGradeClass}>{screenGrade}</span>}
               {screenView.notice !== null && <span class={noticeClass}> {screenView.notice}</span>}
             </h2>
           )}
