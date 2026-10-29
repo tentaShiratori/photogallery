@@ -1,7 +1,4 @@
 import { Handler } from "hono";
 
-export interface Env {
-  MEDIA: R2Bucket;
-  ASSETS: Fetcher;
-}
+export type Env = Cloudflare.Env;
 export type AppHanlder = Handler<{ Bindings: Env }>;
