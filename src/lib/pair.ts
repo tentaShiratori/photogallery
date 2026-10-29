@@ -150,6 +150,10 @@ const LIST_PAGE_SIZE = 1000;
 const GROUP_OBJECT_CAP = 20_000;
 const DISCOVERY_PAGE_CAP = 20;
 const PAST_YEAR_PREFIXES = ":";
+/** Year-list cards show at most this many thumbnails (R-GAL-10). */
+const PREVIEW_COUNT = 4;
+/** Page size while gathering year-list previews; stop once {@link PREVIEW_COUNT} pairs are stable. */
+const PREVIEW_PAGE_SIZE = 32;
 
 function suffixOk(raw: string | undefined): boolean {
   if (raw === undefined) return true;
@@ -370,7 +374,7 @@ function compareUnknown(a: Ranked, b: Ranked): number {
   return b.uploaded.localeCompare(a.uploaded) || a.media.bodyKey.localeCompare(b.media.bodyKey);
 }
 
-function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
+function slotsFromHeads(heads: readonly BucketHead[]): Map<Stem, Slot> {
   const slots = new Map<Stem, Slot>();
   for (const head of heads) {
     const found = classify(head.key);
@@ -382,8 +386,12 @@ function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
         : seeThumb(current, found.thumbKey);
     slots.set(found.stem, next);
   }
+  return slots;
+}
+
+function pairsFromHeads(heads: readonly BucketHead[]): Ranked[] {
   const ranked: Ranked[] = [];
-  for (const slot of slots.values()) {
+  for (const slot of slotsFromHeads(heads).values()) {
     if (slot.status === "pair") ranked.push(mediaFromPair(slot.head, slot.bodyKey));
   }
   return ranked;
@@ -433,32 +441,113 @@ function groupIdOf(query: YearQuery): GroupId {
   return query === "unknown" ? { kind: "unknown" } : { kind: "year", year: query };
 }
 
+function previewMediasFromHeads(id: GroupId, heads: readonly BucketHead[]): readonly Media[] {
+  const ranked = pairsFromHeads(heads);
+  const items =
+    id.kind === "year"
+      ? ranked.filter(isDated).filter((item) => item.captured.year === id.year)
+      : ranked.filter((item) => !isDated(item));
+  return [...items]
+    .map((item) => item.media)
+    .sort((left, right) => left.bodyKey.localeCompare(right.bodyKey))
+    .slice(0, PREVIEW_COUNT);
+}
+
+/**
+ * True when the first {@link PREVIEW_COUNT} bodyKey-ordered pairs cannot change
+ * with further list pages: every body at or before the cutoff was seen, and any
+ * body-only slot at or before the cutoff can no longer gain a thumb.
+ */
+function previewPairsStable(
+  id: GroupId,
+  heads: readonly BucketHead[],
+  previews: readonly Media[],
+  bodySide: { readonly open: boolean; readonly lastKey: string },
+  thumbSide: { readonly open: boolean; readonly lastKey: string },
+): boolean {
+  if (previews.length < PREVIEW_COUNT) return false;
+  const cutoff = previews[PREVIEW_COUNT - 1]!.bodyKey;
+  if (bodySide.open && bodySide.lastKey < cutoff) return false;
+  for (const slot of slotsFromHeads(heads).values()) {
+    if (slot.status !== "body" || slot.bodyKey > cutoff) continue;
+    const neededThumb = thumbKeyFor(slot.bodyKey);
+    if (thumbSide.open && (thumbSide.lastKey === "" || thumbSide.lastKey < neededThumb)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 async function previewMedias(bucket: Lister, id: GroupId): Promise<readonly Media[] | null> {
   const { body, thumb } = prefixesOf(id);
-  if (id.kind === "unknown") {
-    const probe = await bucket.list({ prefix: body, limit: 1 });
-    if (probe.objects.length === 0) return null;
+  const bodySide = {
+    prefix: body,
+    cursor: undefined as string | undefined,
+    open: true,
+    lastKey: "",
+  };
+  const thumbSide = {
+    prefix: thumb,
+    cursor: undefined as string | undefined,
+    open: true,
+    lastKey: "",
+  };
+  const heads: BucketHead[] = [];
+
+  for (;;) {
+    const open = [bodySide, thumbSide].filter((side) => side.open);
+    if (open.length === 0) break;
+    const pages = await Promise.all(
+      open.map((side) =>
+        bucket.list({ prefix: side.prefix, cursor: side.cursor, limit: PREVIEW_PAGE_SIZE }),
+      ),
+    );
+    for (const [index, page] of pages.entries()) {
+      const side = open[index]!;
+      for (const object of page.objects) {
+        heads.push({
+          key: object.key,
+          size: object.size,
+          uploaded: object.uploaded.toISOString(),
+        });
+        side.lastKey = object.key;
+      }
+      if (!page.truncated) {
+        side.open = false;
+      } else if (page.objects.length === 0 || page.cursor === side.cursor) {
+        side.open = false;
+      } else {
+        side.cursor = page.cursor;
+      }
+    }
+    const previews = previewMediasFromHeads(id, heads);
+    if (previewPairsStable(id, heads, previews, bodySide, thumbSide)) {
+      return previews;
+    }
   }
-  const read = await readGroup(bucket, [body, thumb]);
-  const group = groupFromHeads(id, read.heads, read.truncated);
-  if (group === null) return null;
-  return [...group.items]
-    .sort((left, right) => left.bodyKey.localeCompare(right.bodyKey))
-    .slice(0, 4);
+
+  const previews = previewMediasFromHeads(id, heads);
+  return previews.length > 0 ? previews : null;
 }
 
 export async function readYearList(
   bucket: Lister,
 ): Promise<{ readonly years: readonly YearListYear[] }> {
   const discovered = [...(await discoverYears(bucket))].sort((left, right) => right - left);
+  const [yearCards, unknown] = await Promise.all([
+    Promise.all(
+      discovered.map(async (year) => {
+        const previews = await previewMedias(bucket, { kind: "year", year });
+        if (previews === null || previews.length === 0) return null;
+        return { label: String(year), previews } satisfies YearListYear;
+      }),
+    ),
+    previewMedias(bucket, { kind: "unknown" }),
+  ]);
   const years: YearListYear[] = [];
-  for (const year of discovered) {
-    const previews = await previewMedias(bucket, { kind: "year", year });
-    if (previews !== null && previews.length > 0) {
-      years.push({ label: String(year), previews });
-    }
+  for (const card of yearCards) {
+    if (card !== null) years.push(card);
   }
-  const unknown = await previewMedias(bucket, { kind: "unknown" });
   if (unknown !== null && unknown.length > 0) {
     years.push({ label: UNKNOWN_LABEL, previews: unknown });
   }
