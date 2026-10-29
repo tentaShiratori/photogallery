@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { perfYearListEnv } from "../env.ts";
 
 const LOCAL_URL = "http://localhost:8787";
 export const PROFILE_DIR = path.join(homedir(), ".photogallery-perf");
@@ -35,13 +36,7 @@ export function parseArgs(argv: readonly string[]): {
     usage();
   }
   if (local) return { local: true, url: LOCAL_URL };
-  return { local: false, url: photogalleryUrlFromEnv() ?? DEFAULT_PRODUCTION_URL };
-}
-
-/** Trimmed non-empty `PHOTOGALLERY_URL`, or null when unset / blank. */
-function photogalleryUrlFromEnv(): string | null {
-  const value = process.env.PHOTOGALLERY_URL?.trim();
-  return value && value.length > 0 ? value : null;
+  return { local: false, url: perfYearListEnv().PHOTOGALLERY_URL ?? DEFAULT_PRODUCTION_URL };
 }
 
 export function gitCommit(): string {

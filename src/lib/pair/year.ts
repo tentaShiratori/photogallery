@@ -1,3 +1,4 @@
+import * as v from "valibot";
 import type { Year } from "./types.ts";
 
 export function toYear(value: number): Year | null {
@@ -8,10 +9,17 @@ export function parseYear(raw: string): Year | null {
   return /^[1-9]\d{0,3}$/.test(raw) ? toYear(Number(raw)) : null;
 }
 
-export type YearQuery = Year | "unknown";
+export const yearQuerySchema = v.union([
+  v.literal("unknown"),
+  v.pipe(
+    v.string(),
+    v.regex(/^[1-9]\d{0,3}$/),
+    v.transform((raw) => {
+      const year = toYear(Number(raw));
+      if (year === null) throw new Error("year");
+      return year;
+    }),
+  ),
+]);
 
-/** `unknown`, or a year in 1..9999 with no leading zeros. */
-export function parseYearQuery(raw: string): YearQuery | null {
-  if (raw === "unknown") return "unknown";
-  return parseYear(raw);
-}
+export type YearQuery = v.InferOutput<typeof yearQuerySchema>;

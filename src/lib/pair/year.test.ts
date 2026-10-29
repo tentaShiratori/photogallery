@@ -1,5 +1,6 @@
+import * as v from "valibot";
 import { describe, expect, it } from "vite-plus/test";
-import { parseYear, parseYearQuery, type YearQuery } from "./index.ts";
+import { parseYear, yearQuerySchema, type YearQuery } from "./index.ts";
 
 describe("parseYear", () => {
   it("1 から 9999 の先頭 0 の無い数字だけを年にする", () => {
@@ -12,13 +13,13 @@ describe("parseYear", () => {
   });
 });
 
-describe("parseYearQuery", () => {
+describe("yearQuerySchema", () => {
   it("unknown と 1 から 9999 の先頭 0 の無い年だけを受け付ける", () => {
-    const unknown: YearQuery | null = parseYearQuery("unknown");
+    const unknown: YearQuery = v.parse(yearQuerySchema, "unknown");
     expect(unknown).toBe("unknown");
-    expect(parseYearQuery("2024")).toBe(2024);
-    expect(parseYearQuery("7")).toBe(7);
-    expect(parseYearQuery("9999")).toBe(9999);
+    expect(v.parse(yearQuerySchema, "2024")).toBe(2024);
+    expect(v.parse(yearQuerySchema, "7")).toBe(7);
+    expect(v.parse(yearQuerySchema, "9999")).toBe(9999);
     for (const raw of [
       "",
       "0",
@@ -31,7 +32,7 @@ describe("parseYearQuery", () => {
       "UNKNOWN",
       "unknown ",
     ]) {
-      expect(parseYearQuery(raw)).toBeNull();
+      expect(v.safeParse(yearQuerySchema, raw).success).toBe(false);
     }
   });
 });
