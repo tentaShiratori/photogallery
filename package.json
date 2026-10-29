@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "fmt": "vp fmt",
     "lint": "vp lint",
+    "check": "vp fmt --check && vp lint && pnpm deadcode && pnpm typecheck && pnpm test run",
     "upload:local": "node --experimental-strip-types scripts/upload-local.ts",
     "upload:prd": "node --experimental-strip-types scripts/upload-prd.ts",
     "perf:year-list": "node --experimental-strip-types scripts/perf-year-list.ts",

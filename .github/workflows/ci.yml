@@ -1,4 +1,5 @@
 # ツールのバージョンは mise.toml を正とする。
+# e2e 以外のチェックは `pnpm check` に足す。CI に直接書かない。足せば lefthook と Cursor の hook にも効く。
 # Dependabot の自動マージは、このワークフロー名 "CI" の成功を待つ。
 name: CI
 
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   js:
-    name: fmt / lint / typecheck / test
+    name: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -41,11 +42,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec vp fmt --check
-      - run: pnpm exec vp lint
-      - run: pnpm deadcode
-      - run: pnpm typecheck
-      - run: pnpm test run
+      - run: pnpm check
 
   e2e:
     name: e2e
