@@ -1,4 +1,4 @@
-import type { MediaKind } from "./media.ts";
+import type { MediaKind } from "../media.ts";
 
 declare const stemBrand: unique symbol;
 declare const bodyKeyBrand: unique symbol;

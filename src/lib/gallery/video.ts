@@ -1,14 +1,6 @@
-import { type Box, boxesIn, readBox } from "./gallery-bmff.ts";
-import {
-  MAX_BOX_STEPS,
-  META_CAP,
-  type RangeRead,
-  fourcc,
-  takeUpTo,
-  u32be,
-  u64,
-} from "./gallery-bytes.ts";
-import { CaptureInstant } from "./gallery-civil.ts";
+import { type Box, boxesIn, readBox } from "./bmff.ts";
+import { MAX_BOX_STEPS, META_CAP, type RangeRead, fourcc, takeUpTo, u32be, u64 } from "./bytes.ts";
+import { CaptureInstant } from "./civil.ts";
 
 const MAC_EPOCH_MS = BigInt(Date.UTC(1904, 0, 1));
 

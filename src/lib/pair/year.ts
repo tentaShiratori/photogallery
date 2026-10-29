@@ -1,4 +1,4 @@
-import type { Year } from "./pair-types.ts";
+import type { Year } from "./types.ts";
 
 export function toYear(value: number): Year | null {
   return Number.isInteger(value) && value >= 1 && value <= 9999 ? (value as Year) : null;

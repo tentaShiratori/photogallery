@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
-import { embeddedCapture } from "./gallery.ts";
-import { androidKeys, creationdateKeys, openFiles, overlaps } from "./gallery.fixtures.ts";
-import { macSeconds, mp4 } from "../../test/capture-fixtures.ts";
+import { embeddedCapture } from "./index.ts";
+import { androidKeys, creationdateKeys, openFiles, overlaps } from "./fixtures.ts";
+import { macSeconds, mp4 } from "../../../test/capture-fixtures.ts";
 
 describe("embeddedCapture", () => {
   it("mdat の後ろの mvhd を読み、mdat 本体は読まない", async () => {

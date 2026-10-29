@@ -8,9 +8,9 @@
  * runs reuse ~/.photogallery-perf headless.
  */
 import { existsSync, mkdirSync } from "node:fs";
-import { parseArgs, PROFILE_DIR } from "./lib/perf-year-list-cli.ts";
-import { runBenchmark } from "./lib/perf-year-list-report.ts";
-import { ensureAccess, openContext, READY_MARKER } from "./lib/perf-year-list-run.ts";
+import { parseArgs, PROFILE_DIR } from "./lib/perf-year-list/cli.ts";
+import { runBenchmark } from "./lib/perf-year-list/report.ts";
+import { ensureAccess, openContext, READY_MARKER } from "./lib/perf-year-list/run.ts";
 
 async function main(): Promise<void> {
   const { local, url } = parseArgs(process.argv.slice(2));

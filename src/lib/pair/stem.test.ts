@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { noon } from "./pair.fixtures.ts";
+import { noon } from "./fixtures.ts";
 import {
   captureFromKey,
   StemClaim,
   type ThumbnailFile,
   type ThumbKey,
   type UploadPlan,
-} from "./pair.ts";
+} from "./index.ts";
 
 describe("StemClaim.plan", () => {
   it("同じ秒は拡張子が違っても別のステムになり、サムネイルは WebP", () => {

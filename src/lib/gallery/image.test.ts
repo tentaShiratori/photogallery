@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { embeddedCapture } from "./gallery.ts";
-import { noon, openFiles, overlaps } from "./gallery.fixtures.ts";
+import { embeddedCapture } from "./index.ts";
+import { noon, openFiles, overlaps } from "./fixtures.ts";
 import {
   heicExif,
   jpegDateTime,
@@ -8,7 +8,7 @@ import {
   macSeconds,
   pngExif,
   webpExif,
-} from "../../test/capture-fixtures.ts";
+} from "../../../test/capture-fixtures.ts";
 
 describe("embeddedCapture", () => {
   it("JPEG の DateTimeOriginal を返し、DateTime だけでは null", async () => {

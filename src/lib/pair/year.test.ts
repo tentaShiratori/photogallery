@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { parseYear, parseYearQuery, type YearQuery } from "./pair.ts";
+import { parseYear, parseYearQuery, type YearQuery } from "./index.ts";
 
 describe("parseYear", () => {
   it("1 から 9999 の先頭 0 の無い数字だけを年にする", () => {

@@ -1,9 +1,9 @@
-import { extensionOf, type ImageExtension, type VideoExtension } from "./media.ts";
-import { instantFromBmffExif } from "./gallery-bmff.ts";
-import { type RangeRead } from "./gallery-bytes.ts";
-import { civilFromParts, type CaptureInstant, type CivilCapture } from "./gallery-civil.ts";
-import { instantFromJpeg, instantFromPng, instantFromWebp } from "./gallery-image.ts";
-import { instantFromBmffCreate } from "./gallery-video.ts";
+import { extensionOf, type ImageExtension, type VideoExtension } from "../media.ts";
+import { instantFromBmffExif } from "./bmff.ts";
+import { type RangeRead } from "./bytes.ts";
+import { civilFromParts, type CaptureInstant, type CivilCapture } from "./civil.ts";
+import { instantFromJpeg, instantFromPng, instantFromWebp } from "./image.ts";
+import { instantFromBmffCreate } from "./video.ts";
 
 export type { CivilCapture };
 export { civilFromParts };

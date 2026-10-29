@@ -18,15 +18,9 @@ import {
 } from "./feed";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
-import { schoolGradeClass, YearCard, yearHeadClass } from "./YearCard";
-import {
-  markYearList,
-  waitForYearListThumbs,
-  YEAR_LIST_MARK_API,
-  YEAR_LIST_MARK_LOADING,
-  YEAR_LIST_MARK_READY,
-} from "./year-list-perf";
-import { readYearFromLocation, writeYearToLocation } from "./year-location";
+import { schoolGradeClass, YearCard, yearHeadClass } from "./year-list/YearCard";
+import { markYearList, waitForYearListThumbs } from "./year-list/perf";
+import { readYearFromLocation, writeYearToLocation } from "./year-list/location";
 
 const NEAR_BOTTOM_PX = 600;
 const SCROLL_KEY = "photogallery-year-list-scroll";
@@ -114,7 +108,7 @@ const Gallery: FC = () => {
 
   useLayoutEffect(() => {
     if (yearToken !== null) return;
-    if (yearList.status === "loading") markYearList(YEAR_LIST_MARK_LOADING);
+    if (yearList.status === "loading") markYearList.loading();
   }, [yearToken, yearList.status]);
 
   useEffect(() => {
@@ -123,7 +117,7 @@ const Gallery: FC = () => {
     void (async () => {
       try {
         const response = await fetch("/api/media");
-        markYearList(YEAR_LIST_MARK_API);
+        markYearList.api();
         if (!response.ok) throw new Error(String(response.status));
         const parsed = parseYearList(await response.json());
         dispatchList({ type: "loaded", years: parsed.years });
@@ -138,7 +132,7 @@ const Gallery: FC = () => {
     if (yearList.status !== "ready") return;
     let cancelled = false;
     void waitForYearListThumbs().then(() => {
-      if (!cancelled) markYearList(YEAR_LIST_MARK_READY);
+      if (!cancelled) markYearList.ready();
     });
     return () => {
       cancelled = true;

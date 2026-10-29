@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { captureFromMtime } from "./gallery.ts";
+import { captureFromMtime } from "./index.ts";
 
 describe("captureFromMtime", () => {
   it("アップロードより 7 日より古い更新日時を現地の暦にする", () => {

@@ -1,4 +1,4 @@
-import type { Lister } from "./pair-types.ts";
+import type { Lister } from "./types.ts";
 
 /** R2 `list` call count and wall time accumulated by {@link timedLister}. */
 export type ListTimingStats = {

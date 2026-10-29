@@ -7,8 +7,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { getPlatformProxy } from "wrangler";
-import type { BodyKey } from "../src/lib/pair.ts";
-import { thumbKeyFor } from "../src/lib/pair.ts";
+import type { BodyKey } from "../src/lib/pair/index.ts";
+import { thumbKeyFor } from "../src/lib/pair/index.ts";
 import type { Env } from "../src/lib/types.ts";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

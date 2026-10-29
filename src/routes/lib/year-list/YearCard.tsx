@@ -1,8 +1,8 @@
 import { css } from "hono/css";
 import type { FC } from "hono/jsx";
-import { schoolGradeForLabel } from "../../lib/school-grade.ts";
-import type { ParsedMedia, ParsedYearCard } from "./feed";
-import { yearTokenFromLabel } from "./year-location";
+import { schoolGradeForLabel } from "../../../lib/school-grade.ts";
+import type { ParsedMedia, ParsedYearCard } from "../feed";
+import { yearTokenFromLabel } from "./location";
 
 const thumbs2x2Class = css`
   display: grid;

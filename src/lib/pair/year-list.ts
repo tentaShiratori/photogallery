@@ -6,10 +6,10 @@ import {
   UNKNOWN_LABEL,
   type BucketHead,
   type GroupId,
-} from "./pair-group.ts";
-import { discoverYears, readGroup } from "./pair-page.ts";
-import type { Lister, Media, YearGroup } from "./pair-types.ts";
-import type { YearQuery } from "./pair-year.ts";
+} from "./group.ts";
+import { discoverYears, readGroup } from "./page.ts";
+import type { Lister, Media, YearGroup } from "./types.ts";
+import type { YearQuery } from "./year.ts";
 
 export type YearListYear = {
   readonly label: string;

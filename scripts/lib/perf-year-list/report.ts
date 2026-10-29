@@ -1,6 +1,6 @@
 import type { BrowserContext } from "playwright-core";
-import { gitCommit, jstStamp } from "./perf-year-list-cli.ts";
-import { oneRun, type RunSample } from "./perf-year-list-run.ts";
+import { gitCommit, jstStamp } from "./cli.ts";
+import { oneRun, type RunSample } from "./run.ts";
 
 const WARMUP_RUNS = 1;
 const MEASURE_RUNS = 10;

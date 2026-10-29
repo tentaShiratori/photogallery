@@ -1,5 +1,5 @@
-import { readPage, type Lister, type ListingPage, type Year, type YearGroup } from "./pair.ts";
-import { parseYear } from "./pair.ts";
+import { readPage, type Lister, type ListingPage, type Year, type YearGroup } from "./index.ts";
+import { parseYear } from "./index.ts";
 
 export const noon = {
   year: 2024,

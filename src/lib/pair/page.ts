@@ -1,6 +1,6 @@
-import { groupFromHeads, prefixesOf, type BucketHead, type GroupId } from "./pair-group.ts";
-import type { Lister, ListingPage, Year } from "./pair-types.ts";
-import { toYear } from "./pair-year.ts";
+import { groupFromHeads, prefixesOf, type BucketHead, type GroupId } from "./group.ts";
+import type { Lister, ListingPage, Year } from "./types.ts";
+import { toYear } from "./year.ts";
 
 const LIST_PAGE_SIZE = 1000;
 const GROUP_OBJECT_CAP = 20_000;

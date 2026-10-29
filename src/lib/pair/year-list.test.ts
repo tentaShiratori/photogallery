@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { memoryBucket, pairOf, stored, year } from "./pair.fixtures.ts";
+import { memoryBucket, pairOf, stored, year } from "./fixtures.ts";
 import {
   readYearContents,
   readYearList,
   timedLister,
   type Lister,
   type YearListYear,
-} from "./pair.ts";
+} from "./index.ts";
 
 describe("readYearList", () => {
   it("新しい年からカードを返し、プレビューは bodyKey の昇順で最大 4 件、年不明は最後", async () => {

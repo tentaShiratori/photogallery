@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { memoryBucket, pairOf } from "./pair.fixtures.ts";
-import { readYearList, serverTimingHeader, timedLister, type ListTimingStats } from "./pair.ts";
+import { memoryBucket, pairOf } from "./fixtures.ts";
+import { readYearList, serverTimingHeader, timedLister, type ListTimingStats } from "./index.ts";
 
 describe("timedLister と serverTimingHeader", () => {
   it("list の回数と時間を積み、Server-Timing 文字列にする", async () => {

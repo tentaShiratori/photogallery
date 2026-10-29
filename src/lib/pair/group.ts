@@ -1,4 +1,4 @@
-import type { CivilCapture } from "./gallery.ts";
+import type { CivilCapture } from "../gallery/index.ts";
 import {
   captureFromKey,
   classify,
@@ -6,7 +6,7 @@ import {
   thumbKeyFor,
   urlForBody,
   urlForThumb,
-} from "./pair-stem.ts";
+} from "./stem.ts";
 import {
   mediaSeal,
   type BodyKey,
@@ -15,7 +15,7 @@ import {
   type ThumbKey,
   type Year,
   type YearGroup,
-} from "./pair-types.ts";
+} from "./types.ts";
 
 export type GroupId = { readonly kind: "year"; readonly year: Year } | { readonly kind: "unknown" };
 

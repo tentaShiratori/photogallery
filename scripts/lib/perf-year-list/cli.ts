@@ -9,7 +9,7 @@ export const PROFILE_DIR = path.join(homedir(), ".photogallery-perf");
 /** Fallback when PHOTOGALLERY_URL is unset. Override with the env var. */
 const DEFAULT_PRODUCTION_URL = "https://photogallery.tentashiratori.workers.dev";
 
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function usage(): never {
   console.error(`使い方:
@@ -35,8 +35,13 @@ export function parseArgs(argv: readonly string[]): {
     usage();
   }
   if (local) return { local: true, url: LOCAL_URL };
-  const fromEnv = process.env.PHOTOGALLERY_URL?.trim();
-  return { local: false, url: fromEnv && fromEnv.length > 0 ? fromEnv : DEFAULT_PRODUCTION_URL };
+  return { local: false, url: photogalleryUrlFromEnv() ?? DEFAULT_PRODUCTION_URL };
+}
+
+/** Trimmed non-empty `PHOTOGALLERY_URL`, or null when unset / blank. */
+function photogalleryUrlFromEnv(): string | null {
+  const value = process.env.PHOTOGALLERY_URL?.trim();
+  return value && value.length > 0 ? value : null;
 }
 
 export function gitCommit(): string {

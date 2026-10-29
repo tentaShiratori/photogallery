@@ -9,9 +9,9 @@ import {
   u16be,
   u32be,
   u64,
-} from "./gallery-bytes.ts";
-import { CaptureInstant } from "./gallery-civil.ts";
-import { dateTimeOriginalFromTiff } from "./gallery-image.ts";
+} from "./bytes.ts";
+import { CaptureInstant } from "./civil.ts";
+import { dateTimeOriginalFromTiff } from "./image.ts";
 
 export type Box = {
   readonly type: string;

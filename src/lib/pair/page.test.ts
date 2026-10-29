@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { bodyKeys, groupsOf, memoryBucket, pairOf, stored, walk, year } from "./pair.fixtures.ts";
-import { readPage, type Lister } from "./pair.ts";
+import { bodyKeys, groupsOf, memoryBucket, pairOf, stored, walk, year } from "./fixtures.ts";
+import { readPage, type Lister } from "./index.ts";
 
 describe("readPage", () => {
   it("新しい年から 1 年ずつ返し、組の無い年は見出しを返さずに続きを返す", async () => {
