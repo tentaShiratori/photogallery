@@ -1,5 +1,12 @@
-import type { MediaKind } from "../../lib/media";
-import type { BodyUrl, ThumbUrl } from "../../lib/pair";
+import {
+  parseYearListResponse,
+  parseYearScreenResponse,
+  type MediaItem,
+  type YearCardResponse,
+  type YearGroupResponse,
+  type YearListResponse,
+  type YearScreenResponse,
+} from "../../lib/media-response.ts";
 
 const STEP = 60;
 const LOADING = "読み込み中です。";
@@ -14,87 +21,18 @@ declare const hrefBrand: unique symbol;
 /** A listing URL fetched verbatim. */
 export type Href = string & { readonly [hrefBrand]: "Href" };
 
-export type ParsedMedia = {
-  readonly bodyKey: string;
-  readonly kind: MediaKind;
-  readonly bodyUrl: BodyUrl;
-  readonly thumbUrl: ThumbUrl;
-  readonly caption: string;
-};
+export type ParsedMedia = MediaItem;
+export type ParsedGroup = YearGroupResponse;
+export type ParsedYearCard = YearCardResponse;
 
-export type ParsedGroup = {
-  readonly label: string;
-  readonly truncated: boolean;
-  readonly items: readonly [ParsedMedia, ...ParsedMedia[]];
-};
-
-export type ParsedYearCard = {
-  readonly label: string;
-  readonly previews: readonly ParsedMedia[];
-};
-
-function shapeError(): never {
-  throw new Error("一覧の形が違います。");
+export function parseYearList(input: unknown): YearListResponse {
+  return parseYearListResponse(input);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isBodyUrl(value: unknown): value is BodyUrl {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isThumbUrl(value: unknown): value is ThumbUrl {
-  return typeof value === "string" && value.length > 0;
-}
-
-function parseItem(value: unknown): ParsedMedia {
-  if (!isRecord(value)) return shapeError();
-  const kind = value.kind;
-  if (kind !== "image" && kind !== "video") return shapeError();
-  if (typeof value.bodyKey !== "string" || value.bodyKey.length === 0) return shapeError();
-  if (typeof value.caption !== "string" || value.caption.length === 0) return shapeError();
-  if (!isBodyUrl(value.bodyUrl) || !isThumbUrl(value.thumbUrl)) return shapeError();
-  return {
-    bodyKey: value.bodyKey,
-    kind,
-    bodyUrl: value.bodyUrl,
-    thumbUrl: value.thumbUrl,
-    caption: value.caption,
-  };
-}
-
-function parseGroup(value: unknown): ParsedGroup {
-  if (!isRecord(value) || typeof value.label !== "string") return shapeError();
-  if (typeof value.truncated !== "boolean" || !Array.isArray(value.items)) return shapeError();
-  const [first, ...rest] = value.items.map(parseItem);
-  if (first === undefined) return shapeError();
-  return { label: value.label, truncated: value.truncated, items: [first, ...rest] };
-}
-
-function parseYearCard(value: unknown): ParsedYearCard {
-  if (!isRecord(value) || typeof value.label !== "string" || !Array.isArray(value.previews)) {
-    return shapeError();
-  }
-  if (value.previews.length > 4) return shapeError();
-  return { label: value.label, previews: value.previews.map(parseItem) };
-}
-
-export function parseYearList(input: unknown): { readonly years: readonly ParsedYearCard[] } {
-  if (!isRecord(input) || !Array.isArray(input.years)) return shapeError();
-  return { years: input.years.map(parseYearCard) };
-}
-
-export type ParsedYearScreen = {
-  readonly group: ParsedGroup | null;
-  readonly next: null;
-};
+export type ParsedYearScreen = YearScreenResponse;
 
 export function parseYearScreen(input: unknown): ParsedYearScreen {
-  if (!isRecord(input)) return shapeError();
-  if (input.next !== null) return shapeError();
-  return { group: input.group === null ? null : parseGroup(input.group), next: null };
+  return parseYearScreenResponse(input);
 }
 
 export type YearListState =
