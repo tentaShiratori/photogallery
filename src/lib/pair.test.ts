@@ -239,6 +239,30 @@ describe("readYearList", () => {
     const list = await readYearList(bucket.bucket);
     expect(list.years.map((year) => year.label)).toEqual(["2024"]);
   });
+
+  it("プレビューは先頭 4 組で打ち切り、その年の残りは読まない", async () => {
+    const objects: ReturnType<typeof stored>[] = [];
+    for (let i = 0; i < 80; i++) {
+      const minute = String(Math.floor(i / 60)).padStart(2, "0");
+      const second = String(i % 60).padStart(2, "0");
+      objects.push(
+        ...pairOf(`2024-01-01T00-${minute}-${second}-${i + 2}.jpg`, "2026-01-01T00:00:00.000Z"),
+      );
+    }
+    const bucket = memoryBucket(objects);
+    const timed = timedLister(bucket.bucket);
+    const list = await readYearList(timed.bucket);
+    expect(list.years).toHaveLength(1);
+    expect(list.years[0]?.previews.map((item) => item.bodyKey)).toEqual([
+      "2024-01-01T00-00-00-2.jpg",
+      "2024-01-01T00-00-01-3.jpg",
+      "2024-01-01T00-00-02-4.jpg",
+      "2024-01-01T00-00-03-5.jpg",
+    ]);
+    expect(bucket.objectsRead("2024-")).toBeLessThan(80);
+    expect(bucket.objectsRead("t/2024-")).toBeLessThan(80);
+    expect(timed.stats().r2Calls).toBeLessThan(10);
+  });
 });
 
 describe("readYearContents", () => {
