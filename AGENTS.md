@@ -10,15 +10,18 @@
 
 挙動を変える PR は同じ PR で仕様を直し、触った UC ID を本文に書く。本番の挙動は [docs/spec](docs/spec/README.md)。ローカルだけの挙動は [docs/spec-local](docs/spec-local/README.md)。ユースケースの形は `.agents/skills/write-spec`（正本は [references/writing.md](.agents/skills/write-spec/references/writing.md)）に合わせる。文書を書くときは、まず `/technical-writing` を使って英語で書く。次に日本語に訳し、`/yomiyasu` で推敲して仕上げる。リポジトリに残すのは日本語の文書だけである。PR の説明にもこの流れを使う。画面とコンソールの文言は、製品どおりの文字列を「」の中に残す。UC のファイル名は日本語の名前に合わせる。例は `docs/spec/UC-01-ギャラリーを見る.md` である。ID は変えない。
 
+e2e 以外のチェックは `pnpm check` に足す。CI に直接書かない。足せば lefthook と Cursor の hook にも効く。
+
 ## 実行するコマンド
 
-ツールは mise（`mise.toml`）。依存関係は pnpm。fmt と lint は Vite+（`vp fmt` / `vp lint`）。コミット時は lefthook がステージしたファイルに対して実行する。エージェントがファイルを編集したあとは `.cursor/hooks.json` が同じコマンドをそのファイルに実行する。Vite+ の Git hook（`.vite-hooks`）は使わない。
+ツールは mise（`mise.toml`）。依存関係は pnpm。fmt と lint は Vite+（`vp fmt` / `vp lint`）。コミット時は lefthook がステージしたファイルに対して fmt と lint を実行する。push 前は lefthook が `pnpm check` を実行する。エージェントがファイルを編集したあとは `.cursor/hooks.json` の `afterFileEdit` が同じ fmt と lint をそのファイルに実行する。エージェントが作業を終えるときは `stop` hook が `pnpm check` を実行し、失敗したらエラーを返して直しに戻す。Vite+ の Git hook（`.vite-hooks`）は使わない。
 
 ```powershell
 pnpm dev
 pnpm deploy
 pnpm upload:local <フォルダ>
 pnpm upload:prd <フォルダ>
+pnpm check
 pnpm typecheck
 pnpm exec vp fmt
 pnpm exec vp lint
@@ -32,7 +35,9 @@ pnpm e2e
 pnpm e2e:update-screenshots
 ```
 
-テストはファイルを指定して実行する。全テストファイルをまとめて実行しない。
+手で回すときはファイルを指定する。まとめて流すのは hook と CI（`pnpm check`）。
+
+`pnpm check` は e2e 以外のチェックをまとめたもの（`vp fmt --check`、`vp lint`、`pnpm deadcode`、`pnpm typecheck`、`pnpm test run`）。fmt は書き換えずにチェックだけする。
 
 `pnpm e2e` は UC-01 / UC-02 のブラウザ E2E（Chromium、PC と mobile の 2 ビューポート）。ギャラリーの UC 挙動を変えた PR では、対応する `tests/uc-*.e2e.ts` を直す。
 
@@ -40,6 +45,7 @@ pnpm e2e:update-screenshots
 
 ## 実行するコマンド
 
+- `pnpm check` — e2e 以外のチェックをまとめて実行する。新しいチェックはここに足す。
 - `pnpm deadcode` — 使っていないコードと依存を検出。0 件で終了し、終了コード 0 が返ること。
   - 指摘は消すか、`.fallowrc.jsonc` に理由つきで足すかのどちらかで直す。
   - baseline ファイルは作らない。

@@ -8,3 +8,8 @@ pre-commit:
     lint:
       glob: "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}"
       run: pnpm exec vp lint {staged_files}
+
+pre-push:
+  commands:
+    check:
+      run: pnpm check
