@@ -15,7 +15,7 @@ describe("year-screen/perf", () => {
   it("grid ルートのサムネイル待ちを呼ぶ", async () => {
     const root = document.createElement("div");
     root.id = "grid";
-    document.body.append(root);
+    document.body.appendChild(root);
     await expect(waitForYearScreenThumbs()).resolves.toBeUndefined();
     root.remove();
   });

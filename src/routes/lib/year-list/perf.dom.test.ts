@@ -15,7 +15,7 @@ describe("year-list/perf", () => {
   it("year-list ルートのサムネイル待ちを呼ぶ", async () => {
     const root = document.createElement("div");
     root.id = "year-list";
-    document.body.append(root);
+    document.body.appendChild(root);
     await expect(waitForYearListThumbs()).resolves.toBeUndefined();
     root.remove();
   });

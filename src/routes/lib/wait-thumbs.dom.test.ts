@@ -10,7 +10,7 @@ describe("waitForRootThumbs", () => {
   it("対象の img が無ければすぐ終わる", async () => {
     const root = document.createElement("div");
     root.id = "empty-root";
-    document.body.append(root);
+    document.body.appendChild(root);
     await expect(waitForRootThumbs("empty-root")).resolves.toBeUndefined();
   });
 
@@ -20,8 +20,8 @@ describe("waitForRootThumbs", () => {
     const img = document.createElement("img");
     Object.defineProperty(img, "complete", { value: true });
     Object.defineProperty(img, "currentSrc", { value: "http://localhost/t.webp" });
-    root.append(img);
-    document.body.append(root);
+    root.appendChild(img);
+    document.body.appendChild(root);
     await expect(waitForRootThumbs("thumbs-root")).resolves.toBeUndefined();
   });
 
@@ -32,9 +32,9 @@ describe("waitForRootThumbs", () => {
       const img = document.createElement("img");
       Object.defineProperty(img, "complete", { value: true });
       Object.defineProperty(img, "currentSrc", { value: `http://localhost/${i}.webp` });
-      root.append(img);
+      root.appendChild(img);
     }
-    document.body.append(root);
+    document.body.appendChild(root);
     await expect(waitForRootThumbs("limited-root", 1)).resolves.toBeUndefined();
   });
 });

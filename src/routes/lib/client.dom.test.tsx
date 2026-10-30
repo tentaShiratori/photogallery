@@ -14,8 +14,8 @@ describe("Gallery", () => {
   it("年の一覧を出し、年を開くと年の画面になる", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input: RequestInfo) => {
-        const url = String(input);
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
         if (url.includes("year=")) {
           return Response.json({
             group: {

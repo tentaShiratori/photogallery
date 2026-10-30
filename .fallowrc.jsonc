@@ -35,7 +35,17 @@
     { "file": "e2e/viewports.ts", "exports": ["VIEWPORT_HEIGHT"] },
     { "file": "scripts/lib/object-sink.ts", "exports": ["BUCKET_DISPLAY_NAME"] },
     { "file": "src/routes/media.ts", "exports": ["serveObject"] },
-    { "file": "src/lib/name/index.ts", "exports": ["Stem"] },
+    {
+      "file": "src/lib/name/index.ts",
+      // Public gallery name barrel; StemClaim tests import from stem.ts for 1:1 coverage.
+      "exports": ["Stem", "ThumbKey", "UploadPlan"],
+    },
+    {
+      "file": "src/lib/media/index.ts",
+      // Public media barrel; year tests import from year.ts for 1:1 coverage.
+      "exports": ["YearQuery"],
+    },
   ],
+
   "ignorePatterns": [".agents/**", ".cursor/**"],
 }
