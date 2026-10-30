@@ -1,6 +1,6 @@
 import type { MediaItem, YearCardResponse, YearGroupResponse, YearScreenResponse } from "../../lib/media-response.ts";
 
-const STEP = 60;
+export const STEP = 60;
 const LOADING = "読み込み中です。";
 const LIST_FAILED = "一覧を取得できませんでした。";
 const EMPTY = "まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。";

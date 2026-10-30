@@ -1,6 +1,7 @@
-import { useEffect, useReducer, useRef, useState } from "hono/jsx";
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "hono/jsx";
 import { parseYearScreenResponse } from "../../lib/media-response.ts";
 import { initialYearScreen, yearApiHref, yearScreenReducer, yearScreenStep, yearScreenView } from "./feed";
+import { markYearScreen, waitForYearScreenThumbs } from "./year-screen/perf";
 
 const NEAR_BOTTOM_PX = 600;
 
@@ -9,6 +10,11 @@ export function useYearFeed(yearToken: string | null) {
   const [scrolls, setScrolls] = useState(0);
   const sentinel = useRef<HTMLDivElement>(null);
   const yearFetchId = useRef(0);
+
+  useLayoutEffect(() => {
+    if (yearToken === null) return;
+    if (yearFeed.status === "loading") markYearScreen.loading();
+  }, [yearToken, yearFeed.status]);
 
   useEffect(() => {
     if (yearToken === null) {
@@ -21,6 +27,7 @@ export function useYearFeed(yearToken: string | null) {
     void (async () => {
       try {
         const response = await fetch(href);
+        markYearScreen.api();
         if (!response.ok) throw new Error(String(response.status));
         const screen = parseYearScreenResponse(await response.json());
         if (fetchId !== yearFetchId.current) return;
@@ -31,6 +38,18 @@ export function useYearFeed(yearToken: string | null) {
       }
     })();
   }, [yearToken]);
+
+  useEffect(() => {
+    if (yearToken === null) return;
+    if (yearFeed.status !== "ready") return;
+    let cancelled = false;
+    void waitForYearScreenThumbs().then(() => {
+      if (!cancelled) markYearScreen.ready();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [yearToken, yearFeed]);
 
   useEffect(() => {
     const target = sentinel.current;

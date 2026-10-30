@@ -33,7 +33,7 @@ export function timedLister(bucket: Lister): {
 }
 
 /**
- * Builds a `Server-Timing` value for the year-list API.
+ * Builds a `Server-Timing` value for `/api/media` JSON success responses.
  * `r2` carries the list call count in `desc` and the summed list time in `dur`.
  * `total` is the handler wall time until the response is ready.
  */

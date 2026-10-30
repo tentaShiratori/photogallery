@@ -25,7 +25,7 @@
 - その年にメディアがないとき、`group` は null である。
 - `items` または `previews` の各要素は、`bodyKey`（本体の名前）、`kind`（`image` または `video`）、`bodyUrl`（本体の配信）、`thumbUrl`（サムネイルの配信）、`caption`（本体の名前）を持つ。
 - `Cache-Control` は `private, no-store` である。
-- `year` なしの応答には `Server-Timing` が付く。`r2` の `desc` は R2 の `list` の回数、`dur` はその合計時間（ミリ秒）である。`total` の `dur` は、年の一覧の応答を作るまでの全体の時間（ミリ秒）である。
+- JSON の成功応答には、`year` の有無を問わず `Server-Timing` が付く。`r2` の `desc` は R2 の `list` の回数、`dur` はその合計時間（ミリ秒）である。`total` の `dur` は、その応答を作るまでの全体の時間（ミリ秒）である。
 - `year` があり、値が `unknown` でもなく、先頭の 0 なしの 1 から 9999 の数でもないとき、状態は 400 である。本体は「year が不正です。」である。
 - 名前を 1,000 件ずつ最大 20 回読んでも、年を探しているあいだに数字で始まる名前がまだあるとき、状態は 500 である。
 

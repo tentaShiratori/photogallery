@@ -4,6 +4,7 @@
     "src/routes/lib/client.tsx",
     "scripts/upload-local.ts",
     "scripts/upload-prd.ts",
+    "scripts/perf.ts",
     "scripts/perf-year-list.ts",
     "scripts/seed-perf-year-list.ts",
     "scripts/e2e-update-screenshots.ts",
@@ -17,6 +18,10 @@
     "@types/webpack-env",
     "e2e",
     "playwright-core",
+    // perf harness (scripts/perf.ts), not the Worker
+    "chrome-launcher",
+    "lighthouse",
+    "web-vitals",
     "vite-ssr-components",
   ],
   "ignoreExports": [

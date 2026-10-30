@@ -3,6 +3,7 @@ import { useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import type { MediaKind } from "../../lib/kind";
 import type { BodyUrl } from "../../lib/name";
+import { markEnlarged } from "./enlarged/perf";
 
 const dialogClass = css`
   width: min(960px, calc(100vw - 32px));
@@ -51,6 +52,12 @@ export const MediaViewer: FC<{
   }, [item]);
 
   useEffect(() => {
+    if (!item || item.kind !== "image") return;
+    const img = document.querySelector("#stage img");
+    if (img instanceof HTMLImageElement && img.complete) markEnlarged.ready();
+  }, [item]);
+
+  useEffect(() => {
     const dialog = document.getElementById("viewer") as HTMLDialogElement | null;
     if (!dialog) return;
     const onDialogClose = () => onClose();
@@ -68,7 +75,13 @@ export const MediaViewer: FC<{
           (item.kind === "video" ? (
             <video class={dialogMediaClass} src={item.bodyUrl} controls autoplay />
           ) : (
-            <img class={dialogMediaClass} src={item.bodyUrl} alt={item.caption} />
+            <img
+              class={dialogMediaClass}
+              src={item.bodyUrl}
+              alt={item.caption}
+              onLoad={() => markEnlarged.ready()}
+              onError={() => markEnlarged.ready()}
+            />
           ))}
       </div>
       <p class={dialogCaptionClass} id="caption">

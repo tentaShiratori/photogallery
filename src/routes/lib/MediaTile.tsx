@@ -1,5 +1,6 @@
 import { css } from "hono/css";
 import type { FC } from "hono/jsx";
+import type { MediaKind } from "../../lib/kind";
 import type { ThumbUrl } from "../../lib/name";
 
 const figureClass = css`
@@ -37,12 +38,13 @@ const captionClass = css`
 `;
 
 export const MediaTile: FC<{
+  kind: MediaKind;
   thumbUrl: ThumbUrl;
   caption: string;
   onClick: () => void;
-}> = ({ thumbUrl, caption, onClick }) => (
+}> = ({ kind, thumbUrl, caption, onClick }) => (
   <figure class={figureClass}>
-    <button class={tileClass} type="button" onClick={onClick}>
+    <button class={tileClass} type="button" data-kind={kind} onClick={onClick}>
       <img class={mediaClass} src={thumbUrl} alt={caption} loading="lazy" />
     </button>
     <figcaption class={captionClass}>{caption}</figcaption>

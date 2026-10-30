@@ -37,7 +37,7 @@ export function uploadPrdEnv(runtimeEnv: RuntimeEnv = process.env) {
   });
 }
 
-/** Optional overrides for `perf:year-list` (URL and Chrome path). */
+/** Optional overrides for `pnpm perf` (URL and Chrome path). */
 export function perfYearListEnv(runtimeEnv: RuntimeEnv = process.env) {
   return createEnv({
     server: {
