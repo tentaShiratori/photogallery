@@ -60,14 +60,27 @@ function extraHeadersFromCookies(
   return { Cookie: parts.join("; ") };
 }
 
-async function oneLighthouse(url: string, extraHeaders?: Readonly<Record<string, string>>): Promise<LighthouseSample> {
-  const chrome = await launch({
-    chromePath: chromePath(),
+export type LighthouseDeps = {
+  launch?: typeof launch;
+  lighthouse?: typeof lighthouse;
+  chromePath?: () => string | undefined;
+  error?: (message: string) => void;
+};
+
+async function oneLighthouse(
+  url: string,
+  extraHeaders: Readonly<Record<string, string>> | undefined,
+  deps: LighthouseDeps,
+): Promise<LighthouseSample> {
+  const start = deps.launch ?? launch;
+  const audit = deps.lighthouse ?? lighthouse;
+  const chrome = await start({
+    chromePath: (deps.chromePath ?? chromePath)(),
     logLevel: "silent",
     chromeFlags: ["--headless=new", "--disable-dev-shm-usage", `--window-size=${VIEWPORT.width},${VIEWPORT.height}`],
   });
   try {
-    const result = await lighthouse(
+    const result = await audit(
       url,
       {
         port: chrome.port,
@@ -95,17 +108,19 @@ async function oneLighthouse(url: string, extraHeaders?: Readonly<Record<string,
 export async function runLighthouse(
   url: string,
   cookies: readonly CookieLike[] = [],
+  deps: LighthouseDeps = {},
 ): Promise<readonly LighthouseSample[]> {
   const extraHeaders = extraHeadersFromCookies(url, cookies);
-  console.error(`Lighthouse 暖機 ${LH_WARMUP_RUNS} 回のあと、計測 ${LH_MEASURE_RUNS} 回… (${url})`);
+  const error = deps.error ?? ((message: string) => console.error(message));
+  error(`Lighthouse 暖機 ${LH_WARMUP_RUNS} 回のあと、計測 ${LH_MEASURE_RUNS} 回… (${url})`);
   for (let i = 0; i < LH_WARMUP_RUNS; i++) {
-    await oneLighthouse(url, extraHeaders);
+    await oneLighthouse(url, extraHeaders, deps);
   }
   const samples: LighthouseSample[] = [];
   for (let i = 0; i < LH_MEASURE_RUNS; i++) {
-    const sample = await oneLighthouse(url, extraHeaders);
+    const sample = await oneLighthouse(url, extraHeaders, deps);
     samples.push(sample);
-    console.error(
+    error(
       `  Lighthouse #${i + 1}/${LH_MEASURE_RUNS} score=${sample.score.toFixed(0)} fcp=${sample.fcpMs.toFixed(0)} lcp=${sample.lcpMs.toFixed(0)}`,
     );
   }

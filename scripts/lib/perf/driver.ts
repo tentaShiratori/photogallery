@@ -7,6 +7,18 @@ import { resolveYearToken } from "./resolve-year.ts";
 import { measureEnlarged, measureYearList, measureYearScreen } from "./scenarios.ts";
 import type { LighthouseSample, PlaywrightSample, ScenarioName } from "./types.ts";
 
+export type ScenarioDriver = {
+  resolveYearToken?: typeof resolveYearToken;
+  measureYearList?: typeof measureYearList;
+  measureYearScreen?: typeof measureYearScreen;
+  measureEnlarged?: typeof measureEnlarged;
+  runLighthouse?: typeof runLighthouse;
+  printHeader?: typeof printHeader;
+  printScenario?: typeof printScenario;
+  log?: (message: string) => void;
+  error?: (message: string) => void;
+};
+
 async function withPage<T>(context: BrowserContext, run: (page: Page) => Promise<T>): Promise<T> {
   const page = await context.newPage();
   try {
@@ -21,8 +33,9 @@ async function measureLoop(
   label: string,
   url: string,
   run: (page: Page) => Promise<PlaywrightSample>,
+  error: (message: string) => void,
 ): Promise<PlaywrightSample[]> {
-  console.error(`暖機 ${WARMUP_RUNS} 回のあと、計測 ${MEASURE_RUNS} 回… ${label} (${url})`);
+  error(`暖機 ${WARMUP_RUNS} 回のあと、計測 ${MEASURE_RUNS} 回… ${label} (${url})`);
   for (let i = 0; i < WARMUP_RUNS; i++) {
     await withPage(context, run);
   }
@@ -32,7 +45,7 @@ async function measureLoop(
     samples.push(sample);
     const ready =
       sample.marks["year-list-ready"] ?? sample.marks["year-screen-ready"] ?? sample.marks["enlarged-ready"];
-    console.error(
+    error(
       `  #${i + 1}/${MEASURE_RUNS} ready=${ready?.toFixed(0) ?? "?"} r2=${sample.server.r2Calls}/${sample.server.r2Ms.toFixed(0)}ms`,
     );
   }
@@ -55,15 +68,26 @@ export async function runScenarios(
   local: boolean,
   scenarios: readonly ScenarioName[],
   yearFlag: string | null,
+  driver: ScenarioDriver = {},
 ): Promise<void> {
-  const yearToken = needsYear(scenarios) ? await resolveYearToken(context, baseUrl, yearFlag) : null;
+  const resolveYear = driver.resolveYearToken ?? resolveYearToken;
+  const yearList = driver.measureYearList ?? measureYearList;
+  const yearScreen = driver.measureYearScreen ?? measureYearScreen;
+  const enlarged = driver.measureEnlarged ?? measureEnlarged;
+  const lighthouse = driver.runLighthouse ?? runLighthouse;
+  const header = driver.printHeader ?? printHeader;
+  const scenario = driver.printScenario ?? printScenario;
+  const log = driver.log ?? ((message: string) => console.log(message));
+  const error = driver.error ?? ((message: string) => console.error(message));
+
+  const yearToken = needsYear(scenarios) ? await resolveYear(context, baseUrl, yearFlag) : null;
   const collected: { name: ScenarioName; samples: PlaywrightSample[] }[] = [];
 
   for (const name of scenarios) {
     if (name === "year-list") {
       collected.push({
         name,
-        samples: await measureLoop(context, "年の一覧", baseUrl, (page) => measureYearList(page, baseUrl)),
+        samples: await measureLoop(context, "年の一覧", baseUrl, (page) => yearList(page, baseUrl), error),
       });
       continue;
     }
@@ -71,16 +95,24 @@ export async function runScenarios(
     if (name === "year-screen") {
       collected.push({
         name,
-        samples: await measureLoop(context, "年の画面", yearScreenHref(baseUrl, yearToken), (page) =>
-          measureYearScreen(page, baseUrl, yearToken),
+        samples: await measureLoop(
+          context,
+          "年の画面",
+          yearScreenHref(baseUrl, yearToken),
+          (page) => yearScreen(page, baseUrl, yearToken),
+          error,
         ),
       });
       continue;
     }
     collected.push({
       name,
-      samples: await measureLoop(context, "拡大表示", yearScreenHref(baseUrl, yearToken), (page) =>
-        measureEnlarged(page, baseUrl, yearToken),
+      samples: await measureLoop(
+        context,
+        "拡大表示",
+        yearScreenHref(baseUrl, yearToken),
+        (page) => enlarged(page, baseUrl, yearToken),
+        error,
       ),
     });
   }
@@ -91,13 +123,13 @@ export async function runScenarios(
   const lighthouseByName = new Map<ScenarioName, readonly LighthouseSample[] | null>();
   for (const name of scenarios) {
     const url = lighthouseUrl(name, baseUrl, yearToken);
-    lighthouseByName.set(name, url === null ? null : await runLighthouse(url, cookies));
+    lighthouseByName.set(name, url === null ? null : await lighthouse(url, cookies));
   }
 
-  printHeader(baseUrl, local);
-  if (yearToken !== null) console.log(`対象年: ${yearToken}`);
-  console.log("");
+  header(baseUrl, local);
+  if (yearToken !== null) log(`対象年: ${yearToken}`);
+  log("");
   for (const item of collected) {
-    printScenario(item.name, item.samples, lighthouseByName.get(item.name) ?? null);
+    scenario(item.name, item.samples, lighthouseByName.get(item.name) ?? null);
   }
 }
