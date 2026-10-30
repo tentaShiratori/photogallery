@@ -4,7 +4,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vite-plus/test";
 import { thumbnailBytes } from "../scripts/lib/thumbnail.ts";
-import { barePng } from "./capture-fixtures.ts";
+import { barePng } from "./capture.fixtures.ts";
 
 describe("thumbnailBytes", () => {
   it("画像の長辺を 320 の WebP にする", async () => {

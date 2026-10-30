@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
-import { noon } from "../media/fixtures.ts";
-import { captureFromKey, StemClaim, type ThumbnailFile, type ThumbKey, type UploadPlan } from "./index.ts";
+import { noon } from "../media/media.fixtures.ts";
+import { captureFromKey, classify, kindOfBody, StemClaim, thumbKeyFor, urlForBody, urlForThumb } from "./stem.ts";
+import type { BodyKey, ThumbnailFile, ThumbKey, UploadPlan } from "./types.ts";
 
 describe("StemClaim.plan", () => {
   it("同じ秒は拡張子が違っても別のステムになり、サムネイルは WebP", () => {
@@ -50,7 +51,60 @@ describe("StemClaim.plan", () => {
 
   it("暦として読めない撮影日時や短い識別子ではキーを作らない", () => {
     const stems = new StemClaim();
-    expect(() => stems.plan({ year: 2024, month: 13, day: 1, hour: 0, minute: 0, second: 0 }, "jpg", "")).toThrow();
-    expect(() => stems.plan(null, "png", "abc")).toThrow();
+    expect(() => stems.plan({ year: 2024, month: 13, day: 1, hour: 0, minute: 0, second: 0 }, "jpg", "")).toThrow(
+      "ステムを作れません",
+    );
+    expect(() => stems.plan(null, "png", "abc")).toThrow("ステムを作れません");
+    expect(() => stems.plan(noon, "txt", "")).toThrow("本体キーを作れません");
+  });
+});
+
+describe("classify", () => {
+  it("本体とサムネイルを分け、形の合わないキーは null", () => {
+    const plan = new StemClaim().plan(noon, "jpg", "");
+    expect(classify(plan.bodyKey)).toEqual({
+      stem: "2024-08-02T12-00-00",
+      role: "body",
+      bodyKey: plan.bodyKey,
+    });
+    expect(classify(plan.thumbKey)).toEqual({
+      stem: "2024-08-02T12-00-00",
+      role: "thumb",
+      thumbKey: plan.thumbKey,
+    });
+    expect(classify("u-abc123def456.png")?.role).toBe("body");
+    expect(classify("t/u-abc123def456.webp")?.role).toBe("thumb");
+    expect(classify("2024-02-29T00-00-00.jpg")?.role).toBe("body");
+    expect(classify("2024-08-02T12-00-60.jpg")?.role).toBe("body");
+    for (const key of [
+      "",
+      "folder/2024-08-02T12-00-00.jpg",
+      "2024-08-02T12-00-00.txt",
+      "2024-13-02T12-00-00.jpg",
+      "2023-02-29T00-00-00.jpg",
+      "2024-08-02T12-00-00-1.jpg",
+      "t/2024-08-02T12-00-00.jpg",
+      "u-abc.png",
+      "u-abc123def456-1.png",
+    ]) {
+      expect(classify(key)).toBeNull();
+    }
+  });
+});
+
+describe("URL とサムネイルキー", () => {
+  it("計画したキーから URL と種類を返す", () => {
+    const plan = new StemClaim().plan(noon, "mov", "");
+    expect(thumbKeyFor(plan.bodyKey)).toBe("t/2024-08-02T12-00-00.webp");
+    expect(urlForBody(plan.bodyKey)).toBe("/media/2024-08-02T12-00-00.mov");
+    expect(urlForThumb(plan.thumbKey)).toBe("/media/t/2024-08-02T12-00-00.webp");
+    expect(kindOfBody(plan.bodyKey)).toBe("video");
+  });
+
+  it("形の合わないキーでは作らない", () => {
+    expect(() => thumbKeyFor("nope" as BodyKey)).toThrow("サムネイルキーを作れません");
+    expect(() => urlForBody("a/b.jpg" as BodyKey)).toThrow("本体 URL を作れません");
+    expect(() => urlForThumb("nope" as ThumbKey)).toThrow("サムネイル URL を作れません");
+    expect(() => kindOfBody("notes.txt" as BodyKey)).toThrow("種類がありません");
   });
 });

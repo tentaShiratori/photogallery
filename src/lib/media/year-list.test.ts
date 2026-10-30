@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { memoryBucket, pairOf, stored, year } from "./fixtures.ts";
+import { memoryBucket, pairOf, stored, year } from "./media.fixtures.ts";
 import { readYearContents, readYearList, timedLister, type Lister, type YearListYear } from "./index.ts";
 
 describe("readYearList", () => {

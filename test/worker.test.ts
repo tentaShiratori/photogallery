@@ -2,7 +2,7 @@ import { env, exports } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import app from "../src/index";
 import type { YearListResponse, YearScreenResponse } from "../src/routes/api/media";
-import { jpegExif, macSeconds, mp4 } from "./capture-fixtures";
+import { jpegExif, macSeconds, mp4 } from "./capture.fixtures";
 
 function withList(bucket: R2Bucket, list: R2Bucket["list"]): R2Bucket {
   return new Proxy(bucket, {

@@ -1,6 +1,6 @@
 import * as v from "valibot";
 import { describe, expect, it } from "vite-plus/test";
-import { parseYear, yearQuerySchema, type YearQuery } from "./index.ts";
+import { parseYear, yearQuerySchema, type YearQuery } from "./year.ts";
 
 describe("parseYear", () => {
   it("1 から 9999 の先頭 0 の無い数字だけを年にする", () => {
