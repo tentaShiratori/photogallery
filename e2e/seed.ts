@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { BodyKey } from "../src/lib/pair/index.ts";
-import { thumbKeyFor } from "../src/lib/pair/index.ts";
+import type { BodyKey } from "../src/lib/name/index.ts";
+import { thumbKeyFor } from "../src/lib/name/index.ts";
 import type { Env } from "../src/lib/types.ts";
 import { catalog } from "./catalog.ts";
 import type { GalleryPaths } from "./paths.ts";

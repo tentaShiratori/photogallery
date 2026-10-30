@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import type { BodyUrl, ThumbUrl } from "./pair/types.ts";
+import type { BodyUrl, ThumbUrl } from "./name/types.ts";
 
 const mediaItemSchema = v.object({
   bodyKey: v.pipe(v.string(), v.nonEmpty()),

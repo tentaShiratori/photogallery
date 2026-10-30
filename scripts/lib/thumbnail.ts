@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import sharp from "sharp";
-import type { MediaKind } from "../../src/lib/media.ts";
-import type { ThumbnailFile } from "../../src/lib/pair/index.ts";
+import type { MediaKind } from "../../src/lib/kind.ts";
+import type { ThumbnailFile } from "../../src/lib/name/index.ts";
 
 const LONG_EDGE = 320;
 

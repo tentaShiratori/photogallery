@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { noon } from "./fixtures.ts";
+import { noon } from "../media/fixtures.ts";
 import { captureFromKey, StemClaim, type ThumbnailFile, type ThumbKey, type UploadPlan } from "./index.ts";
 
 describe("StemClaim.plan", () => {

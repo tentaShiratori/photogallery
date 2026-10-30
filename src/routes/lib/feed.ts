@@ -1,12 +1,4 @@
-import {
-  parseYearListResponse,
-  parseYearScreenResponse,
-  type MediaItem,
-  type YearCardResponse,
-  type YearGroupResponse,
-  type YearListResponse,
-  type YearScreenResponse,
-} from "../../lib/media-response.ts";
+import type { MediaItem, YearCardResponse, YearGroupResponse, YearScreenResponse } from "../../lib/media-response.ts";
 
 const STEP = 60;
 const LOADING = "読み込み中です。";
@@ -24,16 +16,7 @@ export type Href = string & { readonly [hrefBrand]: "Href" };
 export type ParsedMedia = MediaItem;
 export type ParsedGroup = YearGroupResponse;
 export type ParsedYearCard = YearCardResponse;
-
-export function parseYearList(input: unknown): YearListResponse {
-  return parseYearListResponse(input);
-}
-
 export type ParsedYearScreen = YearScreenResponse;
-
-export function parseYearScreen(input: unknown): ParsedYearScreen {
-  return parseYearScreenResponse(input);
-}
 
 export type YearListState =
   | { readonly status: "loading" }

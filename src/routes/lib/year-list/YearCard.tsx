@@ -67,10 +67,15 @@ export const schoolGradeClass = css`
 `;
 
 export const yearHeadClass = css`
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin: 4px 0 16px;
+  padding: 8px 0;
+  background: var(--bg);
 `;
 
 const PreviewGrid: FC<{

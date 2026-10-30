@@ -1,6 +1,8 @@
-import type { CivilCapture } from "../gallery/index.ts";
-import { captureFromKey, classify, kindOfBody, thumbKeyFor, urlForBody, urlForThumb } from "./stem.ts";
-import { mediaSeal, type BodyKey, type Media, type Stem, type ThumbKey, type Year, type YearGroup } from "./types.ts";
+import type { CivilCapture } from "../capture/index.ts";
+import { captureFromKey, classify, thumbKeyFor } from "../name/index.ts";
+import { kindOfBody, urlForBody, urlForThumb } from "../name/stem.ts";
+import type { BodyKey, Stem, ThumbKey } from "../name/types.ts";
+import { mediaSeal, type Media, type Year, type YearGroup } from "./types.ts";
 
 export type GroupId = { readonly kind: "year"; readonly year: Year } | { readonly kind: "unknown" };
 

@@ -1,28 +1,16 @@
 import { css } from "hono/css";
 import { render } from "hono/jsx/dom";
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "hono/jsx";
+import { useCallback, useEffect, useState } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import { schoolGradeForLabel } from "../../lib/school-grade.ts";
-import {
-  initialYearList,
-  initialYearScreen,
-  parseYearList,
-  parseYearScreen,
-  yearApiHref,
-  yearListReducer,
-  yearListView,
-  yearScreenReducer,
-  yearScreenStep,
-  yearScreenView,
-  type ParsedMedia,
-} from "./feed";
+import type { ParsedMedia } from "./feed";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
+import { useYearFeed } from "./useYearFeed";
+import { useYearList } from "./useYearList";
 import { schoolGradeClass, YearCard, yearHeadClass } from "./year-list/YearCard";
-import { markYearList, waitForYearListThumbs } from "./year-list/perf";
 import { readYearFromLocation, writeYearToLocation } from "./year-list/location";
 
-const NEAR_BOTTOM_PX = 600;
 const SCROLL_KEY = "photogallery-year-list-scroll";
 
 const statusClass = css`
@@ -76,13 +64,9 @@ const backLinkClass = css`
 
 const Gallery: FC = () => {
   const [yearToken, setYearToken] = useState<string | null>(() => readYearFromLocation());
-  const [yearList, dispatchList] = useReducer(yearListReducer, initialYearList);
-  const [yearFeed, dispatchYear] = useReducer(yearScreenReducer, initialYearScreen);
-  const [scrolls, setScrolls] = useState(0);
   const [selectedItem, setSelectedItem] = useState<ParsedMedia | null>(null);
-  const sentinel = useRef<HTMLDivElement>(null);
-  const listLoaded = useRef(false);
-  const yearFetchId = useRef(0);
+  const listView = useYearList(yearToken);
+  const { screenView, sentinel } = useYearFeed(yearToken);
 
   const openYear = useCallback((token: string) => {
     sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
@@ -106,81 +90,6 @@ const Gallery: FC = () => {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  useLayoutEffect(() => {
-    if (yearToken !== null) return;
-    if (yearList.status === "loading") markYearList.loading();
-  }, [yearToken, yearList.status]);
-
-  useEffect(() => {
-    if (listLoaded.current) return;
-    listLoaded.current = true;
-    void (async () => {
-      try {
-        const response = await fetch("/api/media");
-        markYearList.api();
-        if (!response.ok) throw new Error(String(response.status));
-        const parsed = parseYearList(await response.json());
-        dispatchList({ type: "loaded", years: parsed.years });
-      } catch {
-        dispatchList({ type: "failed" });
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (yearToken !== null) return;
-    if (yearList.status !== "ready") return;
-    let cancelled = false;
-    void waitForYearListThumbs().then(() => {
-      if (!cancelled) markYearList.ready();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [yearToken, yearList]);
-
-  useEffect(() => {
-    if (yearToken === null) {
-      dispatchYear({ type: "reset" });
-      return;
-    }
-    const href = yearApiHref(yearToken);
-    const fetchId = ++yearFetchId.current;
-    dispatchYear({ type: "reset" });
-    void (async () => {
-      try {
-        const response = await fetch(href);
-        if (!response.ok) throw new Error(String(response.status));
-        const screen = parseYearScreen(await response.json());
-        if (fetchId !== yearFetchId.current) return;
-        dispatchYear({ type: "loaded", href, screen });
-      } catch {
-        if (fetchId !== yearFetchId.current) return;
-        dispatchYear({ type: "failed", href });
-      }
-    })();
-  }, [yearToken]);
-
-  useEffect(() => {
-    const target = sentinel.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(() => setScrolls((count) => count + 1), {
-      rootMargin: `0px 0px ${NEAR_BOTTOM_PX}px 0px`,
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [yearToken]);
-
-  useEffect(() => {
-    if (yearToken === null) return;
-    const top = sentinel.current?.getBoundingClientRect().top ?? Infinity;
-    const nearBottom = top <= window.innerHeight + NEAR_BOTTOM_PX;
-    const step = yearScreenStep(yearFeed, nearBottom);
-    if (step.kind === "reveal") dispatchYear({ type: "reveal" });
-  }, [yearToken, yearFeed, scrolls]);
-
-  const listView = yearListView(yearList);
-  const screenView = yearScreenView(yearFeed);
   const screenGrade = screenView.label !== null ? schoolGradeForLabel(screenView.label) : null;
 
   if (yearToken !== null) {

@@ -1,5 +1,3 @@
-export const TAB_ICON_PATH = "/favicon.svg" as const;
-
 const TAB_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
   <defs>
     <path id="petal" d="M0-1.8C1.7-2.6 2.5-4.4 0-6.6C-2.5-4.4-1.7-2.6 0-1.8Z"/>
@@ -17,7 +15,7 @@ const TAB_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16
   </g>
 </svg>`;
 
-export function tabIconResponse(): Response {
+export function getFavicon(): Response {
   return new Response(TAB_ICON_SVG, {
     status: 200,
     headers: {

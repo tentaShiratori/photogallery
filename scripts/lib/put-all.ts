@@ -1,6 +1,6 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
-import type { PlannedFile } from "../../src/lib/pair/index.ts";
+import type { PlannedFile } from "../../src/lib/name/index.ts";
 import type { ObjectSink } from "./object-sink.ts";
 import { thumbnailBytes } from "./thumbnail.ts";
 

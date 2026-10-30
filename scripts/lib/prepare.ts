@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { open, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { captureFromMtime, embeddedCapture, type CivilCapture } from "../../src/lib/gallery/index.ts";
-import { extensionOf, selectUploadNames } from "../../src/lib/media.ts";
-import { StemClaim, type PlannedFile } from "../../src/lib/pair/index.ts";
+import { captureFromMtime, embeddedCapture, type CivilCapture } from "../../src/lib/capture/index.ts";
+import { extensionOf, selectUploadNames } from "../../src/lib/kind.ts";
+import { StemClaim, type PlannedFile } from "../../src/lib/name/index.ts";
 
 async function fileNamesIn(folder: string): Promise<string[]> {
   const entries = await readdir(folder, { withFileTypes: true });

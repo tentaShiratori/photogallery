@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
+import { parseYearListResponse, parseYearScreenResponse } from "../../lib/media-response.ts";
 import {
   initialYearList,
   initialYearScreen,
-  parseYearList,
-  parseYearScreen,
   yearApiHref,
   yearListReducer,
   yearListView,
@@ -53,7 +52,7 @@ describe("year list", () => {
   it("年カードが来たら見出しの文言は出さずカードだけ出す", () => {
     const state = yearListReducer(initialYearList, {
       type: "loaded",
-      years: parseYearList(wireList([{ label: "2024", previews: 2 }])).years,
+      years: parseYearListResponse(wireList([{ label: "2024", previews: 2 }])).years,
     });
     expect(yearListView(state)).toEqual({
       status: null,
@@ -78,8 +77,8 @@ describe("year list", () => {
   });
 
   it("プレビューは 4 件まで受け取る", () => {
-    expect(parseYearList(wireList([{ label: "2024", previews: 4 }])).years[0]?.previews).toHaveLength(4);
-    expect(() => parseYearList(wireList([{ label: "2024", previews: 5 }]))).toThrow();
+    expect(parseYearListResponse(wireList([{ label: "2024", previews: 4 }])).years[0]?.previews).toHaveLength(4);
+    expect(() => parseYearListResponse(wireList([{ label: "2024", previews: 5 }]))).toThrow();
   });
 });
 
@@ -97,7 +96,7 @@ describe("year screen", () => {
     let feed = yearScreenReducer(initialYearScreen, {
       type: "loaded",
       href: "/api/media?year=2024" as Href,
-      screen: parseYearScreen(wireYear("2024", 75)),
+      screen: parseYearScreenResponse(wireYear("2024", 75)),
     });
     let view = yearScreenView(feed);
     expect(view.status).toBeNull();
@@ -117,7 +116,7 @@ describe("year screen", () => {
     const feed = yearScreenReducer(initialYearScreen, {
       type: "loaded",
       href: "/api/media?year=2024" as Href,
-      screen: parseYearScreen(wireYear("2024", 3, true)),
+      screen: parseYearScreenResponse(wireYear("2024", 3, true)),
     });
     const view = yearScreenView(feed);
     expect(view.notice).toBe("（上限で打ち切っています）");
@@ -128,7 +127,7 @@ describe("year screen", () => {
     const feed = yearScreenReducer(initialYearScreen, {
       type: "loaded",
       href: "/api/media?year=2024" as Href,
-      screen: parseYearScreen({ group: null, next: null }),
+      screen: parseYearScreenResponse({ group: null, next: null }),
     });
     expect(yearScreenView(feed).status).toBe(
       "まだ画像も動画もありません。アップロードスクリプトで R2 に置いてください。",
@@ -145,14 +144,14 @@ describe("year screen", () => {
 
   it("形の違う応答は受け取らない", () => {
     const good = wireYear("2024", 1);
-    expect(parseYearScreen(good).group?.items).toHaveLength(1);
-    expect(parseYearScreen({ group: null, next: null })).toEqual({ group: null, next: null });
+    expect(parseYearScreenResponse(good).group?.items).toHaveLength(1);
+    expect(parseYearScreenResponse({ group: null, next: null })).toEqual({ group: null, next: null });
     for (const bad of [
       null,
       { group: null, next: "/api/media?after=2024" },
       { ...good, group: { ...good.group, items: [] } },
     ]) {
-      expect(() => parseYearScreen(bad)).toThrow();
+      expect(() => parseYearScreenResponse(bad)).toThrow();
     }
   });
 });

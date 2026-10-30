@@ -7,7 +7,7 @@ import {
   kindForName,
   mediaPath,
   selectUploadNames,
-} from "./media.ts";
+} from "./kind.ts";
 
 describe("media kinds", () => {
   it("画像と動画の拡張子を分類する", () => {
