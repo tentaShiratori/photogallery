@@ -1,6 +1,16 @@
 import * as v from "valibot";
 import { describe, expect, it } from "vite-plus/test";
-import { parseYear, yearQuerySchema, type YearQuery } from "./year.ts";
+import { parseYear, toYear, yearQuerySchema, type YearQuery } from "./year.ts";
+
+describe("toYear", () => {
+  it("1 から 9999 の整数だけを年にする", () => {
+    expect(toYear(1)).toBe(1);
+    expect(toYear(9999)).toBe(9999);
+    expect(toYear(0)).toBeNull();
+    expect(toYear(10000)).toBeNull();
+    expect(toYear(1.5)).toBeNull();
+  });
+});
 
 describe("parseYear", () => {
   it("1 から 9999 の先頭 0 の無い数字だけを年にする", () => {

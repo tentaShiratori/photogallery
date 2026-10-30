@@ -15,10 +15,10 @@ function bucketOf(objects: ReadonlyMap<string, Stored>): R2Bucket {
       const found = objects.get(key);
       if (!found) return null;
       const header = options?.range instanceof Headers ? options.range.get("range") : null;
-      let range = found.range;
+      let range = found.range ?? undefined;
       let body = found.bytes;
       const match = header ? /^bytes=(\d+)-(\d+)$/.exec(header) : null;
-      if (match && range === undefined) {
+      if (match && found.range === undefined) {
         const offset = Number(match[1]);
         const end = Number(match[2]);
         range = { offset, length: end - offset + 1 };
@@ -93,14 +93,21 @@ describe("serveObject", () => {
     expect(res.headers.get("content-range")).toBe("bytes 6-9/10");
   });
 
-  it("range が空なら 200", async () => {
-    const res = await serveObject(
+  it("offset の無い range や range 無しは 200", async () => {
+    const unparsed = await serveObject(
       new Request("http://localhost/x", { headers: { Range: "bytes=0-1" } }),
-      bucketOf(objects({ range: {} })),
+      bucketOf(objects({ range: { length: 4 } })),
       key,
     );
-    expect(res.status).toBe(200);
-    expect(res.headers.get("content-range")).toBeNull();
+    expect(unparsed.status).toBe(200);
+    expect(unparsed.headers.get("content-range")).toBeNull();
+    const full = await serveObject(
+      new Request("http://localhost/x", { headers: { Range: "bytes=0-1" } }),
+      bucketOf(objects({ range: null })),
+      key,
+    );
+    expect(full.status).toBe(200);
+    expect(new Uint8Array(await full.arrayBuffer())).toEqual(bytes);
   });
 });
 

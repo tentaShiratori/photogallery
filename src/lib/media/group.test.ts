@@ -84,6 +84,13 @@ describe("groupFromHeads", () => {
     expect(groupFromHeads(year2024, [head(`t/${stem}.webp`)], false)).toBeNull();
     expect(groupFromHeads(year2024, [head(`${stem}.jpg`)], false)).toBeNull();
   });
+
+  it("揃った組に本体がもう一つ来ると消し、同じサムネイルがもう一度来ても残す", () => {
+    const stem = "2024-08-02T12-00-00";
+    const base = [head(`${stem}.jpg`), head(`t/${stem}.webp`)];
+    expect(groupFromHeads(year2024, [...base, head(`${stem}.png`)], false)).toBeNull();
+    expect(groupFromHeads(year2024, [...base, head(`t/${stem}.webp`)], false)?.items).toHaveLength(1);
+  });
 });
 
 describe("previewMediasFromHeads", () => {
