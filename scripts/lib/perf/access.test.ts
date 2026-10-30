@@ -43,4 +43,56 @@ describe("ensureAccess", () => {
     expect(written.some((path) => path.includes(".access-ready"))).toBe(true);
     expect(page.close).toHaveBeenCalled();
   });
+
+  it("画面ありでログインを待ち、タイトルが違えば印を書かない", async () => {
+    const originalDocument = globalThis.document;
+    const originalLocation = globalThis.location;
+    const errors: unknown[] = [];
+    const originalError = console.error;
+    console.error = (message?: unknown) => {
+      errors.push(message);
+    };
+    globalThis.document = { title: "フォトギャラリー" } as Document;
+    globalThis.location = { hostname: "gallery.example" } as Location;
+    const written: string[] = [];
+    const page = {
+      goto: async () => undefined,
+      url: () => "https://accounts.google.com/signin",
+      waitForFunction: async (fn: () => boolean) => {
+        expect(fn()).toBe(true);
+      },
+      close: async () => undefined,
+    };
+    try {
+      await ensureAccess({ newPage: async () => page } as never, "https://gallery.example/", true, {
+        mkdirSync: () => undefined as never,
+        writeFileSync: (target) => {
+          written.push(String(target));
+        },
+      });
+      expect(errors).toEqual(["Cloudflare Access にログインしてください。完了すると計測に進みます…"]);
+      expect(written).toHaveLength(1);
+
+      globalThis.document = { title: "Login" } as Document;
+      const blocked = {
+        ...page,
+        url: () => "https://gallery.example/",
+        waitForFunction: async (fn: () => boolean) => {
+          if (!fn()) throw new Error("not ready");
+        },
+      };
+      await expect(
+        ensureAccess({ newPage: async () => blocked } as never, "https://gallery.example/", false, {
+          mkdirSync: () => undefined as never,
+          writeFileSync: () => {
+            throw new Error("should not write");
+          },
+        }),
+      ).rejects.toThrow("not ready");
+    } finally {
+      console.error = originalError;
+      globalThis.document = originalDocument;
+      globalThis.location = originalLocation;
+    }
+  });
 });
