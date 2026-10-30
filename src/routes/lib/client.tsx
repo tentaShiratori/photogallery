@@ -1,5 +1,4 @@
 import { css } from "hono/css";
-import { render } from "hono/jsx/dom";
 import { useCallback, useEffect, useState } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import { schoolGradeForLabel } from "../../lib/school-grade.ts";
@@ -63,7 +62,7 @@ const backLinkClass = css`
   }
 `;
 
-const Gallery: FC = () => {
+export const Gallery: FC = () => {
   const [yearToken, setYearToken] = useState<string | null>(() => readYearFromLocation());
   const [selectedItem, setSelectedItem] = useState<ParsedMedia | null>(null);
   const listView = useYearList(yearToken);
@@ -161,8 +160,3 @@ const Gallery: FC = () => {
     </>
   );
 };
-
-const root = document.getElementById("gallery-root");
-if (root) {
-  render(<Gallery />, root);
-}

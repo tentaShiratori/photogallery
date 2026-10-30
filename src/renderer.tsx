@@ -40,7 +40,7 @@ export const renderer = jsxRenderer(
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <ViteClient />
         <Style />
-        <Script src="/src/routes/lib/client.tsx" />
+        <Script src="/src/routes/lib/gallery-entry.tsx" />
       </head>
       <body>{children}</body>
     </html>
