@@ -1,11 +1,30 @@
-import { spawn } from "node:child_process";
+import { spawn as nodeSpawn } from "node:child_process";
 import sharp from "sharp";
 import type { MediaKind } from "../../src/lib/kind.ts";
 import type { ThumbnailFile } from "../../src/lib/name/index.ts";
 
 const LONG_EDGE = 320;
 
-async function encodeWebp(input: string | Uint8Array): Promise<Uint8Array> {
+export type FrameChild = {
+  stdout: { on(event: "data", listener: (chunk: Buffer) => void): void };
+  stderr: { on(event: "data", listener: (chunk: Buffer) => void): void };
+  on(event: "error", listener: (error: Error) => void): void;
+  on(event: "close", listener: (code: number | null) => void): void;
+};
+
+export type FrameSpawn = (
+  command: string,
+  args: readonly string[],
+  options: { stdio: ["ignore", "pipe", "pipe"]; windowsHide: true },
+) => FrameChild;
+
+export type ThumbnailDeps = {
+  encodeWebp?: (input: string | Uint8Array) => Promise<Uint8Array>;
+  ffmpegPath?: () => Promise<string>;
+  spawn?: FrameSpawn;
+};
+
+async function defaultEncode(input: string | Uint8Array): Promise<Uint8Array> {
   const bytes = await sharp(input)
     .resize({
       width: LONG_EDGE,
@@ -18,14 +37,26 @@ async function encodeWebp(input: string | Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(bytes);
 }
 
-async function ffmpegBinary(): Promise<string> {
+async function defaultFfmpegPath(): Promise<string> {
   const imported = await import("ffmpeg-static");
   const ffmpegPath = imported.default;
   if (!ffmpegPath) throw new Error("ffmpeg が見つかりません。");
   return ffmpegPath;
 }
 
-function firstFrame(filePath: string, ffmpegPath: string): Promise<Uint8Array> {
+function defaultSpawn(command: string, args: readonly string[], options: Parameters<FrameSpawn>[2]): FrameChild {
+  const child = nodeSpawn(command, [...args], options);
+  if (child.stdout === null || child.stderr === null) throw new Error("ffmpeg のパイプがありません。");
+  return {
+    stdout: child.stdout,
+    stderr: child.stderr,
+    on(event, listener) {
+      child.on(event, listener);
+    },
+  };
+}
+
+function readFrame(filePath: string, ffmpegPath: string, spawn: FrameSpawn): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     const child = spawn(
       ffmpegPath,
@@ -69,7 +100,17 @@ function firstFrame(filePath: string, ffmpegPath: string): Promise<Uint8Array> {
   });
 }
 
-export async function thumbnailBytes(filePath: string, kind: MediaKind): Promise<ThumbnailFile> {
-  const source = kind === "video" ? await firstFrame(filePath, await ffmpegBinary()) : filePath;
-  return { bytes: await encodeWebp(source), contentType: "image/webp" };
+export async function thumbnailBytes(
+  filePath: string,
+  kind: MediaKind,
+  deps: ThumbnailDeps = {},
+): Promise<ThumbnailFile> {
+  const encode = deps.encodeWebp ?? defaultEncode;
+  let source: string | Uint8Array = filePath;
+  if (kind === "video") {
+    const ffmpeg = await (deps.ffmpegPath ?? defaultFfmpegPath)();
+    if (!ffmpeg) throw new Error("ffmpeg が見つかりません。");
+    source = await readFrame(filePath, ffmpeg, deps.spawn ?? defaultSpawn);
+  }
+  return { bytes: await encode(source), contentType: "image/webp" };
 }
