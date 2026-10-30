@@ -3,6 +3,7 @@ import { render } from "hono/jsx/dom";
 import { useCallback, useEffect, useState } from "hono/jsx";
 import type { FC } from "hono/jsx";
 import { schoolGradeForLabel } from "../../lib/school-grade.ts";
+import { markEnlarged } from "./enlarged/perf";
 import type { ParsedMedia } from "./feed";
 import { MediaTile } from "./MediaTile";
 import { MediaViewer } from "./MediaViewer";
@@ -117,9 +118,13 @@ const Gallery: FC = () => {
             {screenView.tiles.map((item) => (
               <MediaTile
                 key={item.bodyKey}
+                kind={item.kind}
                 thumbUrl={item.thumbUrl}
                 caption={item.caption}
-                onClick={() => setSelectedItem(item)}
+                onClick={() => {
+                  markEnlarged.open();
+                  setSelectedItem(item);
+                }}
               />
             ))}
           </div>

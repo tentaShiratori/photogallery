@@ -1,5 +1,5 @@
 /**
- * Seeds a large local R2 persist for `pnpm perf:year-list -- --local`.
+ * Seeds a large local R2 persist for `pnpm perf -- --local`.
  * Not part of the product; measurement fixture only.
  */
 import { mkdirSync, rmSync } from "node:fs";

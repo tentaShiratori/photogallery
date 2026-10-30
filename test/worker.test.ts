@@ -146,7 +146,10 @@ describe("Worker 統合テスト", () => {
     it("year で 1 年分を今と同じ順で返し next は null", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/api/media?year=2024"));
       expect(response.status).toBe(200);
-      expect(response.headers.get("server-timing")).toBeNull();
+      const serverTiming = response.headers.get("server-timing");
+      expect(serverTiming).toMatch(/^r2;desc="\d+";dur=\d+(\.\d+)?, total;dur=\d+(\.\d+)?$/);
+      const r2Desc = /r2;desc="(\d+)"/.exec(serverTiming ?? "");
+      expect(Number(r2Desc?.[1])).toBeGreaterThan(0);
       const page = (await response.json()) as YearScreenResponse;
       expect(page.next).toBeNull();
       expect(page.group?.label).toBe("2024");
@@ -163,6 +166,7 @@ describe("Worker 統合テスト", () => {
     it("year=unknown で年不明を返す", async () => {
       const response = await exports.default.fetch(new Request("http://localhost/api/media?year=unknown"));
       expect(response.status).toBe(200);
+      expect(response.headers.get("server-timing")).toMatch(/^r2;desc="\d+";dur=\d+(\.\d+)?, total;dur=\d+(\.\d+)?$/);
       const page = (await response.json()) as YearScreenResponse;
       expect(page.group?.label).toBe("年不明");
       expect(page.next).toBeNull();
@@ -172,6 +176,7 @@ describe("Worker 統合テスト", () => {
       for (const year of ["abc", "0", "2024x", ""]) {
         const response = await exports.default.fetch(new Request(`http://localhost/api/media?year=${year}`));
         expect(response.status).toBe(400);
+        expect(response.headers.get("server-timing")).toBeNull();
         expect(await response.text()).toBe("year が不正です。");
       }
     });

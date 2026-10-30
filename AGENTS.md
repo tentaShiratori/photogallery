@@ -29,6 +29,8 @@ pnpm exec vp lint
 pnpm test run <テストファイル>
 pnpm e2e
 pnpm e2e:update-screenshots
+pnpm perf
+pnpm seed:perf
 ```
 
 手で回すときはファイルを指定する。まとめて流すのは hook と CI（`pnpm check`）。
@@ -48,5 +50,6 @@ pnpm e2e:update-screenshots
   - `pnpm install` のあと `pnpm deadcode` で確認。
 
 - `pnpm e2e --update-snapshots` は e2e の baseline だけを直す。画面を変えたら撮り直し、差分が出るかを CI の e2e が見る。
+- `pnpm perf` — 年の一覧・年の画面・拡大表示を測る。速さの改善を指示されたとき以外は回さない。`pnpm check` には入れない。
 
 アップロード対象の判定は `src/lib/kind.ts` の `selectUploadNames` に寄せる。
