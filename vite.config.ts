@@ -50,6 +50,24 @@ export default defineConfig(() => ({
     ],
   },
   test: {
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}", "scripts/**/*.{ts,tsx}"],
+      exclude: [
+        "**/*.{test,spec}.{ts,tsx}",
+        "**/*.fixtures.ts",
+        "**/types.ts",
+        "**/*.d.ts",
+        "src/lib/media/index.ts",
+        "src/lib/name/index.ts",
+      ],
+      thresholds: {
+        lines: 80,
+        statements: 80,
+        functions: 80,
+        branches: 80,
+      },
+    },
     projects: [
       {
         test: {
@@ -62,7 +80,15 @@ export default defineConfig(() => ({
             "test/**/*.test.ts",
             "test/**/*.test.tsx",
           ],
-          exclude: ["test/worker.test.ts", "**/node_modules/**"],
+          exclude: ["test/worker.test.ts", "src/**/*.dom.test.ts", "src/**/*.dom.test.tsx", "**/node_modules/**"],
+        },
+      },
+      {
+        test: {
+          name: "dom",
+          environment: "happy-dom",
+          include: ["src/**/*.dom.test.ts", "src/**/*.dom.test.tsx"],
+          exclude: ["**/node_modules/**"],
         },
       },
       {
