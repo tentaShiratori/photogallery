@@ -85,13 +85,13 @@ export async function runScenarios(
     });
   }
 
+  const cookies = await context.cookies();
   await context.close();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const lighthouseByName = new Map<ScenarioName, readonly LighthouseSample[] | null>();
   for (const name of scenarios) {
     const url = lighthouseUrl(name, baseUrl, yearToken);
-    lighthouseByName.set(name, url === null ? null : await runLighthouse(url));
+    lighthouseByName.set(name, url === null ? null : await runLighthouse(url, cookies));
   }
 
   printHeader(baseUrl, local);

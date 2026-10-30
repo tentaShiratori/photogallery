@@ -1,8 +1,14 @@
 import { launch } from "chrome-launcher";
 import lighthouse, { desktopConfig } from "lighthouse";
 import { chromePath } from "./chrome.ts";
-import { LH_MEASURE_RUNS, LH_WARMUP_RUNS, PROFILE_DIR, VIEWPORT } from "./constants.ts";
+import { LH_MEASURE_RUNS, LH_WARMUP_RUNS, VIEWPORT } from "./constants.ts";
 import type { LighthouseSample } from "./types.ts";
+
+type CookieLike = {
+  readonly name: string;
+  readonly value: string;
+  readonly domain: string;
+};
 
 function numeric(lhr: { audits: Record<string, { numericValue?: number } | undefined> }, id: string): number {
   const value = lhr.audits[id]?.numericValue;
@@ -39,10 +45,24 @@ function toSample(lhr: {
   };
 }
 
-async function oneLighthouse(url: string): Promise<LighthouseSample> {
+function extraHeadersFromCookies(
+  url: string,
+  cookies: readonly CookieLike[],
+): Readonly<Record<string, string>> | undefined {
+  const host = new URL(url).hostname;
+  const parts = cookies
+    .filter((cookie) => {
+      const domain = cookie.domain.replace(/^\./, "");
+      return host === domain || host.endsWith(`.${domain}`);
+    })
+    .map((cookie) => `${cookie.name}=${cookie.value}`);
+  if (parts.length === 0) return undefined;
+  return { Cookie: parts.join("; ") };
+}
+
+async function oneLighthouse(url: string, extraHeaders?: Readonly<Record<string, string>>): Promise<LighthouseSample> {
   const chrome = await launch({
     chromePath: chromePath(),
-    userDataDir: PROFILE_DIR,
     logLevel: "silent",
     chromeFlags: ["--headless=new", "--disable-dev-shm-usage", `--window-size=${VIEWPORT.width},${VIEWPORT.height}`],
   });
@@ -54,7 +74,7 @@ async function oneLighthouse(url: string): Promise<LighthouseSample> {
         output: "json",
         logLevel: "silent",
         onlyCategories: ["performance"],
-        disableStorageReset: true,
+        extraHeaders,
         screenEmulation: {
           mobile: false,
           width: VIEWPORT.width,
@@ -72,14 +92,18 @@ async function oneLighthouse(url: string): Promise<LighthouseSample> {
   }
 }
 
-export async function runLighthouse(url: string): Promise<readonly LighthouseSample[]> {
+export async function runLighthouse(
+  url: string,
+  cookies: readonly CookieLike[] = [],
+): Promise<readonly LighthouseSample[]> {
+  const extraHeaders = extraHeadersFromCookies(url, cookies);
   console.error(`Lighthouse 暖機 ${LH_WARMUP_RUNS} 回のあと、計測 ${LH_MEASURE_RUNS} 回… (${url})`);
   for (let i = 0; i < LH_WARMUP_RUNS; i++) {
-    await oneLighthouse(url);
+    await oneLighthouse(url, extraHeaders);
   }
   const samples: LighthouseSample[] = [];
   for (let i = 0; i < LH_MEASURE_RUNS; i++) {
-    const sample = await oneLighthouse(url);
+    const sample = await oneLighthouse(url, extraHeaders);
     samples.push(sample);
     console.error(
       `  Lighthouse #${i + 1}/${LH_MEASURE_RUNS} score=${sample.score.toFixed(0)} fcp=${sample.fcpMs.toFixed(0)} lcp=${sample.lcpMs.toFixed(0)}`,
