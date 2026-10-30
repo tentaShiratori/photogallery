@@ -49,7 +49,7 @@ export function useYearFeed(yearToken: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [yearToken, yearFeed]);
+  }, [yearToken, yearFeed.status]);
 
   useEffect(() => {
     const target = sentinel.current;
