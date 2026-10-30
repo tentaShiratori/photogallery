@@ -24,8 +24,14 @@ export class FolderArgError extends Error {
   }
 }
 
-export async function assertDirectory(folder: string): Promise<void> {
-  const folderStat = await stat(folder).catch(() => null);
+type DirectoryStat = (folder: string) => Promise<{ isDirectory(): boolean }>;
+
+async function directoryStat(folder: string): Promise<{ isDirectory(): boolean }> {
+  return stat(folder);
+}
+
+export async function assertDirectory(folder: string, statFn: DirectoryStat = directoryStat): Promise<void> {
+  const folderStat = await statFn(folder).catch(() => null);
   if (!folderStat?.isDirectory()) {
     throw new FolderArgError("not-folder", folder);
   }

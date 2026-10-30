@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { bodyKeys, groupsOf, memoryBucket, pairOf, stored, walk, year } from "./fixtures.ts";
+import { bodyKeys, groupsOf, memoryBucket, pairOf, stored, walk, year } from "./media.fixtures.ts";
 import { readPage, type Lister } from "./index.ts";
 
 describe("readPage", () => {

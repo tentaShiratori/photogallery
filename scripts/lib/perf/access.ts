@@ -15,7 +15,17 @@ export function pageIsOnAccess(pageUrl: string): boolean {
   return isAccessUrl(pageUrl);
 }
 
-export async function ensureAccess(context: BrowserContext, url: string, headed: boolean): Promise<void> {
+export async function ensureAccess(
+  context: BrowserContext,
+  url: string,
+  headed: boolean,
+  deps: {
+    mkdirSync?: typeof mkdirSync;
+    writeFileSync?: typeof writeFileSync;
+  } = {},
+): Promise<void> {
+  const makeDir = deps.mkdirSync ?? mkdirSync;
+  const writeFile = deps.writeFileSync ?? writeFileSync;
   const page = await context.newPage();
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT_MS });
@@ -36,8 +46,8 @@ export async function ensureAccess(context: BrowserContext, url: string, headed:
       },
       { timeout: ACCESS_TIMEOUT_MS },
     );
-    mkdirSync(PROFILE_DIR, { recursive: true });
-    writeFileSync(READY_MARKER, `${new Date().toISOString()}\n`);
+    makeDir(PROFILE_DIR, { recursive: true });
+    writeFile(READY_MARKER, `${new Date().toISOString()}\n`);
   } finally {
     await page.close();
   }

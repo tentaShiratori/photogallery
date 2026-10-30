@@ -185,10 +185,16 @@ const TITLES: Record<ScenarioName, string> = {
   enlarged: "拡大表示",
 };
 
-export function printHeader(url: string, local: boolean): void {
-  console.log(`日時: ${jstStamp()}`);
+export function printHeader(
+  url: string,
+  local: boolean,
+  deps: { stamp?: () => string; commit?: () => string } = {},
+): void {
+  const stamp = deps.stamp ?? jstStamp;
+  const commit = deps.commit ?? gitCommit;
+  console.log(`日時: ${stamp()}`);
   console.log(`URL: ${url}${local ? " (local)" : ""}`);
-  console.log(`コミット: ${gitCommit()}`);
+  console.log(`コミット: ${commit()}`);
   console.log(
     `回数: Playwright 暖機 ${WARMUP_RUNS} + 計測 ${MEASURE_RUNS} / Lighthouse 暖機 ${LH_WARMUP_RUNS} + 計測 ${LH_MEASURE_RUNS}`,
   );

@@ -1,9 +1,16 @@
 /**
  * Alias of `pnpm perf -- --scenario year-list`.
  */
-import { runPerf } from "./lib/perf/main.ts";
+import { invokedDirectly } from "./lib/invoked-directly.ts";
+import { startPerf } from "./perf.ts";
 
-runPerf(["--scenario", "year-list", ...process.argv.slice(2)]).catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
-});
+export function startYearListPerf(
+  argv: readonly string[] = process.argv.slice(2),
+  deps?: Parameters<typeof startPerf>[1],
+): Promise<void> {
+  return startPerf(["--scenario", "year-list", ...argv], deps);
+}
+
+if (invokedDirectly(import.meta.url)) {
+  void startYearListPerf();
+}

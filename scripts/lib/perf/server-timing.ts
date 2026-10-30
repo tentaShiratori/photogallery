@@ -1,7 +1,7 @@
 import type { Page, Response } from "playwright-core";
 import type { ServerTiming } from "./types.ts";
 
-function parseServerTiming(header: string | null): ServerTiming | null {
+export function parseServerTiming(header: string | null): ServerTiming | null {
   if (header === null || header.trim() === "") return null;
   let r2Calls: number | null = null;
   let r2Ms: number | null = null;

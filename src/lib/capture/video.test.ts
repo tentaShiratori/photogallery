@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vite-plus/test";
-import { embeddedCapture } from "./index.ts";
-import { androidKeys, creationdateKeys, openFiles, overlaps } from "./fixtures.ts";
-import { macSeconds, mp4 } from "../../../test/capture-fixtures.ts";
+import { androidKeys, creationdateKeys, openFiles, overlaps } from "./capture.fixtures.ts";
+import { instantFromBmffCreate } from "./video.ts";
+import { macSeconds, mp4 } from "../../../test/capture.fixtures.ts";
 
-describe("embeddedCapture", () => {
+type RangeRead = (key: string, offset: number, length: number) => Promise<Uint8Array>;
+
+async function civilOf(name: string, size: number, read: RangeRead) {
+  return (await instantFromBmffCreate(name, size, read))?.toCivil() ?? null;
+}
+
+describe("instantFromBmffCreate", () => {
   it("mdat の後ろの mvhd を読み、mdat 本体は読まない", async () => {
     const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "after-mdat", wideMdat: true });
     const { calls, read } = openFiles(new Map([["tail.mov", built.bytes]]));
-    expect(await embeddedCapture("tail.mov", built.bytes.length, read)).toEqual({
+    expect(await civilOf("tail.mov", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
       day: 3,
@@ -25,7 +31,7 @@ describe("embeddedCapture", () => {
     const creation = macSeconds(2024, 8, 2, 15, 0, 0);
     const built = mp4({ creationSeconds: creation, moov: "before-mdat" });
     const { calls, read } = openFiles(new Map([["head.m4v", built.bytes]]));
-    expect(await embeddedCapture("head.m4v", built.bytes.length, read)).toEqual({
+    expect(await civilOf("head.m4v", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
       day: 3,
@@ -55,7 +61,7 @@ describe("embeddedCapture", () => {
       });
       const name = `abroad-${where}.mov`;
       const { calls, read } = openFiles(new Map([[name, built.bytes]]));
-      expect(await embeddedCapture(name, built.bytes.length, read)).toEqual(expected);
+      expect(await civilOf(name, built.bytes.length, read)).toEqual(expected);
       expect(
         calls.some((call) => overlaps(call.offset, call.length, built.mdatPayloadStart, built.mdatPayloadEnd)),
       ).toBe(false);
@@ -98,9 +104,9 @@ describe("embeddedCapture", () => {
       ...malformed.map(({ name, built }) => [name, built.bytes] as const),
     ]);
     const { read } = openFiles(files);
-    expect(await embeddedCapture("bare.mov", bare.bytes.length, read)).toEqual(tokyo);
+    expect(await civilOf("bare.mov", bare.bytes.length, read)).toEqual(tokyo);
     for (const { name, built } of malformed) {
-      expect(await embeddedCapture(name, built.bytes.length, read)).toEqual(nextDay);
+      expect(await civilOf(name, built.bytes.length, read)).toEqual(nextDay);
     }
   });
 
@@ -148,8 +154,8 @@ describe("embeddedCapture", () => {
           [taggedName, tagged.bytes],
         ]),
       );
-      expect(await embeddedCapture(plainName, plain.bytes.length, read)).toEqual(sample.expected);
-      expect(await embeddedCapture(taggedName, tagged.bytes.length, read)).toEqual(sample.expected);
+      expect(await civilOf(plainName, plain.bytes.length, read)).toEqual(sample.expected);
+      expect(await civilOf(taggedName, tagged.bytes.length, read)).toEqual(sample.expected);
     }
   });
 
@@ -160,7 +166,7 @@ describe("embeddedCapture", () => {
       moov: "after-mdat",
     });
     const { read } = openFiles(new Map([["unset.mp4", built.bytes]]));
-    expect(await embeddedCapture("unset.mp4", built.bytes.length, read)).toBeNull();
+    expect(await civilOf("unset.mp4", built.bytes.length, read)).toBeNull();
   });
 
   it("creation_time が 0 でも creationdate があれば使う", async () => {
@@ -171,7 +177,7 @@ describe("embeddedCapture", () => {
       keys: creationdateKeys("moov", "2024-08-02T15:00:00-0700"),
     });
     const { read } = openFiles(new Map([["dated-unset-mvhd.mov", built.bytes]]));
-    expect(await embeddedCapture("dated-unset-mvhd.mov", built.bytes.length, read)).toEqual({
+    expect(await civilOf("dated-unset-mvhd.mov", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
       day: 2,
@@ -198,7 +204,7 @@ describe("embeddedCapture", () => {
       });
       const name = `pxl-android-${where}.mp4`;
       const { read } = openFiles(new Map([[name, built.bytes]]));
-      expect(await embeddedCapture(name, built.bytes.length, read)).toEqual(utc);
+      expect(await civilOf(name, built.bytes.length, read)).toEqual(utc);
     }
   });
 
@@ -215,7 +221,7 @@ describe("embeddedCapture", () => {
       },
     });
     const { read } = openFiles(new Map([["android-with-creationdate.mov", built.bytes]]));
-    expect(await embeddedCapture("android-with-creationdate.mov", built.bytes.length, read)).toEqual({
+    expect(await civilOf("android-with-creationdate.mov", built.bytes.length, read)).toEqual({
       year: 2024,
       month: 8,
       day: 2,
@@ -233,6 +239,6 @@ describe("embeddedCapture", () => {
       keys: androidKeys("moov"),
     });
     const { read } = openFiles(new Map([["android-unset.mp4", built.bytes]]));
-    expect(await embeddedCapture("android-unset.mp4", built.bytes.length, read)).toBeNull();
+    expect(await civilOf("android-unset.mp4", built.bytes.length, read)).toBeNull();
   });
 });
