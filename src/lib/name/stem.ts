@@ -1,5 +1,5 @@
-import { civilFromParts, type CivilCapture } from "../gallery/index.ts";
-import { contentTypeForName, kindForName, mediaPath, type MediaKind } from "../media.ts";
+import { civilFromParts, type CivilCapture } from "../capture/index.ts";
+import { contentTypeForName, kindForName, mediaPath, type MediaKind } from "../kind.ts";
 import type { BodyKey, BodyUrl, Stem, ThumbKey, ThumbUrl, UploadPlan } from "./types.ts";
 
 const DATED_STEM = /^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})(?:-([1-9]\d*))?$/;

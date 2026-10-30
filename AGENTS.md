@@ -6,7 +6,7 @@
 2. インフラは `infra/prd`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
 3. `wrangler.jsonc` の `name` / `bucket_name` は Terraform の `local.worker_name` / `local.bucket_name` と揃える。
 4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。
-5. 撮影日時はアップロード時に `src/lib/gallery/index.ts` がバイト列から決める。実装は `src/lib/gallery/` にあり、公開入口は `index.ts` にする。揃ったメディア一覧の実装は `src/lib/pair/` にあり、公開入口は `index.ts` にする。
+5. 撮影日時はアップロード時に `src/lib/capture/index.ts` がバイト列から決める。実装は `src/lib/capture/` にあり、公開入口は `index.ts` にする。揃ったメディア一覧の実装は `src/lib/media/` にあり、公開入口は `index.ts` にする。名前の形は `src/lib/name/` にあり、公開入口は `index.ts` にする。
 6. 1 ファイル 300 行まで（空行とコメントも数える）。超えたら役割ごとに分ける。`vite.config.ts` の oxlint `max-lines` が lint・lefthook・Cursor hook・CI で止める。`oxlint-disable` で外さない。`.agents/` は lint 対象外のまま。
 
 挙動を変える PR は同じ PR で仕様を直し、触った UC ID を本文に書く。本番の挙動は [docs/spec](docs/spec/README.md)。ローカルだけの挙動は [docs/spec-local](docs/spec-local/README.md)。ユースケースの形は `.agents/skills/write-spec`（正本は [references/writing.md](.agents/skills/write-spec/references/writing.md)）に合わせる。文書を書くときは、まず `/technical-writing` を使って英語で書く。次に日本語に訳し、`/yomiyasu` で推敲して仕上げる。リポジトリに残すのは日本語の文書だけである。PR の説明にもこの流れを使う。画面とコンソールの文言は、製品どおりの文字列を「」の中に残す。UC のファイル名は日本語の名前に合わせる。例は `docs/spec/UC-01-ギャラリーを見る.md` である。ID は変えない。
@@ -49,4 +49,4 @@ pnpm e2e:update-screenshots
 
 - `pnpm e2e --update-snapshots` は e2e の baseline だけを直す。画面を変えたら撮り直し、差分が出るかを CI の e2e が見る。
 
-アップロード対象の判定は `src/lib/media.ts` の `selectUploadNames` に寄せる。
+アップロード対象の判定は `src/lib/kind.ts` の `selectUploadNames` に寄せる。

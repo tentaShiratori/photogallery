@@ -1,4 +1,4 @@
-import { contentTypeForName, byteContentRange, keyFromMediaPath, kindForName } from "../lib/media";
+import { contentTypeForName, byteContentRange, keyFromMediaPath, kindForName } from "../lib/kind";
 import { AppHanlder } from "../lib/types";
 
 export async function serveObject(request: Request, bucket: R2Bucket, key: string): Promise<Response> {

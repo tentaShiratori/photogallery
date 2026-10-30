@@ -1,8 +1,8 @@
 import { css } from "hono/css";
 import { useEffect } from "hono/jsx";
 import type { FC } from "hono/jsx";
-import type { MediaKind } from "../../lib/media";
-import type { BodyUrl } from "../../lib/pair";
+import type { MediaKind } from "../../lib/kind";
+import type { BodyUrl } from "../../lib/name";
 
 const dialogClass = css`
   width: min(960px, calc(100vw - 32px));

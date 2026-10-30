@@ -1,6 +1,6 @@
 import { css } from "hono/css";
 import type { FC } from "hono/jsx";
-import type { ThumbUrl } from "../../lib/pair";
+import type { ThumbUrl } from "../../lib/name";
 
 const figureClass = css`
   margin: 0;

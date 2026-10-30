@@ -21,7 +21,7 @@
   ],
   "ignoreExports": [
     {
-      "file": "src/lib/media.ts",
+      "file": "src/lib/kind.ts",
       "exports": ["IMAGE_EXTENSIONS", "VIDEO_EXTENSIONS", "contentRangeHeader"],
     },
     { "file": "src/routes/lib/feed.ts", "exports": ["MORE_FAILED", "RETRY"] },
@@ -30,7 +30,7 @@
     { "file": "e2e/viewports.ts", "exports": ["VIEWPORT_HEIGHT"] },
     { "file": "scripts/lib/object-sink.ts", "exports": ["BUCKET_DISPLAY_NAME"] },
     { "file": "src/routes/media.ts", "exports": ["serveObject"] },
-    { "file": "src/lib/pair/index.ts", "exports": ["Stem"] },
+    { "file": "src/lib/name/index.ts", "exports": ["Stem"] },
   ],
   "ignorePatterns": [".agents/**", ".cursor/**"],
 }

@@ -1,4 +1,4 @@
-import { extensionOf, type ImageExtension, type VideoExtension } from "../media.ts";
+import { extensionOf, type ImageExtension, type VideoExtension } from "../kind.ts";
 import { instantFromBmffExif } from "./bmff.ts";
 import { type RangeRead } from "./bytes.ts";
 import { civilFromParts, type CaptureInstant, type CivilCapture } from "./civil.ts";
