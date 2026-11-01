@@ -17,3 +17,8 @@ body {
   color: var(--ink);
   font-family: "Yu Gothic UI", "Yu Gothic", "Hiragino Sans", sans-serif;
 }
+
+/* StyleX does not express ::backdrop; keep the enlarged-view dimmer here. */
+#viewer::backdrop {
+  background: rgb(0 0 0 / 72%);
+}

@@ -7,10 +7,11 @@ import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({
   dialog: {
     width: "min(960px, calc(100vw - 32px))",
-    border: "0",
+    borderWidth: "0",
+    borderStyle: "none",
     borderRadius: "10px",
     padding: "12px",
-    background: { default: "#111", "::backdrop": "rgb(0 0 0 / 72%)" },
+    backgroundColor: "#111",
     color: "#f4f1ea",
   },
   dialogMedia: {
@@ -25,8 +26,9 @@ const styles = stylex.create({
   },
   close: {
     float: "right",
-    border: "0",
-    background: "transparent",
+    borderWidth: "0",
+    borderStyle: "none",
+    backgroundColor: "transparent",
     color: "inherit",
     fontSize: "1.2rem",
     cursor: "pointer",

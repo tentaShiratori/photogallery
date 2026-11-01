@@ -6,8 +6,10 @@ import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({
   figure: {
     margin: "0",
-    background: "var(--card)",
-    border: "1px solid var(--line)",
+    backgroundColor: "var(--card)",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--line)",
     borderRadius: "8px",
     overflow: "hidden",
   },
@@ -15,8 +17,9 @@ const styles = stylex.create({
     display: "block",
     width: "100%",
     padding: "0",
-    border: "0",
-    background: "#ece7dc",
+    borderWidth: "0",
+    borderStyle: "none",
+    backgroundColor: "#ece7dc",
     cursor: "pointer",
   },
   media: {
@@ -24,7 +27,7 @@ const styles = stylex.create({
     width: "100%",
     height: "180px",
     objectFit: "cover",
-    background: "#ece7dc",
+    backgroundColor: "#ece7dc",
   },
   caption: {
     padding: "8px 10px 10px",
