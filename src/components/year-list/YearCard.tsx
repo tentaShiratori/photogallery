@@ -13,11 +13,13 @@ export const styles = stylex.create({
   previewThumb: {
     display: "block",
     width: "100%",
-    height: "120px",
+    height: { default: "120px", "@media (max-width: 640px)": "72px" },
     objectFit: "cover",
     borderRadius: "6px",
-    border: "1px solid var(--line)",
-    background: "#ece7dc",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--line)",
+    backgroundColor: "#ece7dc",
   },
   yearCard: {
     display: "flex",
@@ -26,9 +28,17 @@ export const styles = stylex.create({
     width: "100%",
     margin: "0",
     padding: "16px",
-    border: "1px solid var(--line)",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: {
+      default: "var(--line)",
+      ":hover": "#c9c0ae",
+    },
     borderRadius: "12px",
-    background: "var(--card)",
+    backgroundColor: {
+      default: "var(--card)",
+      ":hover": "#fffaf0",
+    },
     cursor: "pointer",
     textAlign: "left",
     font: "inherit",
@@ -57,7 +67,7 @@ export const styles = stylex.create({
     gap: "8px",
     margin: "4px 0 16px",
     padding: "8px 0",
-    background: "var(--bg)",
+    backgroundColor: "var(--bg)",
   },
 });
 

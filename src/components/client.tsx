@@ -41,19 +41,22 @@ const styles = stylex.create({
     },
   },
   backLink: {
-    color: "var(--muted)",
-    textDecoration: "none",
+    color: {
+      default: "var(--muted)",
+      ":hover": "var(--ink)",
+    },
+    textDecoration: {
+      default: "none",
+      ":hover": "underline",
+    },
     fontSize: "0.9rem",
-    border: "0",
-    background: "transparent",
+    borderWidth: "0",
+    borderStyle: "none",
+    backgroundColor: "transparent",
     padding: "0",
     cursor: "pointer",
     font: "inherit",
     textAlign: "left",
-    ":hover": {
-      color: "var(--ink)",
-      textDecoration: "underline",
-    },
   },
 });
 
