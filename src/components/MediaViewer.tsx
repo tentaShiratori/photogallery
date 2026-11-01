@@ -1,5 +1,6 @@
 import type { MediaKind } from "../lib/kind";
 import type { BodyUrl } from "../lib/name";
+import { blankBrokenImage } from "./blank-image";
 import { markEnlarged } from "./enlarged/perf";
 import { FC, useEffect } from "react";
 import * as stylex from "@stylexjs/stylex";
@@ -77,7 +78,10 @@ export const MediaViewer: FC<{
               src={item.bodyUrl}
               alt={item.caption}
               onLoad={() => markEnlarged.ready()}
-              onError={() => markEnlarged.ready()}
+              onError={(event) => {
+                blankBrokenImage(event);
+                markEnlarged.ready();
+              }}
             />
           ))}
       </div>

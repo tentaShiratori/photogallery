@@ -38,6 +38,10 @@ async function waitForPaint(browser: Browser): Promise<void> {
           }),
       ),
     );
+    // Let onError blank-image swaps paint before the screenshot.
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
     return true;
   });
 }
