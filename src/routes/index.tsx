@@ -1,57 +1,58 @@
-import { css } from "hono/css";
-import type { FC } from "hono/jsx";
-import { AppHanlder } from "../lib/types";
+import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
+import * as stylex from "@stylexjs/stylex";
+import type { ReactNode } from "react";
+import { Gallery } from "../components/client";
 
-const headerClass = css`
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: baseline;
-  padding: 28px 32px 12px;
-`;
+const styles = stylex.create({
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "16px",
+    alignItems: "baseline",
+    padding: "28px 32px 12px",
+  },
+  title: {
+    margin: "0",
+    fontSize: "1.6rem",
+    fontWeight: "600",
+    letterSpacing: "0.04em",
+  },
+  who: {
+    margin: "0",
+    color: "var(--muted)",
+    fontSize: "0.9rem",
+  },
+  main: {
+    padding: "8px 32px 48px",
+  },
+});
 
-const titleClass = css`
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-`;
-
-const whoClass = css`
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-`;
-
-const mainClass = css`
-  padding: 8px 32px 48px;
-`;
-
-const statusClass = css`
-  color: var(--muted);
-`;
-
-export const GalleryContent: FC<{ email: string | null }> = ({ email }) => (
+export const GalleryChrome = ({ email, children }: { email: string | null; children: ReactNode }) => (
   <>
-    <header class={headerClass}>
-      <h1 class={titleClass}>フォトギャラリー</h1>
-      <p class={whoClass}>{email ?? "ローカルプレビュー"}</p>
+    <header {...stylex.props(styles.header)}>
+      <h1 {...stylex.props(styles.title)}>フォトギャラリー</h1>
+      <p {...stylex.props(styles.who)}>{email ?? "ローカルプレビュー"}</p>
     </header>
-    <main class={mainClass}>
-      <div id="gallery-root">
-        <p class={statusClass}>読み込み中です。</p>
-      </div>
-    </main>
+    <main {...stylex.props(styles.main)}>{children}</main>
   </>
 );
 
-function accessEmail(request: Request): string | null {
-  const email = request.headers.get("Cf-Access-Authenticated-User-Email");
-  if (!email) return null;
-  return email;
-}
-
-export const getIndex: AppHanlder = async (c) => {
-  const email = accessEmail(c.req.raw);
-  return c.render(<GalleryContent email={email} />, { title: "フォトギャラリー" });
+const GalleryContent = () => {
+  const email = Route.useLoaderData();
+  return (
+    <GalleryChrome email={email}>
+      <Gallery />
+    </GalleryChrome>
+  );
 };
+
+const readAccessEmail = createServerFn({ method: "GET" }).handler(() => {
+  return getRequestHeader("Cf-Access-Authenticated-User-Email") ?? null;
+});
+
+export const Route = createFileRoute("/")({
+  component: GalleryContent,
+  loader: () => readAccessEmail(),
+});

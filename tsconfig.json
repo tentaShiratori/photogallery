@@ -11,7 +11,7 @@
     "types": ["@cloudflare/workers-types", "@cloudflare/vitest-plugin/types", "node"],
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "react"
   },
   "include": [
     "src/**/*.ts",
