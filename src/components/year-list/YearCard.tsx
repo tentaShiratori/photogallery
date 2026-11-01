@@ -1,5 +1,6 @@
 import { schoolGradeForLabel } from "../../lib/school-grade.ts";
 import type { ParsedMedia, ParsedYearCard } from "../feed";
+import { blankBrokenImage } from "../blank-image";
 import { yearTokenFromLabel } from "./location";
 import { FC } from "react";
 import * as stylex from "@stylexjs/stylex";
@@ -76,7 +77,14 @@ const PreviewGrid: FC<{
 }> = ({ previews }) => (
   <div {...stylex.props(styles.thumbs2x2)}>
     {previews.map((item) => (
-      <img key={item.bodyKey} {...stylex.props(styles.previewThumb)} src={item.thumbUrl} alt="" loading="lazy" />
+      <img
+        key={item.bodyKey}
+        {...stylex.props(styles.previewThumb)}
+        src={item.thumbUrl}
+        alt=""
+        loading="lazy"
+        onError={blankBrokenImage}
+      />
     ))}
   </div>
 );

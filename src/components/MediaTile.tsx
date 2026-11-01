@@ -2,6 +2,7 @@ import type { MediaKind } from "../lib/kind";
 import type { ThumbUrl } from "../lib/name";
 import { FC } from "react";
 import * as stylex from "@stylexjs/stylex";
+import { blankBrokenImage } from "./blank-image";
 
 const styles = stylex.create({
   figure: {
@@ -47,7 +48,7 @@ export const MediaTile: FC<{
 }> = ({ kind, thumbUrl, caption, onClick }) => (
   <figure {...stylex.props(styles.figure)}>
     <button {...stylex.props(styles.tile)} type="button" data-kind={kind} onClick={onClick}>
-      <img {...stylex.props(styles.media)} src={thumbUrl} alt={caption} loading="lazy" />
+      <img {...stylex.props(styles.media)} src={thumbUrl} alt={caption} loading="lazy" onError={blankBrokenImage} />
     </button>
     <figcaption {...stylex.props(styles.caption)}>{caption}</figcaption>
   </figure>
