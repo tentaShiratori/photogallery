@@ -22,7 +22,7 @@
     "deadcode": "fallow dead-code --fail-on-issues"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1156.0",
+    "@aws-sdk/client-s3": "^3.1160.0",
     "@t3-oss/env-core": "^0.13.11",
     "ffmpeg-static": "^5.3.0",
     "hono": "^4.13.14",
@@ -30,15 +30,15 @@
     "valibot": "^1.5.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.65.0",
-    "@cloudflare/vitest-plugin": "^1.4.7",
-    "@cloudflare/workers-types": "^5.20261026.1",
+    "@cloudflare/vite-plugin": "^1.66.0",
+    "@cloudflare/vitest-plugin": "^1.4.11",
+    "@cloudflare/workers-types": "^5.20261030.1",
     "@e2e-dev/web": "^0.15.3",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.0.5",
     "chrome-launcher": "^1.2.2",
     "e2e": "^0.21.3",
-    "fallow": "^3.36.0",
+    "fallow": "^3.37.0",
     "happy-dom": "^21.0.4",
     "lighthouse": "^13.6.0",
     "playwright-core": "1.64.1",
@@ -48,7 +48,7 @@
     "vite-ssr-components": "^0.9.0",
     "vitest": "catalog:",
     "web-vitals": "^6.2.3",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.156.0"
   },
   "packageManager": "pnpm@12.14.0"
 }
