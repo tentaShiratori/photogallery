@@ -1,6 +1,6 @@
 # エージェント向け
 
-コードを変える前に、下の 6 つを守る。ユーザー向けの手順は README。
+コードを変える前に、下の 7 つを守る。ユーザー向けの手順は README。
 
 1. Worker とアップロードスクリプト（`scripts/upload-local.ts` / `scripts/upload-prd.ts`）は TypeScript。Workers は JavaScript が第一級。Python は範囲が狭く、Go は非対応。
 2. インフラは `infra/prd`。状態は S3 バケット `photogallery-tfstate`（`ap-northeast-1`）。Cloudflare に CloudFormation 相当はない。Terraform が持つのは R2、Worker の器、Access（Google IdP と許可メール）。スクリプト本文と R2 バインディングは Wrangler（`wrangler.jsonc`）。両方でバージョンを管理しない。
@@ -8,6 +8,7 @@
 4. `.env`、`terraform.tfvars`、API トークン、R2 シークレットをコミットしない。`mise.toml` の `_.file` が `.env` を環境変数として読む。Google のクライアント ID とシークレットは `terraform.tfvars`。R2 バケットは公開しない。
 5. 撮影日時はアップロード時に `src/lib/capture/index.ts` がバイト列から決める。実装は `src/lib/capture/` にあり、公開入口は `index.ts` にする。揃ったメディア一覧の実装は `src/lib/media/` にあり、公開入口は `index.ts` にする。名前の形は `src/lib/name/` にあり、公開入口は `index.ts` にする。
 6. 1 ファイル 300 行まで（空行とコメントも数える）。超えたら役割ごとに分ける。`vite.config.ts` の oxlint `max-lines` が lint・lefthook・Cursor hook・CI で止める。`oxlint-disable` で外さない。`.agents/` は lint 対象外のまま。
+7. 作業を始める前に `graphify update` でグラフを最新にする。
 
 挙動を変える PR は同じ PR で仕様を直し、触った UC ID を本文に書く。本番の挙動は [docs/spec](docs/spec/README.md)。ローカルだけの挙動は [docs/spec-local](docs/spec-local/README.md)。ユースケースの形は `.agents/skills/write-spec`（正本は [references/writing.md](.agents/skills/write-spec/references/writing.md)）に合わせる。文書を書くときは、まず `/technical-writing` を使って英語で書く。次に日本語に訳し、`/yomiyasu` で推敲して仕上げる。リポジトリに残すのは日本語の文書だけである。PR の説明にもこの流れを使う。画面とコンソールの文言は、製品どおりの文字列を「」の中に残す。UC のファイル名は日本語の名前に合わせる。例は `docs/spec/UC-01-ギャラリーを見る.md` である。ID は変えない。
 
@@ -53,3 +54,15 @@ pnpm seed:perf
 - `pnpm perf` — 年の一覧・年の画面・拡大表示を測る。速さの改善を指示されたとき以外は回さない。`pnpm check` には入れない。
 
 アップロード対象の判定は `src/lib/kind.ts` の `selectUploadNames` に寄せる。
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- When graphify-out/graph.json exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.

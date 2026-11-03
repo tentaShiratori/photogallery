@@ -5,6 +5,9 @@ node = "26.12.1"
 "npm:skills" = "1.7.2"
 pnpm = "12.14.0"
 terraform = "1.16.6"
+# pipx:graphifyy のバックエンドが uv を使う（Python は uv が用意する）
+uv = "0.13.6"
+"pipx:graphifyy" = "0.9.101"
 
 [env]
 MISE_PIN = true

@@ -8,130 +8,112 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as GalleryRouteImport } from './routes/_gallery'
-import { Route as HogeRouteImport } from './routes/hoge'
-import { Route as GalleryIndexRouteImport } from './routes/_gallery/index'
-import { Route as ApiMediaRouteImport } from './routes/api/media'
-import { Route as MediaSplatRouteImport } from './routes/media.$'
-import { Route as GalleryYearsYearRouteImport } from './routes/_gallery/years.$year'
+import { Route as rootRouteImport } from "./routes/__root"
+import { Route as GalleryRouteImport } from "./routes/_gallery"
+import { Route as GalleryIndexRouteImport } from "./routes/_gallery/index"
+import { Route as ApiMediaRouteImport } from "./routes/api/media"
+import { Route as MediaSplatRouteImport } from "./routes/media.$"
+import { Route as GalleryYearsYearRouteImport } from "./routes/_gallery/years.$year"
 
 const GalleryRoute = GalleryRouteImport.update({
-  id: '/_gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HogeRoute = HogeRouteImport.update({
-  id: '/hoge',
-  path: '/hoge',
+  id: "/_gallery",
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryIndexRoute = GalleryIndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => GalleryRoute,
 } as any)
 const ApiMediaRoute = ApiMediaRouteImport.update({
-  id: '/api/media',
-  path: '/api/media',
+  id: "/api/media",
+  path: "/api/media",
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
-  id: '/media/$',
-  path: '/media/$',
+  id: "/media/$",
+  path: "/media/$",
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryYearsYearRoute = GalleryYearsYearRouteImport.update({
-  id: '/years/$year',
-  path: '/years/$year',
+  id: "/years/$year",
+  path: "/years/$year",
   getParentRoute: () => GalleryRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof GalleryIndexRoute
-  '/hoge': typeof HogeRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
-  '/years/$year': typeof GalleryYearsYearRoute
+  "/": typeof GalleryIndexRoute
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRoutesByTo {
-  '/hoge': typeof HogeRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
-  '/': typeof GalleryIndexRoute
-  '/years/$year': typeof GalleryYearsYearRoute
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/": typeof GalleryIndexRoute
+  "/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_gallery': typeof GalleryRouteWithChildren
-  '/hoge': typeof HogeRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
-  '/_gallery/': typeof GalleryIndexRoute
-  '/_gallery/years/$year': typeof GalleryYearsYearRoute
+  "/_gallery": typeof GalleryRouteWithChildren
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/_gallery/": typeof GalleryIndexRoute
+  "/_gallery/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/hoge' | '/api/media' | '/media/$' | '/years/$year'
+  fullPaths: "/" | "/api/media" | "/media/$" | "/years/$year"
   fileRoutesByTo: FileRoutesByTo
-  to: '/hoge' | '/api/media' | '/media/$' | '/' | '/years/$year'
+  to: "/api/media" | "/media/$" | "/" | "/years/$year"
   id:
-    | '__root__'
-    | '/_gallery'
-    | '/hoge'
-    | '/api/media'
-    | '/media/$'
-    | '/_gallery/'
-    | '/_gallery/years/$year'
+    | "__root__"
+    | "/_gallery"
+    | "/api/media"
+    | "/media/$"
+    | "/_gallery/"
+    | "/_gallery/years/$year"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRouteWithChildren
-  HogeRoute: typeof HogeRoute
   ApiMediaRoute: typeof ApiMediaRoute
   MediaSplatRoute: typeof MediaSplatRoute
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/_gallery': {
-      id: '/_gallery'
-      path: ''
-      fullPath: '/'
+    "/_gallery": {
+      id: "/_gallery"
+      path: ""
+      fullPath: "/"
       preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/hoge': {
-      id: '/hoge'
-      path: '/hoge'
-      fullPath: '/hoge'
-      preLoaderRoute: typeof HogeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_gallery/': {
-      id: '/_gallery/'
-      path: '/'
-      fullPath: '/'
+    "/_gallery/": {
+      id: "/_gallery/"
+      path: "/"
+      fullPath: "/"
       preLoaderRoute: typeof GalleryIndexRouteImport
       parentRoute: typeof GalleryRoute
     }
-    '/api/media': {
-      id: '/api/media'
-      path: '/api/media'
-      fullPath: '/api/media'
+    "/api/media": {
+      id: "/api/media"
+      path: "/api/media"
+      fullPath: "/api/media"
       preLoaderRoute: typeof ApiMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/media/$': {
-      id: '/media/$'
-      path: '/media/$'
-      fullPath: '/media/$'
+    "/media/$": {
+      id: "/media/$"
+      path: "/media/$"
+      fullPath: "/media/$"
       preLoaderRoute: typeof MediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_gallery/years/$year': {
-      id: '/_gallery/years/$year'
-      path: '/years/$year'
-      fullPath: '/years/$year'
+    "/_gallery/years/$year": {
+      id: "/_gallery/years/$year"
+      path: "/years/$year"
+      fullPath: "/years/$year"
       preLoaderRoute: typeof GalleryYearsYearRouteImport
       parentRoute: typeof GalleryRoute
     }
@@ -153,19 +135,9 @@ const GalleryRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRouteWithChildren,
-  HogeRoute: HogeRoute,
   ApiMediaRoute: ApiMediaRoute,
   MediaSplatRoute: MediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

@@ -1,0 +1,9 @@
+# Screenshots and snapshot baselines — binary noise for the code graph
+docs/spec/screenshots/
+tests/*-snapshots/
+
+# Lockfile (also skipped by graphify defaults; keep explicit)
+pnpm-lock.yaml
+
+# Agent skills and prompts are not product source
+.agents/
