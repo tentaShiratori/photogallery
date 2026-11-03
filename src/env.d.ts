@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 declare global {
   namespace Cloudflare {
     interface Env {
@@ -6,7 +8,7 @@ declare global {
     }
 
     interface GlobalProps {
-      mainModule: typeof import("./index.tsx");
+      mainModule: typeof import("./server.ts");
     }
   }
 }

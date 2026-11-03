@@ -1,7 +1,5 @@
 {
   "entry": [
-    "src/index.tsx",
-    "src/routes/lib/gallery-entry.tsx",
     "scripts/upload-local.ts",
     "scripts/upload-prd.ts",
     "scripts/perf.ts",
@@ -23,18 +21,22 @@
     "lighthouse",
     "web-vitals",
     "vite-ssr-components",
+    // Vite plugin wiring; imported as @tailwindcss/vite
+    "tailwindcss",
+    // TanStack Start template peer of router-devtools
+    "@tanstack/react-devtools",
   ],
   "ignoreExports": [
     {
       "file": "src/lib/kind.ts",
       "exports": ["IMAGE_EXTENSIONS", "VIDEO_EXTENSIONS", "contentRangeHeader"],
     },
-    { "file": "src/routes/lib/feed.ts", "exports": ["MORE_FAILED", "RETRY"] },
+    { "file": "src/components/feed.ts", "exports": ["MORE_FAILED", "RETRY"] },
     { "file": "e2e/paths.ts", "exports": ["E2E_PORT"] },
     { "file": "e2e/seed.ts", "exports": ["GalleryPrepareBusy"] },
     { "file": "e2e/viewports.ts", "exports": ["VIEWPORT_HEIGHT"] },
     { "file": "scripts/lib/object-sink.ts", "exports": ["BUCKET_DISPLAY_NAME"] },
-    { "file": "src/routes/media.ts", "exports": ["serveObject"] },
+    { "file": "src/lib/serve-media.ts", "exports": ["serveObject"] },
     {
       "file": "src/lib/name/index.ts",
       // Public gallery name barrel; StemClaim tests import from stem.ts for 1:1 coverage.
