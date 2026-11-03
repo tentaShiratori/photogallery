@@ -70,7 +70,7 @@ describe("measure scenarios", () => {
     const harness = steps({ "year-screen-ready": 11 });
     await measureYearScreen(page, "http://localhost:8787/", "2024", harness.deps);
     expect(harness.calls).toContain("timing:true");
-    expect(harness.calls).toContain("open:http://localhost:8787/?year=2024");
+    expect(harness.calls).toContain("open:http://localhost:8787/years/2024");
     expect(harness.calls).toContain("marks:year-screen-loading,year-screen-api,year-screen-ready");
   });
 
@@ -82,7 +82,7 @@ describe("measure scenarios", () => {
     expect(harness.calls).toContain("marks:year-screen-loading,year-screen-api,year-screen-ready");
     expect(harness.calls).toContain("marks:enlarged-open,enlarged-ready");
     expect(harness.calls).toContain("sleep:300");
-    expect(harness.calls).toContain("open:http://localhost:8787/?year=unknown");
+    expect(harness.calls).toContain("open:http://localhost:8787/years/unknown");
     expect(result.marks["enlarged-ready"]).toBe(12);
   });
 });

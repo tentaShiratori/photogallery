@@ -5,22 +5,17 @@ import { markYearScreen, waitForYearScreenThumbs } from "./year-screen/perf";
 
 const NEAR_BOTTOM_PX = 600;
 
-export function useYearFeed(yearToken: string | null) {
+export function useYearFeed(yearToken: string) {
   const [yearFeed, dispatchYear] = useReducer(yearScreenReducer, initialYearScreen);
   const [scrolls, setScrolls] = useState(0);
   const sentinel = useRef<HTMLDivElement>(null);
   const yearFetchId = useRef(0);
 
   useLayoutEffect(() => {
-    if (yearToken === null) return;
     if (yearFeed.status === "loading") markYearScreen.loading();
-  }, [yearToken, yearFeed.status]);
+  }, [yearFeed.status]);
 
   useEffect(() => {
-    if (yearToken === null) {
-      dispatchYear({ type: "reset" });
-      return;
-    }
     const href = yearApiHref(yearToken);
     const fetchId = ++yearFetchId.current;
     dispatchYear({ type: "reset" });
@@ -40,7 +35,6 @@ export function useYearFeed(yearToken: string | null) {
   }, [yearToken]);
 
   useEffect(() => {
-    if (yearToken === null) return;
     if (yearFeed.status !== "ready") return;
     let cancelled = false;
     void waitForYearScreenThumbs().then(() => {
@@ -49,7 +43,7 @@ export function useYearFeed(yearToken: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [yearToken, yearFeed.status]);
+  }, [yearFeed.status]);
 
   useEffect(() => {
     const target = sentinel.current;
@@ -62,7 +56,6 @@ export function useYearFeed(yearToken: string | null) {
   }, [yearToken]);
 
   useEffect(() => {
-    if (yearToken === null) return;
     const top = sentinel.current?.getBoundingClientRect().top ?? Infinity;
     const nearBottom = top <= window.innerHeight + NEAR_BOTTOM_PX;
     const step = yearScreenStep(yearFeed, nearBottom);
