@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { renderHook, waitFor } from "@testing-library/react";
 import { yearCard } from "./media.fixtures.ts";
-import { useYearList } from "./useYearList";
+import { resetYearListCache, useYearList } from "./useYearList";
 
 describe("useYearList", () => {
   afterEach(() => {
+    resetYearListCache();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -18,7 +19,7 @@ describe("useYearList", () => {
         }),
       ),
     );
-    const { result } = renderHook(() => useYearList(null));
+    const { result } = renderHook(() => useYearList());
     expect(result.current.status).toBe("読み込み中です。");
     await waitFor(() => {
       expect(result.current.years.map((card) => card.label)).toEqual(["2024"]);
@@ -31,7 +32,7 @@ describe("useYearList", () => {
       "fetch",
       vi.fn(async () => new Response("nope", { status: 500 })),
     );
-    const { result } = renderHook(() => useYearList(null));
+    const { result } = renderHook(() => useYearList());
     await waitFor(() => {
       expect(result.current.status).toBe("一覧を取得できませんでした。");
     });

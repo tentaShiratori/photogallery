@@ -1,25 +1,19 @@
 import { describe, expect, it } from "vite-plus/test";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { screen } from "@testing-library/react";
 import { yearCard } from "../media.fixtures.ts";
+import { renderWithRouter } from "../../../test/render-with-router.tsx";
 import { YearCard } from "./YearCard";
 
 describe("YearCard", () => {
-  it("年ラベルを出し、クリックでトークンを渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("2024", 2)} onOpen={(token) => opened.push(token)} />);
-    const button = screen.getByRole("button", { name: "2024" });
-    expect(button).toBeTruthy();
-    await user.click(button);
-    expect(opened).toEqual(["2024"]);
+  it("年ラベルを出し、年の画面へのリンクになる", async () => {
+    renderWithRouter(<YearCard card={yearCard("2024", 2)} />);
+    const link = await screen.findByRole("link", { name: "2024" });
+    expect(link.getAttribute("href")).toBe("/years/2024");
   });
 
-  it("年不明は unknown を渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("年不明", 1)} onOpen={(token) => opened.push(token)} />);
-    await user.click(screen.getByRole("button", { name: "年不明" }));
-    expect(opened).toEqual(["unknown"]);
+  it("年不明は unknown パスへのリンクになる", async () => {
+    renderWithRouter(<YearCard card={yearCard("年不明", 1)} />);
+    const link = await screen.findByRole("link", { name: "年不明" });
+    expect(link.getAttribute("href")).toBe("/years/unknown");
   });
 });

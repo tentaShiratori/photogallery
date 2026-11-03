@@ -2,6 +2,7 @@ import { schoolGradeForLabel } from "../../lib/school-grade.ts";
 import type { ParsedMedia, ParsedYearCard } from "../feed";
 import { blankBrokenImage } from "../blank-image";
 import { yearTokenFromLabel } from "./location";
+import { Link } from "@tanstack/react-router";
 import { FC } from "react";
 import * as stylex from "@stylexjs/stylex";
 
@@ -44,6 +45,7 @@ export const styles = stylex.create({
     textAlign: "left",
     font: "inherit",
     color: "inherit",
+    textDecoration: "none",
   },
   yearLabel: {
     fontSize: { default: "1.35rem", "@media (max-width: 640px)": "1.2rem" },
@@ -91,18 +93,16 @@ const PreviewGrid: FC<{
 
 export const YearCard: FC<{
   card: ParsedYearCard;
-  onOpen: (yearToken: string) => void;
-}> = ({ card, onOpen }) => {
+}> = ({ card }) => {
   const token = yearTokenFromLabel(card.label);
   const grade = schoolGradeForLabel(card.label);
-  const open = () => onOpen(token);
   return (
-    <button {...stylex.props(styles.yearCard)} type="button" onClick={open}>
+    <Link {...stylex.props(styles.yearCard)} to="/years/$year" params={{ year: token }}>
       <span {...stylex.props(card.label === "年不明" ? styles.yearLabelUnknown : styles.yearLabel)}>
         {card.label}
         {grade !== null && <span {...stylex.props(styles.schoolGrade)}>{grade}</span>}
       </span>
       <PreviewGrid previews={card.previews} />
-    </button>
+    </Link>
   );
 };

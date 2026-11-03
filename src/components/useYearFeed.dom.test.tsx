@@ -30,12 +30,6 @@ describe("useYearFeed", () => {
     });
   });
 
-  it("yearToken が null ならリセットする", () => {
-    const { result } = renderHook(() => useYearFeed(null));
-    expect(result.current.screenView.status).toBe("読み込み中です。");
-    expect(result.current.screenView.tiles).toHaveLength(0);
-  });
-
   it("取得失敗時は失敗文言を出す", async () => {
     vi.stubGlobal(
       "fetch",

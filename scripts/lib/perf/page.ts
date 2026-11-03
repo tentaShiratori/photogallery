@@ -39,6 +39,8 @@ export async function collectMarks(page: Page, names: readonly string[]): Promis
 
 export function yearScreenHref(baseUrl: string, yearToken: string): string {
   const url = new URL(baseUrl);
-  url.searchParams.set("year", yearToken);
+  url.pathname = `/years/${yearToken}`;
+  url.search = "";
+  url.hash = "";
   return url.href;
 }

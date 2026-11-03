@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import * as React from "react";
 import appCss from "../styles.css?url";
 
@@ -27,8 +27,18 @@ export const Route = createRootRoute({
     ],
     scripts: import.meta.env.DEV ? [{ type: "module", src: "/@id/virtual:stylex:runtime" }] : [],
   }),
+  component: RootComponent,
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });
+
+function RootComponent() {
+  return <Outlet />;
+}
+
+function NotFound() {
+  return <>見つかりません。</>;
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

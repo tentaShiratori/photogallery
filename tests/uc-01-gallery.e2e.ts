@@ -41,10 +41,10 @@ test("UC-01 640px で年カードが横並びか縦積みになる", async ({ ap
   await app.open("/");
   await expect(yearList(browser)).toBeVisible();
   const layout = await browser.evaluate((breakpoint) => {
-    const buttons = [...document.querySelectorAll("#year-list > button")];
-    if (buttons.length < 2) return { wide: false, sameRow: false };
-    const first = buttons[0].getBoundingClientRect();
-    const second = buttons[1].getBoundingClientRect();
+    const cards = [...document.querySelectorAll("#year-list > a")];
+    if (cards.length < 2) return { wide: false, sameRow: false };
+    const first = cards[0].getBoundingClientRect();
+    const second = cards[1].getBoundingClientRect();
     const wide = window.innerWidth > breakpoint;
     const sameRow = Math.abs(first.top - second.top) < 2;
     return { wide, sameRow };
@@ -59,7 +59,7 @@ test("UC-01 640px で年カードが横並びか縦積みになる", async ({ ap
 test("UC-01 2024 を開いてスクロールすると 65 件まで増える", async ({ app, browser }) => {
   await app.open("/");
   await yearCard(browser, "2024").tap();
-  await expect(browser).toHaveURL(/[?&]year=2024/);
+  await expect(browser).toHaveURL(/\/years\/2024$/);
   await expect(yearHeading(browser, "2024")).toBeVisible();
   await expect(backToYears(browser)).toBeVisible();
   await expect(gridTiles(browser)).toHaveCount(FIRST_PAGE);
@@ -74,15 +74,47 @@ test("UC-01 2023 は動画 1 件だけ", async ({ app, browser }) => {
   await expect(browser.locator("#grid")).toContainText(catalog.newest("2023").key);
 });
 
-test("UC-01 year=2024 で年画面を直接開ける", async ({ app, browser }) => {
-  await app.open("/?year=2024");
-  await expect(browser).toHaveURL(/[?&]year=2024/);
+test("UC-01 /years/2024 で年画面を直接開ける", async ({ app, browser }) => {
+  await app.open("/years/2024");
+  await expect(browser).toHaveURL(/\/years\/2024$/);
   await expect(yearHeading(browser, "2024")).toBeVisible();
   await expect(gridTiles(browser)).toHaveCount(FIRST_PAGE);
 });
 
-test("UC-01 年の一覧へ戻る", async ({ app, browser }) => {
+test("UC-01 /?year=2024 は /years/2024 にリダイレクトする", async ({ app, browser }) => {
   await app.open("/?year=2024");
+  await expect(browser).toHaveURL(/\/years\/2024$/);
+  await expect(yearHeading(browser, "2024")).toBeVisible();
+});
+
+test("UC-01 年の一覧へ戻る", async ({ app, browser }) => {
+  await app.open("/years/2024");
+  await backToYears(browser).tap();
+  await expect(browser).toHaveURL(/\/$/);
+  await expect(yearList(browser)).toBeVisible();
+});
+
+test("UC-01 戻ると年を開く前のスクロール位置にいる", async ({ app, browser }) => {
+  await app.open("/");
+  await expect(yearList(browser)).toBeVisible();
+  // Open a bottom card so the tap does not scroll the list back to the top.
+  await yearCard(browser, "年不明").scrollIntoView();
+  const before = await browser.evaluate(() => window.scrollY);
+  expect(before).toBeGreaterThan(0);
+  await yearCard(browser, "年不明").tap();
+  await expect(yearHeading(browser, "年不明")).toBeVisible();
   await backToYears(browser).tap();
   await expect(yearList(browser)).toBeVisible();
+  await expect.poll(async () => browser.evaluate(() => window.scrollY), { timeout: 5000 }).toBeGreaterThan(0);
+  const after = await browser.evaluate(() => window.scrollY);
+  expect(Math.abs(after - before)).toBeLessThan(80);
+});
+
+test("UC-01 不正な年と未知の場所は 404", async ({ app, browser }) => {
+  await app.open("/years/abc");
+  await expect(browser.locator("body")).toContainText("見つかりません。");
+  await app.open("/years/0");
+  await expect(browser.locator("body")).toContainText("見つかりません。");
+  await app.open("/no-such-path");
+  await expect(browser.locator("body")).toContainText("見つかりません。");
 });

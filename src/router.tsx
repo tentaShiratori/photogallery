@@ -6,6 +6,8 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
+    // Pathname keeps year-list scroll when returning via Link, not only history.back().
+    getScrollRestorationKey: (location) => location.pathname,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
   });
