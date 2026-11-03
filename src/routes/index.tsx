@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import * as stylex from "@stylexjs/stylex";
-import type { ReactNode } from "react";
 import { Gallery } from "../components/client";
+import { createServerOnlyFn } from "@tanstack/react-start";
 
 const styles = stylex.create({
   header: {
@@ -29,30 +28,25 @@ const styles = stylex.create({
   },
 });
 
-export const GalleryChrome = ({ email, children }: { email: string | null; children: ReactNode }) => (
-  <>
-    <header {...stylex.props(styles.header)}>
-      <h1 {...stylex.props(styles.title)}>フォトギャラリー</h1>
-      <p {...stylex.props(styles.who)}>{email ?? "ローカルプレビュー"}</p>
-    </header>
-    <main {...stylex.props(styles.main)}>{children}</main>
-  </>
-);
-
 const GalleryContent = () => {
   const email = Route.useLoaderData();
   return (
-    <GalleryChrome email={email}>
-      <Gallery />
-    </GalleryChrome>
+    <>
+      <header {...stylex.props(styles.header)}>
+        <h1 {...stylex.props(styles.title)}>フォトギャラリー</h1>
+        <p {...stylex.props(styles.who)}>{email ?? "ローカルプレビュー"}</p>
+      </header>
+      <main {...stylex.props(styles.main)}>
+        <Gallery />
+      </main>
+    </>
   );
 };
 
-const readAccessEmail = createServerFn({ method: "GET" }).handler(() => {
-  return getRequestHeader("Cf-Access-Authenticated-User-Email") ?? null;
-});
+const getEmail = createServerOnlyFn(() => getRequestHeader("Cf-Access-Authenticated-User-Email") ?? null);
 
 export const Route = createFileRoute("/")({
   component: GalleryContent,
-  loader: () => readAccessEmail(),
+  // Index stays mounted for in-app gallery navigation, so this only runs on SSR of `/`.
+  loader: getEmail,
 });

@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HogeRouteImport } from './routes/hoge'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as MediaSplatRouteImport } from './routes/media.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HogeRoute = HogeRouteImport.update({
+  id: '/hoge',
+  path: '/hoge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMediaRoute = ApiMediaRouteImport.update({
@@ -31,30 +37,34 @@ const MediaSplatRoute = MediaSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hoge': typeof HogeRoute
   '/api/media': typeof ApiMediaRoute
   '/media/$': typeof MediaSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hoge': typeof HogeRoute
   '/api/media': typeof ApiMediaRoute
   '/media/$': typeof MediaSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hoge': typeof HogeRoute
   '/api/media': typeof ApiMediaRoute
   '/media/$': typeof MediaSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/media' | '/media/$'
+  fullPaths: '/' | '/hoge' | '/api/media' | '/media/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/media' | '/media/$'
-  id: '__root__' | '/' | '/api/media' | '/media/$'
+  to: '/' | '/hoge' | '/api/media' | '/media/$'
+  id: '__root__' | '/' | '/hoge' | '/api/media' | '/media/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HogeRoute: typeof HogeRoute
   ApiMediaRoute: typeof ApiMediaRoute
   MediaSplatRoute: typeof MediaSplatRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hoge': {
+      id: '/hoge'
+      path: '/hoge'
+      fullPath: '/hoge'
+      preLoaderRoute: typeof HogeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/media': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HogeRoute: HogeRoute,
   ApiMediaRoute: ApiMediaRoute,
   MediaSplatRoute: MediaSplatRoute,
 }

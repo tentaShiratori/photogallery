@@ -1,8 +1,7 @@
 import { cloudflare } from "@cloudflare/vite-plugin";
-import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import { defineConfig } from "vite-plus";
 import { devtools } from "@tanstack/devtools-vite";
-
+import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
 import viteReact from "@vitejs/plugin-react";
@@ -11,13 +10,21 @@ import stylex from "@stylexjs/unplugin";
 
 const persistPath = process.env.PHOTOGALLERY_PERSIST;
 
-const plugins = [
+const appPlugins = [
   devtools(),
   stylex.vite({ useCSSLayers: true, devPersistToDisk: true }),
   tailwindcss(),
   tanstackStart(),
   viteReact(),
+  cloudflare(
+    persistPath
+      ? { persistState: { path: persistPath }, viteEnvironment: { name: "ssr" } }
+      : { viteEnvironment: { name: "ssr" } },
+  ),
 ];
+
+// stylex.vite's configureServer leaves a watcher that blocks Vitest exit; rollup build avoids it.
+const vitestPlugins = [devtools(), stylex.rollup({ useCSSLayers: true }), tailwindcss(), tanstackStart(), viteReact()];
 
 export default defineConfig(() => ({
   server: {
@@ -29,16 +36,7 @@ export default defineConfig(() => ({
       importSource: "react",
     },
   },
-  plugins: process.env.VITEST
-    ? plugins
-    : [
-        ...plugins,
-        cloudflare(
-          persistPath
-            ? { persistState: { path: persistPath }, viteEnvironment: { name: "ssr" } }
-            : { viteEnvironment: { name: "ssr" } },
-        ),
-      ],
+  plugins: process.env.VITEST ? vitestPlugins : appPlugins,
   fmt: {
     endOfLine: "lf",
     printWidth: 120,
@@ -72,6 +70,11 @@ export default defineConfig(() => ({
     ],
   },
   test: {
+    server: {
+      deps: {
+        inline: [/@tanstack\/(start-server-core|react-start)/],
+      },
+    },
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}", "scripts/**/*.{ts,tsx}"],
@@ -102,16 +105,13 @@ export default defineConfig(() => ({
             "test/**/*.test.ts",
             "test/**/*.test.tsx",
           ],
-          exclude: ["test/worker.test.ts", "src/**/*.dom.test.ts", "src/**/*.dom.test.tsx", "**/node_modules/**"],
-        },
-      },
-      {
-        test: {
-          name: "dom",
-          environment: "happy-dom",
-          setupFiles: ["test/dom-setup.ts"],
-          include: ["src/**/*.dom.test.ts", "src/**/*.dom.test.tsx"],
-          exclude: ["**/node_modules/**"],
+          exclude: [
+            "src/**/*.dom.test.ts",
+            "src/**/*.dom.test.tsx",
+            "src/**/*.worker.test.ts",
+            "src/**/*.worker.test.tsx",
+            "**/node_modules/**",
+          ],
         },
       },
       {
@@ -123,7 +123,18 @@ export default defineConfig(() => ({
         ],
         test: {
           name: "worker",
-          include: ["test/worker.test.ts"],
+          environment: "node",
+          include: ["src/**/*.worker.test.ts", "src/**/*.worker.test.tsx"],
+          exclude: ["**/node_modules/**"],
+        },
+      },
+      {
+        test: {
+          name: "dom",
+          environment: "happy-dom",
+          setupFiles: ["test/dom-setup.ts"],
+          include: ["src/**/*.dom.test.ts", "src/**/*.dom.test.tsx"],
+          exclude: ["**/node_modules/**"],
         },
       },
     ],
