@@ -27,8 +27,13 @@ export const Route = createRootRoute({
     ],
     scripts: import.meta.env.DEV ? [{ type: "module", src: "/@id/virtual:stylex:runtime" }] : [],
   }),
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });
+
+function NotFound() {
+  return <p>見つかりません。</p>;
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

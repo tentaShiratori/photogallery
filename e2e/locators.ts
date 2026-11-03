@@ -5,7 +5,7 @@ export function yearList(browser: Browser) {
 }
 
 export function yearCards(browser: Browser) {
-  return browser.locator("#year-list > button");
+  return browser.locator("#year-list > a");
 }
 
 export function yearCard(browser: Browser, label: string) {
@@ -13,7 +13,7 @@ export function yearCard(browser: Browser, label: string) {
 }
 
 export function backToYears(browser: Browser) {
-  return browser.locator("button").filter({ hasText: "← 年の一覧へ" });
+  return browser.locator("a").filter({ hasText: "← 年の一覧へ" });
 }
 
 export function yearHeading(browser: Browser, label: string) {

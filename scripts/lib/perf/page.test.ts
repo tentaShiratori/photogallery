@@ -3,11 +3,9 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { collectMarks, openForMeasure, preparePage, yearScreenHref } from "./page.ts";
 
 describe("yearScreenHref", () => {
-  it("年をクエリに足す", () => {
-    expect(yearScreenHref("http://localhost:8787/gallery?x=1", "2024")).toBe(
-      "http://localhost:8787/gallery?x=1&year=2024",
-    );
-    expect(yearScreenHref("http://localhost:8787", "unknown")).toBe("http://localhost:8787/?year=unknown");
+  it("年の画面のパスにする", () => {
+    expect(yearScreenHref("http://localhost:8787/gallery?x=1", "2024")).toBe("http://localhost:8787/years/2024");
+    expect(yearScreenHref("http://localhost:8787", "unknown")).toBe("http://localhost:8787/years/unknown");
   });
 });
 

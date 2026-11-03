@@ -1,25 +1,53 @@
 import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { yearCard } from "../media.fixtures.ts";
 import { YearCard } from "./YearCard";
+import type { ParsedYearCard } from "../feed";
+
+let cardUnderTest: ParsedYearCard;
+
+const rootRoute = createRootRoute({
+  component: () => <Outlet />,
+});
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: () => <YearCard card={cardUnderTest} />,
+});
+const yearRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/years/$year",
+});
+const routeTree = rootRoute.addChildren([indexRoute, yearRoute]);
 
 describe("YearCard", () => {
-  it("年ラベルを出し、クリックでトークンを渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("2024", 2)} onOpen={(token) => opened.push(token)} />);
-    const button = screen.getByRole("button", { name: "2024" });
-    expect(button).toBeTruthy();
-    await user.click(button);
-    expect(opened).toEqual(["2024"]);
+  it("年ラベルのリンクを /years/2024 にする", async () => {
+    cardUnderTest = yearCard("2024", 2);
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+    });
+    render(<RouterProvider router={router} />);
+    const link = await screen.findByRole("link", { name: cardUnderTest.label });
+    expect(link.getAttribute("href")).toBe("/years/2024");
   });
 
-  it("年不明は unknown を渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("年不明", 1)} onOpen={(token) => opened.push(token)} />);
-    await user.click(screen.getByRole("button", { name: "年不明" }));
-    expect(opened).toEqual(["unknown"]);
+  it("年不明のリンクを /years/unknown にする", async () => {
+    cardUnderTest = yearCard("年不明", 1);
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+    });
+    render(<RouterProvider router={router} />);
+    const link = await screen.findByRole("link", { name: cardUnderTest.label });
+    expect(link.getAttribute("href")).toBe("/years/unknown");
   });
 });

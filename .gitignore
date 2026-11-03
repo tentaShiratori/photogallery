@@ -38,3 +38,4 @@ e2e/state.pending/
 e2e/state.lock
 graphify-out/
 .graphify/
+.tanstack/

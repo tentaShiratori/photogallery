@@ -3,14 +3,13 @@ import { parseYearListResponse } from "../lib/media-response";
 import { initialYearList, yearListReducer, yearListView } from "./feed";
 import { markYearList, waitForYearListThumbs } from "./year-list/perf";
 
-export function useYearList(yearToken: string | null) {
+export function useYearList() {
   const [yearList, dispatchList] = useReducer(yearListReducer, initialYearList);
   const listLoaded = useRef(false);
 
   useLayoutEffect(() => {
-    if (yearToken !== null) return;
     if (yearList.status === "loading") markYearList.loading();
-  }, [yearToken, yearList.status]);
+  }, [yearList.status]);
 
   useEffect(() => {
     if (listLoaded.current) return;
@@ -29,7 +28,6 @@ export function useYearList(yearToken: string | null) {
   }, []);
 
   useEffect(() => {
-    if (yearToken !== null) return;
     if (yearList.status !== "ready") return;
     let cancelled = false;
     void waitForYearListThumbs().then(() => {
@@ -38,7 +36,7 @@ export function useYearList(yearToken: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [yearToken, yearList]);
+  }, [yearList]);
 
   return yearListView(yearList);
 }
