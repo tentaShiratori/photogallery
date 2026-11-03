@@ -40,7 +40,8 @@ export default defineConfig(() => ({
   fmt: {
     endOfLine: "lf",
     printWidth: 120,
-    ignorePatterns: ["src/routeTree.gen.ts"],
+    // Match lint: committed agent skills (e.g. graphify) stay vendor-formatted.
+    ignorePatterns: ["src/routeTree.gen.ts", ".agents/**"],
   },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
