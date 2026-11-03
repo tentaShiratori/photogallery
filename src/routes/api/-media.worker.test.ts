@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vite-plus/test";
+import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { pairOf } from "../../lib/media/media.fixtures.ts";
 import { loadServerResponse } from "../../../test/router";
 import { env } from "cloudflare:workers";
