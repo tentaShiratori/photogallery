@@ -36,3 +36,5 @@ dist/
 e2e/state/
 e2e/state.pending/
 e2e/state.lock
+graphify-out/
+.graphify/

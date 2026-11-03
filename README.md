@@ -5,10 +5,11 @@
 今すぐ見る。所要は約 5 分。
 
 1. このリポジトリのルートで `mise install` を実行する
-2. `pnpm install` を実行する
-3. `pnpm dev` を実行する
-4. ブラウザで `http://localhost:8787` を開く
-5. 別の PowerShell で、画像や動画の入ったフォルダを指定して実行する
+2. `graphify extract . --code-only` を実行してコードのグラフを作る
+3. `pnpm install` を実行する
+4. `pnpm dev` を実行する
+5. ブラウザで `http://localhost:8787` を開く
+6. 別の PowerShell で、画像や動画の入ったフォルダを指定して実行する
 
 ```powershell
 pnpm upload:local D:\photos\sample
