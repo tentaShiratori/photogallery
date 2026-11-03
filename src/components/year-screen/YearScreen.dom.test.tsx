@@ -1,16 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createRouterWrapper } from "../../../test/wrapper/router.tsx";
 import { mediaItem } from "../media.fixtures.ts";
 import { YearScreen } from "./YearScreen";
-
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
-    <a href={String(to)} {...rest}>
-      {children}
-    </a>
-  ),
-}));
 
 describe("YearScreen", () => {
   afterEach(() => {
@@ -32,7 +25,7 @@ describe("YearScreen", () => {
         }),
       ),
     );
-    render(<YearScreen yearToken="2024" />);
+    render(<YearScreen yearToken="2024" />, { wrapper: createRouterWrapper() });
     const back = await screen.findByRole("link", { name: "← 年の一覧へ" });
     expect(back.getAttribute("href")).toBe("/");
     expect(screen.getByRole("button", { name: "2024-0.jpg" })).toBeTruthy();
@@ -53,7 +46,7 @@ describe("YearScreen", () => {
         }),
       ),
     );
-    render(<YearScreen yearToken="2024" />);
+    render(<YearScreen yearToken="2024" />, { wrapper: createRouterWrapper() });
     await user.click(await screen.findByRole("button", { name: "2024-0.jpg" }));
     expect(screen.getByRole("dialog")).toBeTruthy();
   });

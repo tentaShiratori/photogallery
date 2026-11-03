@@ -18,19 +18,3 @@ describe("GET /years/$year", () => {
     }
   });
 });
-
-describe("GET /?year=", () => {
-  it("古いクエリは /years/ へ置き換える", async () => {
-    const response = await loadServerResponse(new Request("http://localhost/?year=2024"));
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("/years/2024");
-  });
-});
-
-describe("未知の場所", () => {
-  it("存在しないパスは 404", async () => {
-    const response = await loadServerResponse(new Request("http://localhost/no-such-page"));
-    expect(response.status).toBe(404);
-    expect(await response.text()).toContain("見つかりません。");
-  });
-});

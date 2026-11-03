@@ -20,4 +20,10 @@ describe("GET /", () => {
     const html = await response.text();
     expect(html).toContain("ローカルプレビュー");
   });
+
+  it("古いクエリは /years/ へ置き換える", async () => {
+    const response = await loadServerResponse(new Request("http://localhost/?year=2024"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/years/2024");
+  });
 });
