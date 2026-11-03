@@ -1,25 +1,36 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { yearCard } from "../media.fixtures.ts";
 import { YearCard } from "./YearCard";
 
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    params,
+    children,
+    ...rest
+  }: {
+    to: string;
+    params?: { year: string };
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
+    <a href={params ? `/years/${params.year}` : String(to)} {...rest}>
+      {children}
+    </a>
+  ),
+}));
+
 describe("YearCard", () => {
-  it("年ラベルを出し、クリックでトークンを渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("2024", 2)} onOpen={(token) => opened.push(token)} />);
-    const button = screen.getByRole("button", { name: "2024" });
-    expect(button).toBeTruthy();
-    await user.click(button);
-    expect(opened).toEqual(["2024"]);
+  it("年ラベルを出し、年の画面へのリンクになる", () => {
+    render(<YearCard card={yearCard("2024", 2)} />);
+    const link = screen.getByRole("link", { name: "2024" });
+    expect(link.getAttribute("href")).toBe("/years/2024");
   });
 
-  it("年不明は unknown を渡す", async () => {
-    const user = userEvent.setup();
-    const opened: string[] = [];
-    render(<YearCard card={yearCard("年不明", 1)} onOpen={(token) => opened.push(token)} />);
-    await user.click(screen.getByRole("button", { name: "年不明" }));
-    expect(opened).toEqual(["unknown"]);
+  it("年不明は unknown へのリンクになる", () => {
+    render(<YearCard card={yearCard("年不明", 1)} />);
+    const link = screen.getByRole("link", { name: "年不明" });
+    expect(link.getAttribute("href")).toBe("/years/unknown");
   });
 });

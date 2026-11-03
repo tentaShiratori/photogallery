@@ -23,7 +23,7 @@ test("UC-01 スクショ 年の一覧", async ({ app, browser, screen }) => {
 test("UC-01 スクショ 2024 の年の画面", async ({ app, browser, screen }) => {
   await app.open("/");
   await yearCard(browser, "2024").tap();
-  await expect(browser).toHaveURL(/[?&]year=2024/);
+  await expect(browser).toHaveURL(/\/years\/2024$/);
   await expect(browser.locator("#grid button").first()).toBeVisible();
   await expectUcScreenshot(screen, browser, {
     uc: "UC-01",
@@ -35,7 +35,7 @@ test("UC-01 スクショ 2024 の年の画面", async ({ app, browser, screen })
 test("UC-01 スクショ 2018 の年の画面", async ({ app, browser, screen }) => {
   await app.open("/");
   await yearCard(browser, "2018").tap();
-  await expect(browser).toHaveURL(/[?&]year=2018/);
+  await expect(browser).toHaveURL(/\/years\/2018$/);
   await expect(browser.locator("h2")).toContainText("大学４年");
   await expect(browser.locator("#grid button").first()).toBeVisible();
   await expectUcScreenshot(screen, browser, {
@@ -94,7 +94,7 @@ test("UC-01 スクショ 年の画面の取得失敗", async ({ app, browser, sc
     }
     await route.fulfill({ status: 500, body: "fail" });
   });
-  await app.open("/?year=2024");
+  await app.open("/years/2024");
   await expect(browser.locator("#status")).toHaveText(FAILED_STATUS);
   await expectUcScreenshot(screen, browser, {
     uc: "UC-01",
