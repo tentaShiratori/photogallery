@@ -5,8 +5,8 @@ import { MediaTile } from "../MediaTile";
 import { MediaViewer } from "../MediaViewer";
 import { useYearFeed } from "../useYearFeed";
 import { styles as yearCardStyles } from "../year-list/YearCard";
-import { Link } from "@tanstack/react-router";
-import { FC, useState } from "react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { FC, useState, type MouseEvent } from "react";
 import * as stylex from "@stylexjs/stylex";
 
 const styles = stylex.create({
@@ -42,14 +42,22 @@ const styles = stylex.create({
 });
 
 export const YearScreen: FC<{ yearToken: string }> = ({ yearToken }) => {
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<ParsedMedia | null>(null);
   const { screenView, sentinel } = useYearFeed(yearToken);
   const screenGrade = screenView.label !== null ? schoolGradeForLabel(screenView.label) : null;
 
+  const backToList = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    if (!router.history.canGoBack()) return;
+    event.preventDefault();
+    router.history.back();
+  };
+
   return (
     <>
       <div {...stylex.props(yearCardStyles.yearHead)}>
-        <Link {...stylex.props(styles.backLink)} to="/">
+        <Link {...stylex.props(styles.backLink)} to="/" onClick={backToList}>
           ← 年の一覧へ
         </Link>
         {screenView.label !== null && (

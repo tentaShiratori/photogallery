@@ -8,6 +8,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { yearCard } from "../media.fixtures.ts";
+import { resetYearListCache } from "../useYearList";
 import { YearList } from "./YearList";
 
 const rootRoute = createRootRoute();
@@ -24,6 +25,7 @@ const routeTree = rootRoute.addChildren([indexRoute, yearRoute]);
 
 describe("YearList", () => {
   afterEach(() => {
+    resetYearListCache();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });

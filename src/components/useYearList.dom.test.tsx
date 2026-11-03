@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { renderHook, waitFor } from "@testing-library/react";
 import { yearCard } from "./media.fixtures.ts";
-import { useYearList } from "./useYearList";
+import { resetYearListCache, useYearList } from "./useYearList";
 
 describe("useYearList", () => {
   afterEach(() => {
+    resetYearListCache();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
