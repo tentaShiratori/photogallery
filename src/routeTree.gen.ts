@@ -8,97 +8,136 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiMediaRouteImport } from './routes/api/media'
-import { Route as MediaSplatRouteImport } from './routes/media.$'
+import { Route as rootRouteImport } from "./routes/__root"
+import { Route as GalleryRouteImport } from "./routes/_gallery"
+import { Route as GalleryIndexRouteImport } from "./routes/_gallery/index"
+import { Route as ApiMediaRouteImport } from "./routes/api/media"
+import { Route as MediaSplatRouteImport } from "./routes/media.$"
+import { Route as GalleryYearsYearRouteImport } from "./routes/_gallery/years.$year"
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const GalleryRoute = GalleryRouteImport.update({
+  id: "/_gallery",
   getParentRoute: () => rootRouteImport,
 } as any)
+const GalleryIndexRoute = GalleryIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => GalleryRoute,
+} as any)
 const ApiMediaRoute = ApiMediaRouteImport.update({
-  id: '/api/media',
-  path: '/api/media',
+  id: "/api/media",
+  path: "/api/media",
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
-  id: '/media/$',
-  path: '/media/$',
+  id: "/media/$",
+  path: "/media/$",
   getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryYearsYearRoute = GalleryYearsYearRouteImport.update({
+  id: "/years/$year",
+  path: "/years/$year",
+  getParentRoute: () => GalleryRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
+  "/": typeof GalleryIndexRoute
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/": typeof GalleryIndexRoute
+  "/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/api/media': typeof ApiMediaRoute
-  '/media/$': typeof MediaSplatRoute
+  "/_gallery": typeof GalleryRouteWithChildren
+  "/api/media": typeof ApiMediaRoute
+  "/media/$": typeof MediaSplatRoute
+  "/_gallery/": typeof GalleryIndexRoute
+  "/_gallery/years/$year": typeof GalleryYearsYearRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/media' | '/media/$'
+  fullPaths: "/" | "/api/media" | "/media/$" | "/years/$year"
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/media' | '/media/$'
-  id: '__root__' | '/' | '/api/media' | '/media/$'
+  to: "/api/media" | "/media/$" | "/" | "/years/$year"
+  id:
+    | "__root__"
+    | "/_gallery"
+    | "/api/media"
+    | "/media/$"
+    | "/_gallery/"
+    | "/_gallery/years/$year"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  GalleryRoute: typeof GalleryRouteWithChildren
   ApiMediaRoute: typeof ApiMediaRoute
   MediaSplatRoute: typeof MediaSplatRoute
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    "/_gallery": {
+      id: "/_gallery"
+      path: ""
+      fullPath: "/"
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/media': {
-      id: '/api/media'
-      path: '/api/media'
-      fullPath: '/api/media'
+    "/_gallery/": {
+      id: "/_gallery/"
+      path: "/"
+      fullPath: "/"
+      preLoaderRoute: typeof GalleryIndexRouteImport
+      parentRoute: typeof GalleryRoute
+    }
+    "/api/media": {
+      id: "/api/media"
+      path: "/api/media"
+      fullPath: "/api/media"
       preLoaderRoute: typeof ApiMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/media/$': {
-      id: '/media/$'
-      path: '/media/$'
-      fullPath: '/media/$'
+    "/media/$": {
+      id: "/media/$"
+      path: "/media/$"
+      fullPath: "/media/$"
       preLoaderRoute: typeof MediaSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    "/_gallery/years/$year": {
+      id: "/_gallery/years/$year"
+      path: "/years/$year"
+      fullPath: "/years/$year"
+      preLoaderRoute: typeof GalleryYearsYearRouteImport
+      parentRoute: typeof GalleryRoute
     }
   }
 }
 
+interface GalleryRouteChildren {
+  GalleryIndexRoute: typeof GalleryIndexRoute
+  GalleryYearsYearRoute: typeof GalleryYearsYearRoute
+}
+
+const GalleryRouteChildren: GalleryRouteChildren = {
+  GalleryIndexRoute: GalleryIndexRoute,
+  GalleryYearsYearRoute: GalleryYearsYearRoute,
+}
+
+const GalleryRouteWithChildren =
+  GalleryRoute._addFileChildren(GalleryRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  GalleryRoute: GalleryRouteWithChildren,
   ApiMediaRoute: ApiMediaRoute,
   MediaSplatRoute: MediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
